@@ -89,7 +89,7 @@ const DropdownItem = ({ label, children, addon, icon: Icon, avatarUrl, unstyled,
             {(state) => (
                 <div
                     className={cx(
-                        "relative flex h-9 items-center rounded-full px-3.5 outline-focus-ring transition duration-100 ease-linear",
+                        "relative flex h-11 items-center rounded-full px-3.5 outline-focus-ring transition duration-100 ease-linear md:h-9",
                         !state.isDisabled && "group-hover:bg-brand-primary",
                         state.isFocused && "bg-brand-primary",
                         state.isFocusVisible && "outline-2 -outline-offset-2",
@@ -104,7 +104,7 @@ const DropdownItem = ({ label, children, addon, icon: Icon, avatarUrl, unstyled,
                         </div>
                     )}
 
-                    {Icon && <Icon aria-hidden="true" className={cx("mr-3 size-4.5 shrink-0 text-fg-quaternary", state.isFocused && "text-fg-brand-secondary")} />}
+                    {Icon && <Icon aria-hidden="true" className={cx("mr-3 size-5 shrink-0 text-tertiary", state.isFocused && "text-brand-secondary")} />}
 
                     <span className={cx("grow truncate text-sm font-medium text-tertiary", state.isFocused && "text-brand-secondary")}>
                         {label || (typeof children === "function" ? children(state) : children)}
@@ -143,7 +143,7 @@ const DropdownPopover = (props: DropdownPopoverProps) => {
             {...props}
             className={(state) =>
                 cx(
-                    "w-64 origin-(--trigger-anchor-point) overflow-auto rounded-[1.375rem] bg-primary shadow-xl will-change-transform",
+                    "w-[min(16rem,calc(100vw-2rem))] origin-(--trigger-anchor-point) overflow-auto rounded-[1.375rem] bg-primary shadow-xl will-change-transform",
                     state.isEntering &&
                         "duration-150 ease-out animate-in fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
                     state.isExiting &&
@@ -158,7 +158,7 @@ const DropdownPopover = (props: DropdownPopoverProps) => {
 };
 
 const DropdownSeparator = (props: AriaSeparatorProps) => {
-    return <AriaSeparator {...props} className={cx("my-1 h-px w-full bg-line", props.className)} />;
+    return <AriaSeparator {...props} className={cx("my-1 h-px w-full bg-border-secondary", props.className)} />;
 };
 
 const DropdownDotsButton = (props: AriaButtonProps & RefAttributes<HTMLButtonElement>) => {
