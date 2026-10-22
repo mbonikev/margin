@@ -1,0 +1,118 @@
+/* ============================================================
+   MARGIN — THE PALETTE
+   The only colour file you need to edit. Everything in the app,
+   including every Untitled UI component, derives from these 15.
+   ============================================================ */
+
+@theme {
+    /* ---------- THE 15 ---------- */
+
+    /* Brand */
+    --color-brand: #449c63; /* the one green */
+    --color-on-brand: #ffffff; /* text/icons sitting on brand */
+
+    /* Surfaces */
+    --color-canvas: #f1f1f3; /* page background */
+    --color-surface: #ffffff; /* cards */
+
+    /* Text */
+    --color-ink: #16191a; /* headings, big numbers */
+    --color-ink-muted: #5f6663; /* labels, secondary copy */
+    --color-ink-faint: #9aa19d; /* placeholders, disabled */
+
+    /* Structure */
+    --color-line: #e3e6e4; /* hairlines, dividers */
+
+    /* Meaning */
+    --color-positive: #2f9e5e; /* good delta, money saved */
+    --color-negative: #d64a45; /* overspend, overdue */
+    --color-caution: #dca32a; /* running tight */
+    --color-info: #5a6ee0; /* neutral notice */
+
+    /* Interaction */
+    --color-focus: #449c63; /* focus rings */
+    --color-overlay: oklch(from var(--color-ink) l c h / 0.45); /* modal scrim */
+    --color-shadow: oklch(from var(--color-ink) l c h / 0.07); /* elevation */
+
+    /* ---------- TYPOGRAPHY ---------- */
+    --font-body: "Google Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-display: "Google Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+    /* ============================================================
+       DERIVED BELOW — don't edit. These regenerate from the 15
+       above and are what Untitled UI's components actually read.
+       ============================================================ */
+
+    /* Neutral ramp — interpolated between canvas / line / faint / muted / ink */
+    --color-neutral-50: var(--color-canvas);
+    --color-neutral-100: color-mix(in oklab, var(--color-canvas) 55%, var(--color-line));
+    --color-neutral-200: var(--color-line);
+    --color-neutral-300: color-mix(in oklab, var(--color-line) 60%, var(--color-ink-faint));
+    --color-neutral-400: var(--color-ink-faint);
+    --color-neutral-500: color-mix(in oklab, var(--color-ink-faint) 45%, var(--color-ink-muted));
+    --color-neutral-600: var(--color-ink-muted);
+    --color-neutral-700: color-mix(in oklab, var(--color-ink-muted) 50%, var(--color-ink));
+    --color-neutral-800: color-mix(in oklab, var(--color-ink-muted) 22%, var(--color-ink));
+    --color-neutral-900: var(--color-ink);
+    --color-neutral-950: color-mix(in oklab, var(--color-ink) 82%, black);
+
+    /* Brand ramp */
+    --color-brand-50: color-mix(in oklab, var(--color-brand) 8%, white);
+    --color-brand-100: color-mix(in oklab, var(--color-brand) 14%, white);
+    --color-brand-200: color-mix(in oklab, var(--color-brand) 26%, white);
+    --color-brand-300: color-mix(in oklab, var(--color-brand) 44%, white);
+    --color-brand-400: color-mix(in oklab, var(--color-brand) 68%, white);
+    --color-brand-500: color-mix(in oklab, var(--color-brand) 86%, white);
+    --color-brand-600: var(--color-brand);
+    --color-brand-700: color-mix(in oklab, var(--color-brand) 80%, black);
+    --color-brand-800: color-mix(in oklab, var(--color-brand) 66%, black);
+    --color-brand-900: color-mix(in oklab, var(--color-brand) 54%, black);
+    --color-brand-950: color-mix(in oklab, var(--color-brand) 38%, black);
+
+    /* Success ramp <- positive */
+    --color-green-50: color-mix(in oklab, var(--color-positive) 8%, white);
+    --color-green-100: color-mix(in oklab, var(--color-positive) 14%, white);
+    --color-green-200: color-mix(in oklab, var(--color-positive) 26%, white);
+    --color-green-300: color-mix(in oklab, var(--color-positive) 44%, white);
+    --color-green-400: color-mix(in oklab, var(--color-positive) 68%, white);
+    --color-green-500: color-mix(in oklab, var(--color-positive) 86%, white);
+    --color-green-600: var(--color-positive);
+    --color-green-700: color-mix(in oklab, var(--color-positive) 80%, black);
+    --color-green-800: color-mix(in oklab, var(--color-positive) 66%, black);
+    --color-green-900: color-mix(in oklab, var(--color-positive) 54%, black);
+    --color-green-950: color-mix(in oklab, var(--color-positive) 38%, black);
+
+    /* Error ramp <- negative */
+    --color-red-50: color-mix(in oklab, var(--color-negative) 8%, white);
+    --color-red-100: color-mix(in oklab, var(--color-negative) 14%, white);
+    --color-red-200: color-mix(in oklab, var(--color-negative) 26%, white);
+    --color-red-300: color-mix(in oklab, var(--color-negative) 44%, white);
+    --color-red-400: color-mix(in oklab, var(--color-negative) 68%, white);
+    --color-red-500: color-mix(in oklab, var(--color-negative) 86%, white);
+    --color-red-600: var(--color-negative);
+    --color-red-700: color-mix(in oklab, var(--color-negative) 80%, black);
+    --color-red-800: color-mix(in oklab, var(--color-negative) 66%, black);
+    --color-red-900: color-mix(in oklab, var(--color-negative) 54%, black);
+    --color-red-950: color-mix(in oklab, var(--color-negative) 38%, black);
+
+    /* Warning ramp <- caution */
+    --color-yellow-50: color-mix(in oklab, var(--color-caution) 8%, white);
+    --color-yellow-100: color-mix(in oklab, var(--color-caution) 14%, white);
+    --color-yellow-200: color-mix(in oklab, var(--color-caution) 26%, white);
+    --color-yellow-300: color-mix(in oklab, var(--color-caution) 44%, white);
+    --color-yellow-400: color-mix(in oklab, var(--color-caution) 68%, white);
+    --color-yellow-500: color-mix(in oklab, var(--color-caution) 86%, white);
+    --color-yellow-600: var(--color-caution);
+    --color-yellow-700: color-mix(in oklab, var(--color-caution) 70%, black);
+    --color-yellow-800: color-mix(in oklab, var(--color-caution) 58%, black);
+    --color-yellow-900: color-mix(in oklab, var(--color-caution) 46%, black);
+    --color-yellow-950: color-mix(in oklab, var(--color-caution) 32%, black);
+}
+
+/* Surfaces that must be exact rather than derived. */
+@layer base {
+    :root {
+        --color-bg-primary: var(--color-surface);
+        --color-bg-secondary: var(--color-canvas);
+    }
+}
