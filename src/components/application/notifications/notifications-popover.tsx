@@ -75,7 +75,7 @@ const NotificationRow = ({ item }: { item: NotificationItem }) => {
                 alt=""
                 className="mt-0.5 size-9"
                 badge={
-                    <span className={cx("absolute -right-0.5 -bottom-0.5 flex size-4.5 items-center justify-center rounded-full ring-2 ring-surface", toneStyles[item.tone])}>
+                    <span className={cx("absolute -right-0.5 -bottom-0.5 flex size-4.5 items-center justify-center rounded-full ring-2 ring-bg-primary", toneStyles[item.tone])}>
                         <Icon className="size-2.5" />
                     </span>
                 }
@@ -103,10 +103,14 @@ export const NotificationsPopover = () => {
         <DialogTrigger>
             <AriaButton
                 aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
-                className="relative flex size-9 shrink-0 items-center justify-center rounded-full text-tertiary transition duration-100 ease-linear outline-focus-ring hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="relative flex size-11 shrink-0 items-center justify-center rounded-full md:size-9 text-tertiary transition duration-100 ease-linear outline-focus-ring hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-                <HiOutlineBell className="size-5" />
-                {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand-solid ring-2 ring-surface" />}
+                <HiOutlineBell className="size-6 md:size-5.5" />
+                {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-solid px-1 text-[0.625rem] leading-none font-semibold text-white ring-2 ring-bg-primary">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                )}
             </AriaButton>
 
             <Popover
@@ -114,7 +118,7 @@ export const NotificationsPopover = () => {
                 offset={8}
                 className={({ isEntering, isExiting }) =>
                     cx(
-                        "w-[22rem] origin-(--trigger-anchor-point) overflow-hidden rounded-3xl bg-primary shadow-xl will-change-transform",
+                        "w-[min(22rem,calc(100vw-2rem))] origin-(--trigger-anchor-point) overflow-hidden rounded-3xl bg-primary shadow-xl will-change-transform",
                         isEntering && "duration-150 ease-out animate-in fade-in placement-bottom:slide-in-from-top-0.5",
                         isExiting && "duration-100 ease-in animate-out fade-out placement-bottom:slide-out-to-top-0.5",
                     )
@@ -151,7 +155,7 @@ export const NotificationsPopover = () => {
                                 </AriaButton>
                             </header>
 
-                            <div className="max-h-[24rem] divide-y divide-line overflow-y-auto">
+                            <div className="max-h-[24rem] divide-y divide-border-secondary overflow-y-auto">
                                 {items.length > 0 ? (
                                     items.map((item) => <NotificationRow key={item.id} item={item} />)
                                 ) : (
@@ -159,12 +163,12 @@ export const NotificationsPopover = () => {
                                 )}
                             </div>
 
-                            <footer className="flex items-center gap-1 bg-secondary px-3 py-2">
-                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition hover:bg-primary">
+                            <footer className="flex items-center gap-1 px-3 py-2">
+                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-primary hover:text-brand-secondary">
                                     <HiOutlineCheck className="size-4" />
                                     Mark all read
                                 </button>
-                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition hover:bg-primary">
+                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-primary hover:text-brand-secondary">
                                     <HiOutlineTrash className="size-4" />
                                     Clear all
                                 </button>
