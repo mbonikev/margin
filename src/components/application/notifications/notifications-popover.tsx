@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { FC } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import { HiOutlineArrowRight, HiOutlineBanknotes, HiOutlineBell, HiOutlineCheck, HiOutlineEnvelope, HiOutlineFlag, HiOutlineTrash, HiOutlineXMark } from "react-icons/hi2";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -94,8 +95,12 @@ const NotificationRow = ({ item }: { item: NotificationItem }) => {
     );
 };
 
+const filters = ["all", "unread"] as const;
+type Filter = (typeof filters)[number];
+
 export const NotificationsPopover = () => {
-    const [filter, setFilter] = useState<"all" | "unread">("all");
+    const reduceMotion = useReducedMotion();
+    const [filter, setFilter] = useState<Filter>("all");
     const items = filter === "unread" ? sampleNotifications.filter((n) => n.unread) : sampleNotifications;
     const unreadCount = sampleNotifications.filter((n) => n.unread).length;
 
@@ -131,7 +136,7 @@ export const NotificationsPopover = () => {
                                 <h2 className="flex-1 text-md font-semibold text-primary">Notifications</h2>
 
                                 <div className="flex items-center gap-0.5 rounded-full bg-secondary p-0.5">
-                                    {(["all", "unread"] as const).map((key) => (
+                                    {filters.map((key) => (
                                         <button
                                             key={key}
                                             type="button"
@@ -157,7 +162,16 @@ export const NotificationsPopover = () => {
 
                             <div className="max-h-[24rem] divide-y divide-border-secondary overflow-y-auto">
                                 {items.length > 0 ? (
-                                    items.map((item) => <NotificationRow key={item.id} item={item} />)
+                                    items.map((item, index) => (
+                                        <motion.div
+                                            key={`${filter}-${item.id}`}
+                                            initial={reduceMotion ? false : { opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.18, ease: "easeOut", delay: reduceMotion ? 0 : index * 0.035 }}
+                                        >
+                                            <NotificationRow item={item} />
+                                        </motion.div>
+                                    ))
                                 ) : (
                                     <p className="px-4 py-10 text-center text-sm text-tertiary">You're all caught up.</p>
                                 )}
