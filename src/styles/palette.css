@@ -11,17 +11,18 @@
     --color-brand: #449c63; /* the one green */
     --color-on-brand: #ffffff; /* text/icons sitting on brand */
 
-    /* Surfaces */
-    --color-canvas: #f1f1f3; /* page background */
-    --color-surface: #ffffff; /* cards */
+    /* Surfaces — tinted by the accent so the whole app shifts with it.
+       Edit the base hex inside each mix; the accent does the rest. */
+    --color-canvas: color-mix(in oklab, var(--color-brand) 5%, #f1f1f3); /* page background */
+    --color-surface: color-mix(in oklab, var(--color-brand) 2%, #ffffff); /* cards */
 
     /* Text */
-    --color-ink: #16191a; /* headings, big numbers */
-    --color-ink-muted: #5f6663; /* labels, secondary copy */
-    --color-ink-faint: #9aa19d; /* placeholders, disabled */
+    --color-ink: color-mix(in oklab, var(--color-brand) 7%, #14171a); /* headings, big numbers */
+    --color-ink-muted: color-mix(in oklab, var(--color-brand) 6%, #5f6663); /* labels, secondary copy */
+    --color-ink-faint: color-mix(in oklab, var(--color-brand) 5%, #9aa19d); /* placeholders, disabled */
 
     /* Structure */
-    --color-line: #e3e6e4; /* hairlines, dividers */
+    --color-line: color-mix(in oklab, var(--color-brand) 6%, #e3e6e4); /* hairlines, dividers */
 
     /* Meaning */
     --color-positive: #2f9e5e; /* good delta, money saved */
@@ -109,10 +110,24 @@
     --color-yellow-950: color-mix(in oklab, var(--color-caution) 32%, black);
 }
 
-/* Surfaces that must be exact rather than derived. */
+/* Light-mode surfaces that must be exact rather than derived.
+   Scoped away from .dark-mode so theme.css's dark values still win. */
 @layer base {
-    :root {
+    :root:not(.dark-mode) {
         --color-bg-primary: var(--color-surface);
         --color-bg-secondary: var(--color-canvas);
+    }
+}
+
+/* Dark mode needs muted text a step brighter than the light-mode mapping. */
+@layer base {
+    :root.dark-mode {
+        --color-text-tertiary: var(--color-neutral-300);
+        --color-text-quaternary: var(--color-neutral-400);
+        /* Mirror the light-mode relationship: a soft brand tint sitting just
+           above the surface, with light brand text on it. Untitled UI defaults
+           this to a saturated brand-500, which reads as a second solid button. */
+        --color-bg-brand-primary: color-mix(in oklab, var(--color-brand) 22%, var(--color-bg-primary));
+        --color-text-brand-secondary: var(--color-brand-300);
     }
 }
