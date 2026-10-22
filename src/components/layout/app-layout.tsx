@@ -15,10 +15,14 @@ const navItems = [
     { label: "Accounts", to: "/accounts" },
 ];
 
-const recordTypes = [
+/** Ordered by how often they get used: daily actions first, setup last. */
+const recordActions = [
     { id: "balance", label: "Update balance", icon: HiOutlineScale },
     { id: "expense", label: "Add expense", icon: HiOutlineArrowTrendingDown },
     { id: "income", label: "Add income", icon: HiOutlineArrowTrendingUp },
+];
+
+const recordSetup = [
     { id: "commitment", label: "Add recurring bill", icon: HiOutlineArrowPath },
     { id: "goal", label: "New savings goal", icon: HiOutlineFlag },
 ];
@@ -85,7 +89,13 @@ export const AppLayout = () => {
 
                         <Dropdown.Popover placement="bottom right">
                             <Dropdown.Menu>
-                                {recordTypes.map((type) => (
+                                {recordActions.map((type) => (
+                                    <Dropdown.Item key={type.id} id={type.id} label={type.label} icon={type.icon} />
+                                ))}
+
+                                <Dropdown.Separator />
+
+                                {recordSetup.map((type) => (
                                     <Dropdown.Item key={type.id} id={type.id} label={type.label} icon={type.icon} />
                                 ))}
                             </Dropdown.Menu>
