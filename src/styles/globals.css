@@ -113,4 +113,28 @@ input[type="search"]::-webkit-search-cancel-button {
     [aria-disabled="true"] {
         cursor: not-allowed;
     }
+
+    /* No text caret or blue highlight when dragging across controls. */
+    button,
+    [role="button"],
+    [role="menuitem"],
+    [role="option"],
+    [role="tab"],
+    a[href],
+    summary,
+    label {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
