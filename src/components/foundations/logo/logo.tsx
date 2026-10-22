@@ -8,18 +8,28 @@ interface LogoProps extends HTMLAttributes<HTMLSpanElement> {
     variant?: LogoVariant;
 }
 
-const sources: Record<LogoVariant, { light: string; dark: string; width: number; height: number }> = {
-    wordmark: { light: "/logos/wordmark-green.png", dark: "/logos/wordmark-white.png", width: 312, height: 96 },
-    mark: { light: "/logos/mark-green.png", dark: "/logos/mark-white.png", width: 96, height: 96 },
+/**
+ * The PNGs are used as alpha masks, not images, so the logo paints in whatever
+ * the current accent colour is. The counter inside the "m" is transparent in the
+ * source art, so it knocks through to the page behind it in both themes.
+ */
+const sources: Record<LogoVariant, { src: string; ratio: number }> = {
+    wordmark: { src: "/logos/wordmark-green.png", ratio: 1877 / 578 },
+    mark: { src: "/logos/mark-green.png", ratio: 1 },
 };
 
 export const Logo = ({ variant = "wordmark", className, ...props }: LogoProps) => {
-    const { light, dark, width, height } = sources[variant];
+    const { src, ratio } = sources[variant];
+    const mask = {
+        maskImage: `url(${src})`,
+        WebkitMaskImage: `url(${src})`,
+        maskRepeat: "no-repeat",
+        WebkitMaskRepeat: "no-repeat",
+        maskSize: "contain",
+        WebkitMaskSize: "contain",
+        maskPosition: "center",
+        WebkitMaskPosition: "center",
+    } as const;
 
-    return (
-        <span {...props} className={cx("inline-flex shrink-0 items-center", className)}>
-            <img src={light} width={width} height={height} alt="Margin" className="h-full w-auto dark:hidden" />
-            <img src={dark} width={width} height={height} alt="" aria-hidden="true" className="hidden h-full w-auto dark:block" />
-        </span>
-    );
+    return <span {...props} role="img" aria-label="Margin" className={cx("inline-block shrink-0 bg-brand-solid", className)} style={{ aspectRatio: String(ratio), ...mask }} />;
 };
