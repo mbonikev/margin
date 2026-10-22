@@ -9,6 +9,6 @@ export const Separator = ({ orientation = "vertical", className }: SeparatorProp
     <span
         role="separator"
         aria-orientation={orientation}
-        className={cx("shrink-0 bg-line", orientation === "vertical" ? "h-5 w-px" : "h-px w-full", className)}
+        className={cx("shrink-0 bg-border-secondary", orientation === "vertical" ? "h-5 w-px" : "h-px w-full", className)}
     />
 );
