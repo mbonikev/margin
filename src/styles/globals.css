@@ -1,8 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
+
 @import "tailwindcss";
 @import "./theme.css";
-@import "./typography.css";
+@import "./palette.css";
 
-@plugin "@tailwindcss/typography";
 @plugin "tailwindcss-react-aria-components";
 @plugin "tailwindcss-animate";
 
@@ -66,4 +67,50 @@ input[type="search"]::-webkit-search-cancel-button {
 .recharts-surface g,
 .recharts-surface path {
     outline: none;
+}
+
+@layer base {
+    /* No grey flash box when tapping on mobile. */
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Kill the browser's default outline on mouse clicks and taps.
+       Keyboard focus is handled below so the app stays navigable. */
+    :focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    /* One designed focus ring, on brand, keyboard only. */
+    :focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    /* Inputs and contenteditable never show the UA outline. */
+    input:focus,
+    textarea:focus,
+    select:focus,
+    [contenteditable]:focus {
+        outline: none;
+    }
+
+    /* Tailwind v4 drops the UA's cursor:pointer on buttons. Put it back
+       for everything that is actually clickable. */
+    button:not(:disabled),
+    [role="button"]:not([aria-disabled="true"]),
+    [role="menuitem"],
+    [role="option"],
+    [role="tab"],
+    a[href],
+    summary,
+    label[for],
+    select {
+        cursor: pointer;
+    }
+
+    button:disabled,
+    [aria-disabled="true"] {
+        cursor: not-allowed;
+    }
 }
