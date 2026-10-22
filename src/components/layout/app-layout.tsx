@@ -19,7 +19,7 @@ const recordTypes = [
     { id: "balance", label: "Update balance", icon: HiOutlineScale },
     { id: "expense", label: "Add expense", icon: HiOutlineArrowTrendingDown },
     { id: "income", label: "Add income", icon: HiOutlineArrowTrendingUp },
-    { id: "commitment", label: "Add commitment", icon: HiOutlineArrowPath },
+    { id: "commitment", label: "Add recurring bill", icon: HiOutlineArrowPath },
     { id: "goal", label: "New savings goal", icon: HiOutlineFlag },
 ];
 
