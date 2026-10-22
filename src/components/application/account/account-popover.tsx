@@ -46,11 +46,11 @@ export const AccountPopover = () => (
                     <PanelItem icon={HiOutlineCog6Tooth} label="Settings" />
                 </div>
 
-                <Separator orientation="horizontal" className="my-1" />
+                <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
 
                 <ThemeControls />
 
-                <Separator orientation="horizontal" className="my-1" />
+                <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
 
                 <div className="p-1">
                     <PanelItem icon={HiOutlineArrowRightOnRectangle} label="Sign out" />

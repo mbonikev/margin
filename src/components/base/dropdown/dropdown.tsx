@@ -158,7 +158,7 @@ const DropdownPopover = (props: DropdownPopoverProps) => {
 };
 
 const DropdownSeparator = (props: AriaSeparatorProps) => {
-    return <AriaSeparator {...props} className={cx("my-1 h-px w-full bg-border-secondary", props.className)} />;
+    return <AriaSeparator {...props} className={cx("my-1 mx-auto h-px w-[86%] bg-border-secondary", props.className)} />;
 };
 
 const DropdownDotsButton = (props: AriaButtonProps & RefAttributes<HTMLButtonElement>) => {
