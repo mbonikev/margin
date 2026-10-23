@@ -213,3 +213,28 @@ input[type="search"]::-webkit-search-cancel-button {
         scrollbar-gutter: stable;
     }
 }
+
+/* Liquid progress: a slow shimmer across the fill, and bubbles rising through it.
+   The reduced-motion block above collapses both to a stand-still. */
+@keyframes margin-liquid {
+    from {
+        background-position: 0% 50%;
+    }
+    to {
+        background-position: 200% 50%;
+    }
+}
+
+@keyframes margin-bubble {
+    0% {
+        transform: translateY(20%) scale(0.5);
+        opacity: 0;
+    }
+    25% {
+        opacity: 0.75;
+    }
+    100% {
+        transform: translateY(-160%) scale(1);
+        opacity: 0;
+    }
+}
