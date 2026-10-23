@@ -9,7 +9,7 @@ export type Pressure = "ok" | "tight" | "over";
 
 /** Most rows stay neutral on purpose — only the ones that need attention carry colour. */
 const pressureChip: Record<Pressure, string> = {
-    ok: "bg-secondary text-tertiary",
+    ok: "bg-tertiary text-tertiary",
     tight: "bg-tile-yellow-tint text-tile-yellow-ink",
     over: "bg-tile-magenta-tint text-tile-magenta-ink",
 };
@@ -47,7 +47,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
                     <li key={item.id}>
                         <button
                             type="button"
-                            className="no-press flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition duration-100 ease-linear hover:bg-secondary"
+                            className="no-press flex w-full items-center gap-2.5 rounded-full px-2 py-2 text-left transition duration-100 ease-linear hover:bg-secondary"
                         >
                             {/* Fixed width so the dates form a clean column. */}
                             <span className={cx("w-16 shrink-0 rounded-full py-1 text-center text-[11px] font-medium", pressureChip[item.pressure])}>{item.due}</span>
