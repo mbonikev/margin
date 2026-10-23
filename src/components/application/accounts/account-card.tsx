@@ -13,21 +13,49 @@ const themes: Record<CardTheme, string> = {
     plum: "bg-[#7a3f70]",
 };
 
-/** How the account's identifier is masked. Cash has none at all. */
-export type MaskPattern = "card" | "phone" | "none";
-
 export interface Account {
     id: string;
     name: string;
     kind: string;
-    /** Last digits only — enough to recognise the account, never enough to use it. */
-    tail?: string;
-    mask?: MaskPattern;
+    /** Margin's own reference for the account. Generated from the id if absent. */
+    ref?: string;
     /** Balance in the base currency. */
     balance: number;
     updated: string;
     theme: CardTheme;
 }
+
+/**
+ * A reference Margin issues itself — not a card or wallet number. It needs no
+ * input from the user, carries nothing sensitive, and so needs no masking.
+ */
+const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; // Crockford-style: no I, L, O or U to misread
+
+export const accountRef = (id: string) => {
+    // FNV-1a, then a linear congruential step per character — padding a single
+    // hash instead gives short ids a run of leading zeros.
+    let hash = 2166136261;
+    for (let index = 0; index < id.length; index++) {
+        hash ^= id.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+    }
+
+    // xorshift32, reading the TOP 5 bits. A linear congruential generator's low
+    // bits depend only on the previous low bits, so `state % 32` collides for any
+    // two ids whose hash shares its last 5 bits.
+    let state = hash >>> 0 || 1;
+    let code = "";
+    for (let index = 0; index < 8; index++) {
+        state ^= state << 13;
+        state >>>= 0;
+        state ^= state >>> 17;
+        state ^= state << 5;
+        state >>>= 0;
+        code += ALPHABET[state >>> 27];
+    }
+
+    return `MGN ${code.slice(0, 4)} ${code.slice(4)}`;
+};
 
 const Chip = ({ className }: { className?: string }) => (
     <svg viewBox="0 0 34 26" fill="none" className={className} aria-hidden="true">
@@ -52,7 +80,7 @@ const Blobs = () => (
 );
 
 export const AccountCard = ({ account, className }: { account: Account; className?: string }) => {
-    const mask = account.mask ?? "card";
+    const reference = account.ref ?? accountRef(account.id);
 
     return (
     <div className={cx("relative flex size-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 text-white shadow-lg", themes[account.theme], className)}>
@@ -71,11 +99,7 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
 
         {/* Not font-mono: the generic monospace fallback reads thin and dead.
             The display face with tabular figures gives the chunky card look. */}
-        {mask !== "none" && account.tail && (
-            <p className="relative text-xl font-semibold tracking-[0.14em] tabular-nums text-white md:text-2xl">
-                <span className="text-white/70">{mask === "phone" ? "••• •••" : "•••• •••• ••••"}</span> {account.tail}
-            </p>
-        )}
+        <p className="relative text-xl font-semibold tracking-[0.16em] tabular-nums text-white/90 md:text-2xl">{reference}</p>
 
         <div className="relative flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -102,6 +126,6 @@ export const AccountThumb = ({ account, isActive, onSelect }: { account: Account
         )}
     >
         <span className="absolute -top-4 -right-3 size-16 rounded-full bg-white/8" />
-        {account.tail && <span className="absolute bottom-1.5 left-2 text-[10px] font-semibold tabular-nums text-white/85">{account.tail}</span>}
+        <span className="absolute bottom-1.5 left-2 text-[10px] font-semibold tabular-nums text-white/85">{(account.ref ?? accountRef(account.id)).slice(-4)}</span>
     </button>
 );
