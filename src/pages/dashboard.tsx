@@ -61,11 +61,13 @@ const goals: Goal[] = [
     { id: "trip", name: "Trip home", saved: 62000, target: 400000, startedAt: monthsAgo(1) },
 ];
 
+const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000);
+
 const activity: Activity[] = [
-    { id: "a1", kind: "balance", name: "Balance updated", account: "MTN MoMo", when: "2h ago", amount: 684000 },
-    { id: "a2", kind: "expense", name: "Groceries", account: "Cash", when: "Yesterday", amount: 12400 },
-    { id: "a3", kind: "income", name: "Client payment", account: "Equity Bank", when: "2d ago", amount: 320000 },
-    { id: "a4", kind: "expense", name: "Transport", account: "MTN MoMo", when: "3d ago", amount: 4500 },
+    { id: "a1", kind: "balance", name: "Balance updated", account: "MTN MoMo", at: hoursAgo(2), amount: 684000 },
+    { id: "a2", kind: "expense", name: "Groceries", account: "Cash", at: hoursAgo(20), amount: 12400 },
+    { id: "a3", kind: "income", name: "Client payment", account: "Equity Bank", at: hoursAgo(50), amount: 320000 },
+    { id: "a4", kind: "expense", name: "Transport", account: "MTN MoMo", at: hoursAgo(74), amount: 4500 },
 ];
 
 const flows: MonthFlow[] = [
