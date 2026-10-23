@@ -16,12 +16,15 @@ const pressureChip: Record<Pressure, string> = {
 export interface Commitment {
     id: string;
     name: string;
-    /** "Today", "Tomorrow", "Fri 31" — already humanised. */
-    due: string;
+    /** A real date, so the tile can render it and the list can sort by it. */
+    due: Date;
     /** Amount in the base currency. */
     amount: number;
     pressure: Pressure;
 }
+
+const dayFormat = new Intl.DateTimeFormat(undefined, { day: "numeric" });
+const monthFormat = new Intl.DateTimeFormat(undefined, { month: "short" });
 
 export const UpcomingList = ({ items, className }: { items: Commitment[]; className?: string }) => {
     const total = items.reduce((sum, item) => sum + item.amount, 0);
@@ -45,10 +48,13 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
                     <li key={item.id}>
                         <button
                             type="button"
-                            className="no-press flex w-full items-center gap-2.5 rounded-full px-2 py-2 text-left transition duration-100 ease-linear hover:bg-secondary"
+                            className="no-press flex w-full items-center gap-2.5 rounded-2xl px-2 py-1.5 text-left transition duration-100 ease-linear hover:bg-secondary"
                         >
-                            {/* Fixed width so the dates form a clean column. */}
-                            <span className={cx("w-16 shrink-0 rounded-full py-1 text-center text-[11px] font-medium", pressureChip[item.pressure])}>{item.due}</span>
+                            {/* A calendar tile reads faster down a column than a row of pills. */}
+                            <span className={cx("flex size-10 shrink-0 flex-col items-center justify-center rounded-xl leading-none", pressureChip[item.pressure])}>
+                                <span className="text-sm font-semibold">{dayFormat.format(item.due)}</span>
+                                <span className="mt-0.5 text-[9px] font-medium uppercase opacity-70">{monthFormat.format(item.due)}</span>
+                            </span>
 
                             <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{item.name}</span>
 
