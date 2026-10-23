@@ -24,13 +24,20 @@ const accounts: Account[] = [
     { id: "cash", name: "Cash", kind: "Wallet", balance: 4000, updated: "Updated today", theme: "plum" },
 ];
 
+/** Relative to today so the list never goes stale while this is placeholder data. */
+const inDays = (days: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date;
+};
+
 const upcoming: Commitment[] = [
-    { id: "netflix", name: "Netflix", due: "Today", amount: 18000, pressure: "ok" },
-    { id: "rent", name: "Rent", due: "Tomorrow", amount: 450000, pressure: "over" },
-    { id: "data", name: "Phone bundle", due: "Fri 31", amount: 25000, pressure: "ok" },
-    { id: "school", name: "School fees", due: "Nov 3", amount: 180000, pressure: "tight" },
-    { id: "gym", name: "Gym", due: "Nov 5", amount: 30000, pressure: "ok" },
-    { id: "insurance", name: "Insurance", due: "Nov 12", amount: 64000, pressure: "ok" },
+    { id: "netflix", name: "Netflix", due: inDays(0), amount: 18000, pressure: "ok" },
+    { id: "rent", name: "Rent", due: inDays(1), amount: 450000, pressure: "over" },
+    { id: "data", name: "Phone bundle", due: inDays(8), amount: 25000, pressure: "ok" },
+    { id: "school", name: "School fees", due: inDays(11), amount: 180000, pressure: "tight" },
+    { id: "gym", name: "Gym", due: inDays(13), amount: 30000, pressure: "ok" },
+    { id: "insurance", name: "Insurance", due: inDays(20), amount: 64000, pressure: "ok" },
 ];
 
 export const DashboardPage = () => {
