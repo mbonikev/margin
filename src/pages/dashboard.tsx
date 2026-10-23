@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import type { Account } from "@/components/application/accounts/account-card";
 import { AccountHero } from "@/components/application/dashboard/account-hero";
+import type { Commitment } from "@/components/application/dashboard/upcoming-list";
+import { UpcomingList } from "@/components/application/dashboard/upcoming-list";
 import type { StatTileProps } from "@/components/application/dashboard/stat-tile";
 import { StatTile } from "@/components/application/dashboard/stat-tile";
 import { Amount } from "@/components/base/amount/amount";
-import { Card } from "@/components/base/card/card";
 import { useCurrency } from "@/providers/currency-provider";
 import { usePrivacy } from "@/providers/privacy-provider";
 
@@ -21,6 +22,15 @@ const accounts: Account[] = [
     { id: "equity", name: "Equity Bank", kind: "Current", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
     { id: "savings", name: "Laptop fund", kind: "Savings", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
     { id: "cash", name: "Cash", kind: "Wallet", balance: 4000, updated: "Updated today", theme: "plum" },
+];
+
+const upcoming: Commitment[] = [
+    { id: "netflix", name: "Netflix", due: "Today", amount: 18000, pressure: "ok" },
+    { id: "rent", name: "Rent", due: "Tomorrow", amount: 450000, pressure: "over" },
+    { id: "data", name: "Phone bundle", due: "Fri 31", amount: 25000, pressure: "ok" },
+    { id: "school", name: "School fees", due: "Nov 3", amount: 180000, pressure: "tight" },
+    { id: "gym", name: "Gym", due: "Nov 5", amount: 30000, pressure: "ok" },
+    { id: "insurance", name: "Insurance", due: "Nov 12", amount: 64000, pressure: "ok" },
 ];
 
 export const DashboardPage = () => {
@@ -90,7 +100,7 @@ export const DashboardPage = () => {
             <AccountHero accounts={accounts} className="min-h-80 lg:min-h-0" />
 
             {/* Right — same width as the left column, full height */}
-            <Card className="min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />
+            <UpcomingList items={upcoming} className="min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />
         </section>
     );
 };
