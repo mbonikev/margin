@@ -54,7 +54,7 @@ export const Progress = ({ value, label, className }: ProgressProps) => {
             aria-valuemax={100}
             className={cx("relative h-7 w-full overflow-hidden rounded-full bg-tertiary", className)}
         >
-            <div style={{ width: `${percent}%` }} className="absolute inset-y-0 left-0 overflow-hidden rounded-l-full rounded-r-md bg-brand transition-[width] duration-500 ease-out">
+            <div style={{ width: `${percent}%` }} className="absolute inset-y-0 left-0 overflow-hidden rounded-full bg-brand transition-[width] duration-500 ease-out">
                 {/* Depth: lighter at the surface, darker at the bottom of the vessel. */}
                 <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/15" />
 
