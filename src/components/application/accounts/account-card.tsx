@@ -70,10 +70,10 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
 
         <div className="relative flex items-end justify-between gap-3">
             <div className="min-w-0">
-                <p className="truncate text-[11px] text-white/55">{account.name}</p>
+                <p className="truncate text-xs font-medium text-white/75">{account.name}</p>
                 <Amount value={account.balance} className="mt-0.5 block truncate text-2xl font-semibold tracking-tight" />
             </div>
-            <p className="shrink-0 text-[11px] text-white/55">{account.updated}</p>
+            <p className="shrink-0 text-xs font-medium text-white/70">{account.updated}</p>
         </div>
     </div>
 );
