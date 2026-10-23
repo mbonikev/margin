@@ -158,11 +158,11 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
             The display face with tabular figures gives the chunky card look. */}
         <button
             type="button"
-            onClick={() => copy("Card ID", reference)}
-            title="Copy card ID"
-            className="no-press relative -mx-2 mb-[0.45rem] w-fit rounded-xl px-2 py-1 text-left text-[1.125rem] font-semibold tracking-[0.16em] tabular-nums text-white/90 transition duration-100 ease-linear hover:bg-white/12 md:mb-[0.675rem] md:text-[1.35rem]"
+            onClick={() => copy("Account name", account.name)}
+            title="Copy account name"
+            className="no-press relative -mx-2 mb-[0.45rem] w-fit max-w-full truncate rounded-xl px-2 py-1 text-left text-[1.125rem] font-semibold tracking-tight text-white transition duration-100 ease-linear hover:bg-white/12 md:mb-[0.675rem] md:text-[1.35rem]"
         >
-            {reference}
+            {account.name}
         </button>
 
         <AnimatePresence>
@@ -186,11 +186,11 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
             <div className="min-w-0 flex-1">
                 <button
                     type="button"
-                    onClick={() => copy("Account name", account.name)}
-                    title="Copy account name"
-                    className="no-press -mx-1.5 block max-w-full truncate rounded-lg px-1.5 py-0.5 text-left text-[0.7875rem] font-medium text-white/75 transition duration-100 ease-linear hover:bg-white/12 hover:text-white"
+                    onClick={() => copy("Card ID", reference)}
+                    title="Copy card ID"
+                    className="no-press -mx-1.5 block max-w-full truncate rounded-lg px-1.5 py-0.5 text-left text-[0.7875rem] font-medium tracking-[0.08em] tabular-nums text-white/75 transition duration-100 ease-linear hover:bg-white/12 hover:text-white"
                 >
-                    {account.name}
+                    {reference}
                 </button>
                 <button
                     type="button"
