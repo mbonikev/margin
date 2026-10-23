@@ -4,10 +4,10 @@ export const DashboardPage = () => {
     return (
         <section
             aria-label="Overview"
-            className="grid gap-2 md:grid-cols-2 md:gap-2.5 lg:min-h-[26rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)]"
+            className="grid gap-1.5 md:grid-cols-2 md:gap-2 lg:min-h-[26rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)]"
         >
             {/* Left — four stat tiles in a 2x2 */}
-            <div className="grid grid-cols-2 gap-2 md:gap-2.5">
+            <div className="grid grid-cols-2 gap-1.5 md:gap-2">
                 <Card className="min-h-36 md:min-h-40" />
                 <Card className="min-h-36 md:min-h-40" />
                 <Card className="min-h-36 md:min-h-40" />
