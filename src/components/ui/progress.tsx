@@ -8,7 +8,8 @@ interface ProgressProps {
     className?: string;
 }
 
-/** Deterministic per-value, so bubbles don't reshuffle on every render. */
+/** Seeded rather than raw Math.random per bubble, so a re-render never
+    reshuffles them — only a fresh mount picks a new seed. */
 const buildBubbles = (seed: number) =>
     Array.from({ length: 9 }, (_, index) => {
         const noise = Math.sin(seed * 12.9898 + index * 78.233) * 43758.5453;
@@ -30,7 +31,20 @@ const WAVE_TWICE = `${WAVE} M100,8 C112.5,2 125,2 137.5,8 C150,14 162.5,14 175,8
 
 export const Progress = ({ value, label, className }: ProgressProps) => {
     const percent = Math.max(0, Math.min(100, value));
-    const bubbles = useMemo(() => buildBubbles(percent), [percent]);
+
+    // Chosen once per mount. Without it every bar starts at the same phase on
+    // every reload, so the three of them move in lockstep and it reads as a loop.
+    const start = useMemo(
+        () => ({
+            seed: Math.random(),
+            // Negative delays drop each wave in partway through its cycle.
+            slowWave: -(Math.random() * 7).toFixed(2),
+            fastWave: -(Math.random() * 4.5).toFixed(2),
+        }),
+        [],
+    );
+
+    const bubbles = useMemo(() => buildBubbles(start.seed), [start.seed]);
 
     return (
         <div
@@ -45,14 +59,14 @@ export const Progress = ({ value, label, className }: ProgressProps) => {
                 <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/15" />
 
                 {/* Two surfaces at different speeds — one wave alone looks mechanical. */}
-                <svg aria-hidden="true" viewBox="0 0 200 24" preserveAspectRatio="none" style={{ animation: "margin-wave 7s linear infinite" }} className="absolute inset-y-0 left-0 h-full w-[200%]">
+                <svg aria-hidden="true" viewBox="0 0 200 24" preserveAspectRatio="none" style={{ animation: `margin-wave 7s linear ${start.slowWave}s infinite` }} className="absolute inset-y-0 left-0 h-full w-[200%]">
                     <path d={WAVE_TWICE} fill="currentColor" className="text-white/22" />
                 </svg>
                 <svg
                     aria-hidden="true"
                     viewBox="0 0 200 24"
                     preserveAspectRatio="none"
-                    style={{ animation: "margin-wave 4.5s linear infinite reverse" }}
+                    style={{ animation: `margin-wave 4.5s linear ${start.fastWave}s infinite reverse` }}
                     className="absolute inset-y-0 left-0 h-full w-[200%] translate-y-[3px]"
                 >
                     <path d={WAVE_TWICE} fill="currentColor" className="text-white/14" />
@@ -67,7 +81,7 @@ export const Progress = ({ value, label, className }: ProgressProps) => {
                             width: bubble.size,
                             height: bubble.size,
                             ["--drift" as string]: bubble.drift,
-                            animation: `margin-bubble ${bubble.duration}s ease-in ${bubble.delay}s infinite`,
+                            animation: `margin-bubble ${bubble.duration}s ease-in -${bubble.delay}s infinite`,
                         }}
                         className="absolute -bottom-1 rounded-full bg-white/70 shadow-[inset_0_-1px_1px_rgba(255,255,255,0.9)]"
                     />
