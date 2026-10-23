@@ -1,5 +1,6 @@
 import { HiOutlinePlus } from "react-icons/hi2";
 import { Amount } from "@/components/ui/amount";
+import { ActionButton } from "@/components/ui/action-button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
@@ -17,13 +18,7 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
         <div className="flex items-center justify-between gap-3">
             <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Goals</h2>
 
-            <button
-                type="button"
-                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-brand-solid px-3.5 text-sm font-medium text-white transition duration-100 ease-linear hover:bg-brand-solid_hover"
-            >
-                <HiOutlinePlus className="size-4" />
-                New goal
-            </button>
+<ActionButton icon={HiOutlinePlus}>New goal</ActionButton>
         </div>
 
         <ul className="flex flex-col gap-4">

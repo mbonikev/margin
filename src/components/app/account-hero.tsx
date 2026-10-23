@@ -4,6 +4,7 @@ import { Button as AriaButton } from "react-aria-components";
 import { HiOutlineChevronDown, HiOutlineClock, HiOutlineCog6Tooth, HiOutlineScale } from "react-icons/hi2";
 import type { Account } from "@/components/app/account-card";
 import { AccountCard } from "@/components/app/account-card";
+import { ActionButton } from "@/components/ui/action-button";
 import { Card } from "@/components/ui/card";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
 import { cx } from "@/utils/cx";
@@ -75,14 +76,9 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
 
             <div className="flex flex-wrap items-center gap-1.5">
                 {actions.map((action) => (
-                    <button
-                        key={action.id}
-                        type="button"
-                        className="flex h-9 items-center gap-1.5 rounded-full bg-secondary px-3.5 text-sm font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-primary hover:text-brand-secondary"
-                    >
-                        <action.icon className="size-4.5 shrink-0" />
+                    <ActionButton key={action.id} icon={action.icon}>
                         {action.label}
-                    </button>
+                    </ActionButton>
                 ))}
             </div>
         </Card>

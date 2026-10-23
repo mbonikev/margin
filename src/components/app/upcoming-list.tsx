@@ -1,5 +1,6 @@
 import { HiOutlineArrowRight } from "react-icons/hi2";
 import { Amount } from "@/components/ui/amount";
+import { ActionButton } from "@/components/ui/action-button";
 import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
 
@@ -27,13 +28,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
             <div className="flex items-center justify-between gap-3">
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Upcoming</h2>
 
-                <button
-                    type="button"
-                    className="flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-semibold text-brand-secondary transition duration-100 ease-linear hover:bg-brand-primary"
-                >
-                    View all
-                    <HiOutlineArrowRight className="size-4" />
-                </button>
+<ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
             </div>
 
             <ul className="-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
