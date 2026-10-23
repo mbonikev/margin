@@ -69,7 +69,7 @@ const NavLinks = ({ layoutId }: { layoutId: string }) => {
 export const AppLayout = () => {
 
     return (
-        <div className="min-h-screen bg-secondary">
+        <div className="min-h-screen overflow-x-clip bg-secondary">
             <header className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
                 <NavLink to="/" aria-label="Margin — home" className="rounded-md outline-brand focus-visible:outline-2 focus-visible:outline-offset-4">
                     <Logo className="h-9 md:h-7" />
@@ -140,7 +140,7 @@ export const AppLayout = () => {
                 aria-label="Primary"
                 className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden"
             >
-                <div className="pointer-events-auto flex h-13 items-center gap-1 rounded-full bg-primary p-1 shadow-xl">
+                <div className="pointer-events-auto flex h-13 items-center gap-1 rounded-full bg-popover p-1 shadow-[0_4px_12px_rgba(0,0,0,0.10),0_16px_32px_-12px_rgba(0,0,0,0.22)] ring-1 ring-popover">
                     <NavLinks layoutId="nav-pill-bottom" />
                 </div>
             </nav>
