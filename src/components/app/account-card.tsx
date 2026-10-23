@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from "motion/react";
 import { Amount } from "@/components/ui/amount";
 import { Logo } from "@/components/ui/logo";
 import { cx } from "@/utils/cx";
@@ -70,6 +71,27 @@ const Contactless = ({ className }: { className?: string }) => (
     </svg>
 );
 
+/**
+ * A specular sweep that runs once when the card mounts — which, because the hero
+ * keys the card on the account id, means once per swap. Two stops rather than
+ * one: a wide soft wash for the body of the highlight and a narrow bright core,
+ * which is what separates "metal catching light" from "a white bar sliding past".
+ */
+const Sheen = () => {
+    const reduceMotion = useReducedMotion();
+    if (reduceMotion) return null;
+
+    return (
+        <motion.span
+            aria-hidden="true"
+            initial={{ x: "-110%" }}
+            animate={{ x: "210%" }}
+            transition={{ duration: 0.85, ease: [0.33, 0, 0.2, 1], delay: 0.08 }}
+            className="pointer-events-none absolute inset-y-0 left-0 w-1/2 -skew-x-12 bg-[linear-gradient(100deg,transparent_0%,rgba(255,255,255,0.06)_30%,rgba(255,255,255,0.32)_50%,rgba(255,255,255,0.06)_70%,transparent_100%)] mix-blend-overlay"
+        />
+    );
+};
+
 /** The soft tonal shapes that keep the card from reading as a flat rectangle. */
 const Blobs = () => (
     <span aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -92,6 +114,7 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
                 "inset-shadow-[0_1px_0_rgba(255,255,255,0.22),0_-1px_0_rgba(0,0,0,0.28)]",
             ], themes[account.theme], className)}>
         <Blobs />
+        <Sheen />
 
         {/* Light falling from above, so the surface isn't uniformly flat. */}
         <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/14 via-transparent to-black/18" />
