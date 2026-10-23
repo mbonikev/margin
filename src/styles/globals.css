@@ -186,7 +186,12 @@ input[type="search"]::-webkit-search-cancel-button {
        Space/Enter alike, and `scale` is compositor-only so it costs no layout. */
     button,
     [role="button"],
-    a[href] {
+    [role="menuitem"],
+    [role="tab"],
+    [role="option"],
+    [role="switch"],
+    a[href],
+    summary {
         transition-property: transform, color, background-color, box-shadow, opacity;
         transition-duration: 140ms;
         transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
@@ -194,10 +199,15 @@ input[type="search"]::-webkit-search-cancel-button {
 
     button:not(:disabled):active,
     [role="button"]:not([aria-disabled="true"]):active,
-    a[href]:active {
+    [role="menuitem"]:not([aria-disabled="true"]):active,
+    [role="tab"]:not([aria-disabled="true"]):active,
+    [role="option"]:not([aria-disabled="true"]):active,
+    [role="switch"]:not([aria-disabled="true"]):active,
+    a[href]:active,
+    summary:active {
         /* Faster in than out: the press is instant, the release settles. */
         transition-duration: 60ms;
-        transform: scale(0.97);
+        transform: scale(0.985);
     }
 
     /* Opt out for wide surfaces — a whole list row shrinking reads as a glitch. */
