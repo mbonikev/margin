@@ -32,6 +32,9 @@ export const PaydayCycle = ({ cycleStart, nextPayday, available, spent, classNam
     const drift = Math.round(burned - elapsed);
     const hot = drift > 5;
 
+    const remaining = Math.max(0, available - spent);
+    const perDay = daysLeft > 0 ? remaining / daysLeft : remaining;
+
     return (
         <Card className={cx("flex flex-col gap-4", className)}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -88,6 +91,20 @@ export const PaydayCycle = ({ cycleStart, nextPayday, available, spent, classNam
                         <span className="shrink-0 text-sm font-semibold tabular-nums text-primary">{Math.round(elapsed)}%</span>
                     </li>
                 </ul>
+            </div>
+
+            {/* The two figures you actually act on — the rings say how you are
+                doing, these say what to do about it. */}
+            <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-2xl bg-secondary px-4 py-3">
+                    <p className="text-[11px] text-tertiary">Left to spend</p>
+                    <Amount value={remaining} className="mt-0.5 block truncate text-xl font-semibold tracking-tight text-primary" />
+                </div>
+
+                <div className="rounded-2xl bg-secondary px-4 py-3">
+                    <p className="text-[11px] text-tertiary">Per day until payday</p>
+                    <Amount value={perDay} className={cx("mt-0.5 block truncate text-xl font-semibold tracking-tight", hot ? "text-chart-compare" : "text-primary")} />
+                </div>
             </div>
 
             <p className="text-sm text-secondary">
