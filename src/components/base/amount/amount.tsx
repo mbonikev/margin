@@ -7,6 +7,8 @@ interface AmountProps {
     value: number;
     /** Append the currency code after the number. */
     withCode?: boolean;
+    /** Hide the leading symbol — for lists where the currency is already stated. */
+    hideSymbol?: boolean;
     className?: string;
 }
 
@@ -14,7 +16,7 @@ interface AmountProps {
  * Every money figure in the app goes through this, so a rate fetch shows a
  * skeleton rather than a wrong number that silently corrects itself.
  */
-export const Amount = ({ value, withCode, className }: AmountProps) => {
+export const Amount = ({ value, withCode, hideSymbol, className }: AmountProps) => {
     const { currency, formatAmount, formatWithCode, formatExact, isLoading } = useCurrency();
     const { hidden, mask } = usePrivacy();
 
@@ -38,7 +40,7 @@ export const Amount = ({ value, withCode, className }: AmountProps) => {
     return (
         <span title={hidden ? undefined : formatExact(value)} className={cx("tabular-nums", className)}>
             {/* `em` so the symbol scales with whatever size the figure is set at. */}
-            {!withCode && <span className="mr-[0.25em] align-baseline text-[0.68em] font-medium opacity-60">{currency.symbol}</span>}
+            {!withCode && !hideSymbol && <span className="mr-[0.25em] align-baseline text-[0.68em] font-medium opacity-60">{currency.symbol}</span>}
             {mask(text)}
         </span>
     );
