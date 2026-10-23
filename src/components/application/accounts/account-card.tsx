@@ -13,12 +13,16 @@ const themes: Record<CardTheme, string> = {
     plum: "bg-[#7a3f70]",
 };
 
+/** How the account's identifier is masked. Cash has none at all. */
+export type MaskPattern = "card" | "phone" | "none";
+
 export interface Account {
     id: string;
     name: string;
     kind: string;
-    /** Last digits of the wallet or card. */
-    tail: string;
+    /** Last digits only — enough to recognise the account, never enough to use it. */
+    tail?: string;
+    mask?: MaskPattern;
     /** Balance in the base currency. */
     balance: number;
     updated: string;
@@ -47,7 +51,10 @@ const Blobs = () => (
     </span>
 );
 
-export const AccountCard = ({ account, className }: { account: Account; className?: string }) => (
+export const AccountCard = ({ account, className }: { account: Account; className?: string }) => {
+    const mask = account.mask ?? "card";
+
+    return (
     <div className={cx("relative flex aspect-[1.586/1] w-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 text-white shadow-lg", themes[account.theme], className)}>
         <Blobs />
 
@@ -64,9 +71,11 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
 
         {/* Not font-mono: the generic monospace fallback reads thin and dead.
             The display face with tabular figures gives the chunky card look. */}
-        <p className="relative text-xl font-semibold tracking-[0.14em] tabular-nums text-white md:text-2xl">
-            <span className="text-white/70">•••• •••• ••••</span> {account.tail}
-        </p>
+        {mask !== "none" && account.tail && (
+            <p className="relative text-xl font-semibold tracking-[0.14em] tabular-nums text-white md:text-2xl">
+                <span className="text-white/70">{mask === "phone" ? "••• •••" : "•••• •••• ••••"}</span> {account.tail}
+            </p>
+        )}
 
         <div className="relative flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -76,7 +85,8 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
             <p className="shrink-0 text-xs font-medium text-white/70">{account.updated}</p>
         </div>
     </div>
-);
+    );
+};
 
 /** The small switchable version shown beside the hero. */
 export const AccountThumb = ({ account, isActive, onSelect }: { account: Account; isActive: boolean; onSelect: () => void }) => (
@@ -92,6 +102,6 @@ export const AccountThumb = ({ account, isActive, onSelect }: { account: Account
         )}
     >
         <span className="absolute -top-4 -right-3 size-16 rounded-full bg-white/8" />
-        <span className="absolute bottom-1.5 left-2 text-[10px] font-semibold tabular-nums text-white/85">{account.tail}</span>
+        {account.tail && <span className="absolute bottom-1.5 left-2 text-[10px] font-semibold tabular-nums text-white/85">{account.tail}</span>}
     </button>
 );
