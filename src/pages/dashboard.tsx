@@ -9,7 +9,8 @@ import type { Goal } from "@/components/app/savings-goals";
 import { SavingsGoals } from "@/components/app/savings-goals";
 import type { MonthFlow } from "@/components/app/in-vs-out";
 import { InVsOut } from "@/components/app/in-vs-out";
-import { MorningEmail } from "@/components/app/morning-email";
+import type { Slice } from "@/components/app/money-breakdown";
+import { MoneyBreakdown } from "@/components/app/money-breakdown";
 import type { StatTileProps } from "@/components/app/stat-tile";
 import { StatTile } from "@/components/app/stat-tile";
 import { Amount } from "@/components/ui/amount";
@@ -59,6 +60,12 @@ const goals: Goal[] = [
     { id: "laptop", name: "Laptop", saved: 168000, target: 420000, startedAt: monthsAgo(4) },
     { id: "emergency", name: "Emergency fund", saved: 744000, target: 1200000, startedAt: monthsAgo(14) },
     { id: "trip", name: "Trip home", saved: 62000, target: 400000, startedAt: monthsAgo(1) },
+];
+
+const breakdown: Slice[] = [
+    { id: "committed", label: "Committed", note: "Bills and subscriptions due", amount: 767000, tone: "committed" },
+    { id: "goals", label: "Set aside", note: "Across 3 savings goals", amount: 652800, tone: "goals" },
+    { id: "spendable", label: "Spendable", note: "Yours to use freely", amount: 48200, tone: "spendable" },
 ];
 
 const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000);
@@ -156,7 +163,7 @@ export const DashboardPage = () => {
             </section>
 
             <section aria-label="Activity" className="grid gap-1.5 md:grid-cols-2 md:gap-2">
-                <MorningEmail streak={14} sendsAt="7:00" preview="You've got 48,200 spare. Eight days till payday, eleven days of pace. You're good." />
+                <MoneyBreakdown slices={breakdown} />
                 <RecentActivity items={activity} />
             </section>
         </div>
