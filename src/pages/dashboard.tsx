@@ -9,8 +9,7 @@ import type { Goal } from "@/components/app/savings-goals";
 import { SavingsGoals } from "@/components/app/savings-goals";
 import type { MonthFlow } from "@/components/app/in-vs-out";
 import { InVsOut } from "@/components/app/in-vs-out";
-import type { Slice } from "@/components/app/money-breakdown";
-import { MoneyBreakdown } from "@/components/app/money-breakdown";
+import { PaydayCycle } from "@/components/app/payday-cycle";
 import type { StatTileProps } from "@/components/app/stat-tile";
 import { StatTile } from "@/components/app/stat-tile";
 import { Amount } from "@/components/ui/amount";
@@ -62,11 +61,9 @@ const goals: Goal[] = [
     { id: "trip", name: "Trip home", saved: 62000, target: 400000, startedAt: monthsAgo(1) },
 ];
 
-const breakdown: Slice[] = [
-    { id: "committed", label: "Committed", note: "Bills and subscriptions due", amount: 767000, tone: "committed" },
-    { id: "goals", label: "Set aside", note: "Across 3 savings goals", amount: 652800, tone: "goals" },
-    { id: "spendable", label: "Spendable", note: "Yours to use freely", amount: 48200, tone: "spendable" },
-];
+/** Anchored to today so the card never goes stale while this is placeholder data. */
+const cycleStart = new Date(Date.now() - 18 * 86_400_000);
+const nextPayday = new Date(Date.now() + 12 * 86_400_000);
 
 const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000);
 
@@ -163,7 +160,7 @@ export const DashboardPage = () => {
             </section>
 
             <section aria-label="Activity" className="grid gap-1.5 md:grid-cols-2 md:gap-2">
-                <MoneyBreakdown slices={breakdown} />
+                <PaydayCycle cycleStart={cycleStart} nextPayday={nextPayday} available={1310000} spent={1048000} />
                 <RecentActivity items={activity} />
             </section>
         </div>
