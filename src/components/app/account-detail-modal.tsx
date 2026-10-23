@@ -1,6 +1,7 @@
-import type { Account } from "@/components/app/account-card";
+import { useState } from "react";
+import type { Account, CardTheme } from "@/components/app/account-card";
+import { CardThemePicker } from "@/components/app/card-theme-picker";
 import { Amount } from "@/components/ui/amount";
-import { Select } from "@/components/base/select/select";
 import { Field, ModalActions, TextField } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 
@@ -49,7 +50,10 @@ export const AccountHistoryModal = ({ isOpen, onOpenChange, account }: { isOpen:
     );
 };
 
-export const AccountSettingsModal = ({ isOpen, onOpenChange, account }: { isOpen: boolean; onOpenChange: (open: boolean) => void; account: Account }) => (
+export const AccountSettingsModal = ({ isOpen, onOpenChange, account }: { isOpen: boolean; onOpenChange: (open: boolean) => void; account: Account }) => {
+    const [theme, setTheme] = useState<CardTheme>(account.theme);
+
+    return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} settings`}>
         <div className="flex flex-col gap-4 p-5">
             <div>
@@ -65,21 +69,12 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account }: { isOpen
                 <TextField defaultValue={account.kind} />
             </Field>
 
-            <Select
-                label="Card colour"
-                hint="Accounts are easiest to recognise by colour."
-                defaultSelectedKey={account.theme}
-                items={[
-                    { id: "blue", label: "Blue" },
-                    { id: "graphite", label: "Graphite" },
-                    { id: "emerald", label: "Emerald" },
-                    { id: "plum", label: "Plum" },
-                ]}
-            >
-                {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
-            </Select>
+            <Field label="Card colour" hint="Accounts are easiest to recognise by colour.">
+                <CardThemePicker value={theme} onChange={setTheme} />
+            </Field>
 
             <ModalActions onCancel={() => onOpenChange(false)} onConfirm={() => onOpenChange(false)} confirmLabel="Save changes" />
         </div>
     </Modal>
 );
+};

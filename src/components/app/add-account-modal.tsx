@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react";
 import type { CardTheme } from "@/components/app/account-card";
+import { CardThemePicker } from "@/components/app/card-theme-picker";
 import { Select } from "@/components/base/select/select";
 import { AmountField, Field, ModalActions, TextField } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 import { useCurrency } from "@/providers/currency-provider";
-import { cx } from "@/utils/cx";
 
 const kinds = [
     { id: "Mobile money", label: "Mobile money" },
     { id: "Current", label: "Bank account" },
     { id: "Savings", label: "Savings" },
     { id: "Wallet", label: "Cash" },
-];
-
-const themes: { id: CardTheme; swatch: string }[] = [
-    { id: "blue", swatch: "bg-[#2c5fe0]" },
-    { id: "graphite", swatch: "bg-[#22262a]" },
-    { id: "emerald", swatch: "bg-[#13795a]" },
-    { id: "plum", swatch: "bg-[#7a3f70]" },
 ];
 
 interface AddAccountModalProps {
@@ -62,18 +55,7 @@ export const AddAccountModal = ({ isOpen, onOpenChange, onSave }: AddAccountModa
                 </Field>
 
                 <Field label="Card colour">
-                    <span className="mt-1.5 flex gap-2">
-                        {themes.map((option) => (
-                            <button
-                                key={option.id}
-                                type="button"
-                                aria-label={option.id}
-                                aria-pressed={theme === option.id}
-                                onClick={() => setTheme(option.id)}
-                                className={cx("size-9 rounded-full transition duration-100 ease-linear", option.swatch, theme === option.id ? "ring-2 ring-brand ring-offset-2 ring-offset-popover" : "opacity-70 hover:opacity-100")}
-                            />
-                        ))}
-                    </span>
+                    <CardThemePicker value={theme} onChange={setTheme} />
                 </Field>
 
                 <ModalActions
