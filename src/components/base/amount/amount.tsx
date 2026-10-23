@@ -38,7 +38,7 @@ export const Amount = ({ value, withCode, className }: AmountProps) => {
     return (
         <span title={hidden ? undefined : formatExact(value)} className={cx("tabular-nums", className)}>
             {/* `em` so the symbol scales with whatever size the figure is set at. */}
-            {!withCode && <span className="mr-0.5 align-baseline text-[0.68em] font-medium text-tertiary">{currency.symbol}</span>}
+            {!withCode && <span className="mr-[0.25em] align-baseline text-[0.68em] font-medium text-tertiary">{currency.symbol}</span>}
             {mask(text)}
         </span>
     );
