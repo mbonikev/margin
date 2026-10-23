@@ -123,7 +123,7 @@ export const NotificationsPopover = () => {
                 offset={8}
                 className={({ isEntering, isExiting }) =>
                     cx(
-                        "w-[min(22rem,calc(100vw-2rem))] origin-(--trigger-anchor-point) overflow-hidden rounded-3xl bg-popover shadow-xl ring-1 ring-secondary_alt will-change-transform",
+                        "w-[min(22rem,calc(100vw-2rem))] origin-(--trigger-anchor-point) overflow-hidden rounded-3xl bg-popover shadow-xl ring-1 ring-popover will-change-transform",
                         isEntering && "duration-150 ease-out animate-in fade-in placement-bottom:slide-in-from-top-0.5",
                         isExiting && "duration-100 ease-in animate-out fade-out placement-bottom:slide-out-to-top-0.5",
                     )
