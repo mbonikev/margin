@@ -102,8 +102,8 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
             <span className="text-[0.7875rem] font-medium">{account.kind}</span>
         </div>
 
-        <div className="relative flex items-center gap-3">
-            <Contactless className="size-[1.375rem] text-white/80" />
+        <div className="relative mt-4 flex items-center gap-3">
+            <Contactless className="size-[1.625rem] text-white/80" />
             <Chip className="h-[1.625rem] w-[2.17rem] text-white/85" />
         </div>
 
