@@ -47,10 +47,18 @@ const upcoming: Commitment[] = [
     { id: "insurance", name: "Insurance", due: inDays(20), amount: 64000, pressure: "ok" },
 ];
 
+/** Six months back, so the labels stay correct whenever this is viewed. */
+const monthsAgo = (count: number) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - count);
+    return date;
+};
+
 const goals: Goal[] = [
-    { id: "laptop", name: "Laptop", saved: 168000, target: 420000 },
-    { id: "emergency", name: "Emergency fund", saved: 744000, target: 1200000 },
-    { id: "trip", name: "Trip home", saved: 62000, target: 400000 },
+    { id: "laptop", name: "Laptop", saved: 168000, target: 420000, startedAt: monthsAgo(4) },
+    { id: "emergency", name: "Emergency fund", saved: 744000, target: 1200000, startedAt: monthsAgo(14) },
+    { id: "trip", name: "Trip home", saved: 62000, target: 400000, startedAt: monthsAgo(1) },
 ];
 
 const activity: Activity[] = [
@@ -59,14 +67,6 @@ const activity: Activity[] = [
     { id: "a3", kind: "income", name: "Client payment", account: "Equity Bank", when: "2d ago", amount: 320000 },
     { id: "a4", kind: "expense", name: "Transport", account: "MTN MoMo", when: "3d ago", amount: 4500 },
 ];
-
-/** Six months back, so the labels stay correct whenever this is viewed. */
-const monthsAgo = (count: number) => {
-    const date = new Date();
-    date.setDate(1);
-    date.setMonth(date.getMonth() - count);
-    return date;
-};
 
 const flows: MonthFlow[] = [
     { month: monthsAgo(5), in: 980000, out: 812000 },

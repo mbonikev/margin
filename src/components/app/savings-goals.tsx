@@ -11,7 +11,19 @@ export interface Goal {
     /** Both in the base currency. */
     saved: number;
     target: number;
+    /** When the goal was opened — "how long have I been at this?". */
+    startedAt: Date;
 }
+
+const sinceFormat = new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" });
+
+const elapsed = (from: Date) => {
+    const months = Math.max(0, (new Date().getFullYear() - from.getFullYear()) * 12 + new Date().getMonth() - from.getMonth());
+    if (months < 1) return "this month";
+    if (months === 1) return "1 month in";
+    if (months < 12) return `${months} months in`;
+    return `${Math.floor(months / 12)}y ${months % 12}m in`;
+};
 
 export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: string }) => (
     <Card className={cx("flex flex-col gap-4", className)}>
@@ -45,8 +57,14 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
                             <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums text-primary">{percent}%</span>
                         </div>
 
-                        <p className="mt-1.5 text-xs text-tertiary">
-                            <Amount value={Math.max(0, goal.target - goal.saved)} hideSymbol /> to go
+                        <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-xs text-tertiary">
+                            <span>
+                                <Amount value={Math.max(0, goal.target - goal.saved)} hideSymbol /> to go
+                            </span>
+                            <span className="text-quaternary">·</span>
+                            <span className="text-quaternary" title={`Started ${sinceFormat.format(goal.startedAt)}`}>
+                                {elapsed(goal.startedAt)}
+                            </span>
                         </p>
                     </li>
                 );
