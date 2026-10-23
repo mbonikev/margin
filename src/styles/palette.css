@@ -121,7 +121,7 @@
            fine for a mid-tone accent but vanishes for a light one like amber.
            Mixing into the canvas instead means the chip is always a step darker
            than a white card, whatever hue the accent is. */
-        --color-bg-brand-primary: color-mix(in oklab, var(--color-brand) 20%, var(--color-canvas));
+        --color-bg-brand-primary: color-mix(in oklab, var(--color-brand) 13%, var(--color-canvas));
     }
 }
 
@@ -215,9 +215,10 @@
     --background-color-popover-hover: var(--color-bg-popover-hover);
     --background-color-brand-popover: var(--color-bg-brand-popover);
 
-    /* The comparison series in charts. Picked by measuring against all ten
-       accents — min ΔE 10.5, so it can never collide with the user's choice. */
-    --color-chart-compare: #b8432f;
+    /* The comparison series in charts. Amber is deliberately absent from the
+       accent picker, so it can never collide with the user's choice —
+       min ΔE 16.2 light / 10.4 dark against the nine that remain. */
+    --color-chart-compare: #eda100;
 
     /* Translucent page background for the sticky header. A `/75` modifier bakes
        the light-mode value into a static colour, so it would not follow dark. */
@@ -230,6 +231,6 @@
         --color-bg-popover: var(--color-neutral-800);
         --color-bg-popover-hover: var(--color-neutral-700);
         --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 26%, var(--color-bg-popover));
-        --color-chart-compare: #d4604a;
+        --color-chart-compare: #c98500;
     }
 }

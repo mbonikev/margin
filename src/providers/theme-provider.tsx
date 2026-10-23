@@ -19,7 +19,6 @@ export const accentColors: AccentColor[] = [
     { id: "plum", label: "Plum", hex: "#a84fc4" },
     { id: "rose", label: "Rose", hex: "#d6457e" },
     { id: "coral", label: "Coral", hex: "#e0613f" },
-    { id: "amber", label: "Amber", hex: "#d49420" },
     { id: "slate", label: "Slate", hex: "#5b6670" },
 ];
 
