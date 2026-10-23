@@ -48,7 +48,9 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
 
             {/* Fixed aspect on the frame, card absolutely placed inside it — so the
                 outgoing and incoming cards overlap without the panel resizing. */}
-            <div className="flex flex-1 items-center justify-center">
+            {/* Left-aligned so the card shares a left rail with the action buttons
+                below it — centring it put its edge ~50px inside theirs. */}
+            <div className="flex flex-1 items-center">
                 {/* The frame owns the aspect ratio. It must not be a flex child
                     itself — flex-1 would stretch it and override the ratio. */}
                 {/* Height is width / 1.586 — so the width cap is the size control. */}
