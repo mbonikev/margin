@@ -220,6 +220,10 @@
        min ΔE 16.2 light / 10.4 dark against the nine that remain. */
     --color-chart-compare: #eda100;
 
+    /* A third reserved series colour, measured the same way — min ΔE 13.2
+       against the nine accents and the reserved amber. */
+    --color-chart-third: #5d3a7a;
+
     /* Translucent page background for the sticky header. A `/75` modifier bakes
        the light-mode value into a static colour, so it would not follow dark. */
     --color-bg-header: color-mix(in oklab, var(--color-bg-secondary) 75%, transparent);
@@ -232,5 +236,6 @@
         --color-bg-popover-hover: var(--color-neutral-700);
         --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 26%, var(--color-bg-popover));
         --color-chart-compare: #c98500;
+        --color-chart-third: #9c74c4;
     }
 }
