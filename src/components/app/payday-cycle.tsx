@@ -13,7 +13,14 @@ export interface PaydayCycleProps {
 }
 
 const DAY = 86_400_000;
+const SIZE = 120;
 const clamp = (value: number) => Math.max(0, Math.min(100, value));
+
+/** Circumference and dash offset for a ring at the given radius. */
+const ring = (radius: number, percent: number) => {
+    const circumference = 2 * Math.PI * radius;
+    return { r: radius, strokeDasharray: circumference, strokeDashoffset: circumference * (1 - percent / 100) };
+};
 
 export const PaydayCycle = ({ cycleStart, nextPayday, available, spent, className }: PaydayCycleProps) => {
     const span = Math.max(1, nextPayday.getTime() - cycleStart.getTime());
@@ -34,38 +41,63 @@ export const PaydayCycle = ({ cycleStart, nextPayday, available, spent, classNam
                 </p>
             </div>
 
-            <div>
-                <div className="relative h-4 w-full overflow-hidden rounded-full bg-tertiary">
-                    <div
-                        style={{ width: `${burned}%` }}
-                        className={cx("h-full rounded-full transition-[width] duration-500 ease-out", hot ? "bg-chart-compare" : "bg-brand")}
-                    />
+            <div className="flex flex-1 flex-col items-center justify-center gap-5 sm:flex-row sm:gap-6">
+                <div className="relative shrink-0">
+                    {/* Two concentric rings: money inside, time outside. Which one
+                        reaches further around is the entire reading. */}
+                    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="size-34 -rotate-90" role="img" aria-label={`${Math.round(burned)}% spent, ${Math.round(elapsed)}% through the cycle`}>
+                        <circle cx={SIZE / 2} cy={SIZE / 2} {...ring(52, 100)} className="stroke-bg-tertiary" strokeWidth={10} fill="none" />
+                        <circle cx={SIZE / 2} cy={SIZE / 2} {...ring(52, elapsed)} className="stroke-chart-third" strokeWidth={10} fill="none" strokeLinecap="round" />
 
-                    {/* Where the month actually is — the fill should not be past it. */}
-                    <span style={{ left: `${elapsed}%` }} className="absolute inset-y-0 w-0.5 -translate-x-1/2 rounded-full bg-primary-solid" />
+                        <circle cx={SIZE / 2} cy={SIZE / 2} {...ring(37, 100)} className="stroke-bg-tertiary" strokeWidth={10} fill="none" />
+                        <circle
+                            cx={SIZE / 2}
+                            cy={SIZE / 2}
+                            {...ring(37, burned)}
+                            className={cx(hot ? "stroke-chart-compare" : "stroke-brand")}
+                            strokeWidth={10}
+                            fill="none"
+                            strokeLinecap="round"
+                        />
+                    </svg>
+
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-3xl font-semibold tracking-tight tabular-nums text-primary">{daysLeft}</span>
+                        <span className="text-[11px] text-tertiary">days left</span>
+                    </div>
                 </div>
 
-                <div className="mt-2 flex items-start justify-between gap-3 text-[11px]">
-                    <span className="flex items-center gap-1.5 text-tertiary">
-                        <span className={cx("size-2 rounded-full", hot ? "bg-chart-compare" : "bg-brand")} />
-                        Spent <Amount value={spent} className="font-semibold text-secondary" /> of <Amount value={available} hideSymbol />
-                    </span>
+                <ul className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-1">
+                    <li className="flex items-center gap-2.5">
+                        <span className={cx("size-2.5 shrink-0 rounded-full", hot ? "bg-chart-compare" : "bg-brand")} />
+                        <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-medium text-primary">Spent</span>
+                            <span className="block truncate text-[11px] text-tertiary">
+                                <Amount value={spent} /> of <Amount value={available} hideSymbol />
+                            </span>
+                        </span>
+                        <span className="shrink-0 text-sm font-semibold tabular-nums text-primary">{Math.round(burned)}%</span>
+                    </li>
 
-                    <span className="flex shrink-0 items-center gap-1.5 text-tertiary">
-                        <span className="h-2.5 w-0.5 rounded-full bg-primary-solid" />
-                        {Math.round(elapsed)}% through
-                    </span>
-                </div>
+                    <li className="flex items-center gap-2.5">
+                        <span className="size-2.5 shrink-0 rounded-full bg-chart-third" />
+                        <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-medium text-primary">Cycle elapsed</span>
+                            <span className="block truncate text-[11px] text-tertiary">{daysLeft} of {Math.round(span / DAY)} days remain</span>
+                        </span>
+                        <span className="shrink-0 text-sm font-semibold tabular-nums text-primary">{Math.round(elapsed)}%</span>
+                    </li>
+                </ul>
             </div>
 
-            <p className="mt-auto text-sm text-secondary">
+            <p className="text-sm text-secondary">
                 {hot ? (
                     <>
-                        You're <span className="font-semibold text-primary">{drift}% ahead</span> of where the month is. Easing off now keeps payday comfortable.
+                        You're <span className="font-semibold text-primary">{drift}% ahead</span> of where the cycle is. Easing off now keeps payday comfortable.
                     </>
                 ) : drift < -5 ? (
                     <>
-                        You're <span className="font-semibold text-primary">{Math.abs(drift)}% behind</span> the month — comfortably on track.
+                        You're <span className="font-semibold text-primary">{Math.abs(drift)}% behind</span> the cycle — comfortably on track.
                     </>
                 ) : (
                     <>
