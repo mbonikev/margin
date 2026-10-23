@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Button as AriaButton } from "react-aria-components";
 import { HiOutlineChevronDown, HiOutlineClock, HiOutlineCog6Tooth, HiOutlineScale } from "react-icons/hi2";
 import type { Account } from "@/components/application/accounts/account-card";
-import { AccountCard, AccountThumb } from "@/components/application/accounts/account-card";
+import { AccountCard } from "@/components/application/accounts/account-card";
 import { Card } from "@/components/base/card/card";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
 import { cx } from "@/utils/cx";
@@ -15,6 +16,7 @@ const actions = [
 
 export const AccountHero = ({ accounts, className }: { accounts: Account[]; className?: string }) => {
     const [activeId, setActiveId] = useState(accounts[0].id);
+    const reduceMotion = useReducedMotion();
     const active = accounts.find((item) => item.id === activeId) ?? accounts[0];
 
     return (
@@ -44,16 +46,21 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                 </Dropdown.Root>
             </div>
 
-            <div className="flex flex-1 items-center gap-4">
-                <div className="min-w-0 flex-1">
-                    <AccountCard account={active} className="mx-auto max-w-sm" />
-                </div>
-
-                <div className="flex shrink-0 flex-col gap-2">
-                    {accounts.map((account) => (
-                        <AccountThumb key={account.id} account={account} isActive={account.id === active.id} onSelect={() => setActiveId(account.id)} />
-                    ))}
-                </div>
+            {/* Fixed aspect on the frame, card absolutely placed inside it — so the
+                outgoing and incoming cards overlap without the panel resizing. */}
+            <div className="relative mx-auto aspect-[1.586/1] w-full max-w-sm flex-1">
+                <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                        key={active.id}
+                        initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -14, scale: 0.97 }}
+                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                        className="absolute inset-0"
+                    >
+                        <AccountCard account={active} className="h-full" />
+                    </motion.div>
+                </AnimatePresence>
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
