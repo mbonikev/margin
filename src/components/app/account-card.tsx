@@ -1,5 +1,7 @@
-import { motion, useReducedMotion } from "motion/react";
+import { useCallback, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Amount } from "@/components/ui/amount";
+import { useCurrency } from "@/providers/currency-provider";
 import { Logo } from "@/components/ui/logo";
 import { cx } from "@/utils/cx";
 
@@ -103,6 +105,21 @@ const Blobs = () => (
 
 export const AccountCard = ({ account, className }: { account: Account; className?: string }) => {
     const reference = account.ref ?? accountRef(account.id);
+    const { formatExact } = useCurrency();
+    const [copied, setCopied] = useState<string | null>(null);
+    const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    const copy = useCallback(async (label: string, value: string) => {
+        try {
+            await navigator.clipboard.writeText(value);
+        } catch {
+            return; // denied or insecure context — say nothing rather than lie
+        }
+
+        setCopied(label);
+        clearTimeout(timer.current);
+        timer.current = setTimeout(() => setCopied(null), 1600);
+    }, []);
 
     return (
     <div className={cx([
@@ -134,10 +151,39 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
             The display face with tabular figures gives the chunky card look. */}
         <p className="relative mb-[0.45rem] text-[1.125rem] font-semibold tracking-[0.16em] tabular-nums text-white/90 md:mb-[0.675rem] md:text-[1.35rem]">{reference}</p>
 
+        <AnimatePresence>
+            {copied && (
+                <motion.span
+                    key={copied}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                    className="pointer-events-none absolute inset-x-0 bottom-3 z-10 mx-auto w-fit rounded-full bg-black/55 px-3 py-1.5 text-[11px] font-medium text-white backdrop-blur-sm"
+                >
+                    {copied} copied
+                </motion.span>
+            )}
+        </AnimatePresence>
+
         <div className="relative flex items-end justify-between gap-3">
             <div className="min-w-0">
-                <p className="truncate text-[0.7875rem] font-medium text-white/75">{account.name}</p>
-                <Amount value={account.balance} compactSymbol className="mt-0.5 block truncate text-[1.6rem] font-semibold tracking-tight" />
+                <button
+                    type="button"
+                    onClick={() => copy("Account name", account.name)}
+                    title="Copy account name"
+                    className="no-press block max-w-full truncate rounded text-left text-[0.7875rem] font-medium text-white/75 transition hover:text-white"
+                >
+                    {account.name}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => copy("Balance", formatExact(account.balance))}
+                    title="Copy balance"
+                    className="no-press block max-w-full rounded text-left transition hover:opacity-90"
+                >
+                    <Amount value={account.balance} compactSymbol className="mt-0.5 block truncate text-[1.6rem] font-semibold tracking-tight" />
+                </button>
             </div>
             <p className="shrink-0 text-[0.7875rem] font-medium text-white/70">{account.updated}</p>
         </div>
