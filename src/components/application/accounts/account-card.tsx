@@ -62,7 +62,11 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
             <Chip className="h-6 w-8 text-white/85" />
         </div>
 
-        <p className="relative font-mono text-lg tracking-[0.18em] text-white/90 md:text-xl">•••• {account.tail}</p>
+        {/* Not font-mono: the generic monospace fallback reads thin and dead.
+            The display face with tabular figures gives the chunky card look. */}
+        <p className="relative text-xl font-semibold tracking-[0.14em] tabular-nums text-white md:text-2xl">
+            <span className="text-white/70">•••• •••• ••••</span> {account.tail}
+        </p>
 
         <div className="relative flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -88,6 +92,6 @@ export const AccountThumb = ({ account, isActive, onSelect }: { account: Account
         )}
     >
         <span className="absolute -top-4 -right-3 size-16 rounded-full bg-white/8" />
-        <span className="absolute bottom-1.5 left-2 font-mono text-[9px] text-white/80">{account.tail}</span>
+        <span className="absolute bottom-1.5 left-2 text-[10px] font-semibold tabular-nums text-white/85">{account.tail}</span>
     </button>
 );
