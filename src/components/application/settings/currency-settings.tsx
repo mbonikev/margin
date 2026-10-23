@@ -51,7 +51,7 @@ export const CurrencySettings = () => {
                                 onClick={() => setCurrency(item.code)}
                                 aria-pressed={isActive}
                                 className={cx(
-                                    "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition duration-100 ease-linear",
+                                    "no-press flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition duration-100 ease-linear",
                                     isActive ? "bg-brand-primary" : "hover:bg-secondary",
                                 )}
                             >

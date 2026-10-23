@@ -68,7 +68,7 @@ const NotificationRow = ({ item }: { item: NotificationItem }) => {
     const Icon = item.icon;
 
     return (
-        <button type="button" className="flex w-full gap-3 px-4 py-3 text-left transition duration-100 ease-linear hover:bg-popover-hover">
+        <button type="button" className="no-press flex w-full gap-3 px-4 py-3 text-left transition duration-100 ease-linear hover:bg-popover-hover">
             <Avatar
                 size="sm"
                 src={item.avatarUrl}
