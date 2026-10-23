@@ -99,7 +99,7 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
 
         {/* Not font-mono: the generic monospace fallback reads thin and dead.
             The display face with tabular figures gives the chunky card look. */}
-        <p className="relative text-xl font-semibold tracking-[0.16em] tabular-nums text-white/90 md:text-2xl">{reference}</p>
+        <p className="relative mb-2 text-xl font-semibold tracking-[0.16em] tabular-nums text-white/90 md:mb-3 md:text-2xl">{reference}</p>
 
         <div className="relative flex items-end justify-between gap-3">
             <div className="min-w-0">
