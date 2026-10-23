@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import type { Account } from "@/components/application/accounts/account-card";
+import { AccountHero } from "@/components/application/dashboard/account-hero";
 import type { StatTileProps } from "@/components/application/dashboard/stat-tile";
 import { StatTile } from "@/components/application/dashboard/stat-tile";
 import { Amount } from "@/components/base/amount/amount";
@@ -13,6 +15,13 @@ const totalBalance = [1520000, 1495000, 1610000, 1575000, 1540000, 1505000, 1468
 const savedPerMonth = [7420000, 8150000, 9030000, 8640000, 10310000, 11470000, 12480000];
 
 const last = (series: number[]) => series[series.length - 1];
+
+const accounts: Account[] = [
+    { id: "momo", name: "MTN MoMo", kind: "Mobile money", tail: "2640", balance: 684000, updated: "Updated today", theme: "blue" },
+    { id: "equity", name: "Equity Bank", kind: "Current", tail: "9152", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
+    { id: "savings", name: "Laptop fund", kind: "Savings", tail: "0471", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
+    { id: "cash", name: "Cash", kind: "Wallet", tail: "0000", balance: 4000, updated: "Updated today", theme: "plum" },
+];
 
 export const DashboardPage = () => {
     const { formatWithCode } = useCurrency();
@@ -78,7 +87,7 @@ export const DashboardPage = () => {
             </div>
 
             {/* Middle — the hero, stretches to the full height of the section */}
-            <Card className="min-h-80 lg:min-h-0" />
+            <AccountHero accounts={accounts} className="min-h-80 lg:min-h-0" />
 
             {/* Right — same width as the left column, full height */}
             <Card className="min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />
