@@ -1,5 +1,6 @@
 import { HiOutlinePlus } from "react-icons/hi2";
 import { Amount } from "@/components/ui/amount";
+import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
 
@@ -18,7 +19,7 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
 
             <button
                 type="button"
-                className="flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-semibold text-brand-secondary transition duration-100 ease-linear hover:bg-brand-primary"
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-brand-solid px-3.5 text-sm font-medium text-white transition duration-100 ease-linear hover:bg-brand-solid_hover"
             >
                 <HiOutlinePlus className="size-4" />
                 New goal
@@ -38,13 +39,7 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
                             </p>
                         </div>
 
-                        <div className="mt-2 flex items-center gap-2.5">
-                            {/* The track is the only "bar"; the fill carries the value. */}
-                            <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-tertiary">
-                                <div style={{ width: `${percent}%` }} className="h-full rounded-full bg-brand-solid" />
-                            </div>
-                            <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-tertiary">{percent}%</span>
-                        </div>
+                        <Progress value={percent} label={`${percent}%`} className="mt-2" />
                     </li>
                 );
             })}
