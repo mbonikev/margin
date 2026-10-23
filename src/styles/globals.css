@@ -190,6 +190,7 @@ input[type="search"]::-webkit-search-cancel-button {
     [role="tab"],
     [role="option"],
     [role="switch"],
+    [data-pressed],
     a[href],
     summary {
         transition-property: transform, color, background-color, box-shadow, opacity;
@@ -204,7 +205,10 @@ input[type="search"]::-webkit-search-cancel-button {
     [role="option"]:not([aria-disabled="true"]):active,
     [role="switch"]:not([aria-disabled="true"]):active,
     a[href]:active,
-    summary:active {
+    summary:active,
+    /* react-aria calls preventDefault on pointerdown, so :active never fires on
+       its components — they expose data-pressed instead. */
+    [data-pressed]:not([aria-disabled="true"]) {
         /* Faster in than out: the press is instant, the release settles. */
         transition-duration: 60ms;
         transform: scale(0.985);
