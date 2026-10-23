@@ -88,7 +88,7 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
                 // Depth, in three parts: a tight contact shadow, two wide soft ones
                 // for the cast, and inset edges so the top catches light and the
                 // bottom falls into shadow — what makes it read as a solid object.
-                "shadow-[0_2px_4px_rgba(0,0,0,0.16),0_14px_28px_-10px_rgba(0,0,0,0.45),0_32px_64px_-24px_rgba(0,0,0,0.35)]",
+                "shadow-[0_1px_2px_rgba(0,0,0,0.10),0_8px_16px_-8px_rgba(0,0,0,0.24),0_18px_36px_-20px_rgba(0,0,0,0.18)]",
                 "inset-shadow-[0_1px_0_rgba(255,255,255,0.22),0_-1px_0_rgba(0,0,0,0.28)]",
             ], themes[account.theme], className)}>
         <Blobs />
