@@ -7,8 +7,8 @@ import type { Activity } from "@/components/app/recent-activity";
 import { RecentActivity } from "@/components/app/recent-activity";
 import type { Goal } from "@/components/app/savings-goals";
 import { SavingsGoals } from "@/components/app/savings-goals";
-import type { RunwayPoint } from "@/components/app/runway-chart";
-import { RunwayChart } from "@/components/app/runway-chart";
+import type { MonthFlow } from "@/components/app/in-vs-out";
+import { InVsOut } from "@/components/app/in-vs-out";
 import { MorningEmail } from "@/components/app/morning-email";
 import type { StatTileProps } from "@/components/app/stat-tile";
 import { StatTile } from "@/components/app/stat-tile";
@@ -60,12 +60,22 @@ const activity: Activity[] = [
     { id: "a4", kind: "expense", name: "Transport", account: "MTN MoMo", when: "3d ago", amount: 4500 },
 ];
 
-/** 14 days behind, 16 projected — the crossing is what the card is for. */
-const projection: RunwayPoint[] = Array.from({ length: 31 }, (_, index) => {
-    const day = index - 14;
-    const balance = day <= 0 ? 1_468_000 + day * 9_000 + (index % 3) * 14_000 : Math.max(0, 1_468_000 - day * 92_000);
-    return { day, balance };
-});
+/** Six months back, so the labels stay correct whenever this is viewed. */
+const monthsAgo = (count: number) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - count);
+    return date;
+};
+
+const flows: MonthFlow[] = [
+    { month: monthsAgo(5), in: 980000, out: 812000 },
+    { month: monthsAgo(4), in: 1040000, out: 1105000 },
+    { month: monthsAgo(3), in: 960000, out: 744000 },
+    { month: monthsAgo(2), in: 1180000, out: 905000 },
+    { month: monthsAgo(1), in: 1020000, out: 1240000 },
+    { month: monthsAgo(0), in: 1310000, out: 868000 },
+];
 
 export const DashboardPage = () => {
     const { formatWithCode } = useCurrency();
@@ -139,7 +149,7 @@ export const DashboardPage = () => {
             </section>
 
             <section aria-label="Outlook" className="grid gap-1.5 md:gap-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-                <RunwayChart points={projection} className="min-h-72" />
+                <InVsOut months={flows} className="min-h-72" />
                 <SavingsGoals goals={goals} />
             </section>
 
