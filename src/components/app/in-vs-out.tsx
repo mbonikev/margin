@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Amount } from "@/components/ui/amount";
 import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
@@ -13,10 +13,59 @@ export interface MonthFlow {
 
 const monthFormat = new Intl.DateTimeFormat(undefined, { month: "short" });
 
+/**
+ * Catmull-Rom control points converted to cubic Béziers. Tension is kept low so
+ * the curve stays close to the data — a looser spline overshoots and invents
+ * peaks between months that never happened.
+ */
+const smooth = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return "";
+
+    const tension = 0.18;
+    let path = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+
+    for (let index = 0; index < points.length - 1; index++) {
+        const previous = points[index - 1] ?? points[index];
+        const start = points[index];
+        const end = points[index + 1];
+        const next = points[index + 2] ?? end;
+
+        const c1x = start.x + (end.x - previous.x) * tension;
+        const c1y = start.y + (end.y - previous.y) * tension;
+        const c2x = end.x - (next.x - start.x) * tension;
+        const c2y = end.y - (next.y - start.y) * tension;
+
+        path += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${end.x.toFixed(1)},${end.y.toFixed(1)}`;
+    }
+
+    return path;
+};
+
+const WIDTH = 600;
+const HEIGHT = 180;
+const PAD = { top: 18, right: 14, bottom: 14, left: 14 };
+
 export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?: string }) => {
     const [hovered, setHovered] = useState<number | null>(null);
+    const gradientId = useId();
 
-    const peak = Math.max(...months.flatMap((entry) => [entry.in, entry.out]), 1);
+    const geo = useMemo(() => {
+        // 10% headroom so neither line grazes the top edge.
+        const peak = Math.max(...months.flatMap((entry) => [entry.in, entry.out]), 1) * 1.1;
+        const step = (WIDTH - PAD.left - PAD.right) / Math.max(1, months.length - 1);
+
+        const toX = (index: number) => PAD.left + index * step;
+        const toY = (value: number) => PAD.top + (1 - value / peak) * (HEIGHT - PAD.top - PAD.bottom);
+        const path = (pick: (entry: MonthFlow) => number) => smooth(months.map((entry, index) => ({ x: toX(index), y: toY(pick(entry)) })));
+
+        const baseline = HEIGHT - PAD.bottom;
+        const area = (line: string) => `${line} L${toX(months.length - 1).toFixed(1)},${baseline} L${toX(0).toFixed(1)},${baseline} Z`;
+        const inPath = path((entry) => entry.in);
+        const outPath = path((entry) => entry.out);
+
+        return { toX, toY, step, inPath, outPath, inArea: area(inPath), outArea: area(outPath) };
+    }, [months]);
+
     const net = months.reduce((total, entry) => total + entry.in - entry.out, 0);
     const active = hovered === null ? null : months[hovered];
 
@@ -37,20 +86,71 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
             {/* Two series, so a legend is always present — identity is never colour alone. */}
             <div className="flex items-center gap-4 text-xs text-tertiary">
                 <span className="flex items-center gap-1.5">
-                    <span className="size-2.5 rounded-full bg-tile-aqua" />
+                    <span className="h-0.5 w-4 rounded-full bg-tile-aqua" />
                     Money in
                 </span>
                 <span className="flex items-center gap-1.5">
-                    <span className="size-2.5 rounded-full bg-tile-yellow" />
+                    <span className="h-0.5 w-4 rounded-full bg-tile-yellow" />
                     Money out
                 </span>
             </div>
 
             <div className="relative min-h-0 flex-1">
+                <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" className="h-full max-h-44 w-full overflow-visible" role="img" aria-label="Money in versus money out">
+                    <defs>
+                        {/* Kept low — two overlapping washes muddy fast. */}
+                        <linearGradient id={`${gradientId}-in`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" className="text-tile-aqua" stopColor="currentColor" stopOpacity="0.2" />
+                            <stop offset="100%" className="text-tile-aqua" stopColor="currentColor" stopOpacity="0" />
+                        </linearGradient>
+                        <linearGradient id={`${gradientId}-out`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" className="text-tile-yellow" stopColor="currentColor" stopOpacity="0.16" />
+                            <stop offset="100%" className="text-tile-yellow" stopColor="currentColor" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
+
+                    <path d={geo.outArea} fill={`url(#${gradientId}-out)`} />
+                    <path d={geo.inArea} fill={`url(#${gradientId}-in)`} />
+
+                    {active && (
+                        <line
+                            x1={geo.toX(hovered!)}
+                            x2={geo.toX(hovered!)}
+                            y1={PAD.top}
+                            y2={HEIGHT - PAD.bottom}
+                            className="stroke-border-secondary"
+                            strokeWidth={1}
+                            vectorEffect="non-scaling-stroke"
+                        />
+                    )}
+
+                    {/* non-scaling-stroke keeps 2px true under a stretched viewBox. */}
+                    <path d={geo.outPath} className="stroke-tile-yellow" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                    <path d={geo.inPath} className="stroke-tile-aqua" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+
+                    {months.map((entry, index) => (
+                        <g key={entry.month.toISOString()}>
+                            {/* Surface ring so the dots stay legible where the lines cross. */}
+                            <circle cx={geo.toX(index)} cy={geo.toY(entry.out)} r={index === hovered ? 5 : 3.5} className="fill-tile-yellow stroke-bg-primary" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+                            <circle cx={geo.toX(index)} cy={geo.toY(entry.in)} r={index === hovered ? 5 : 3.5} className="fill-tile-aqua stroke-bg-primary" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+
+                            <rect
+                                x={geo.toX(index) - geo.step / 2}
+                                y={0}
+                                width={geo.step}
+                                height={HEIGHT}
+                                fill="transparent"
+                                onMouseEnter={() => setHovered(index)}
+                                onMouseLeave={() => setHovered(null)}
+                            />
+                        </g>
+                    ))}
+                </svg>
+
                 {active && (
                     <div
-                        style={{ left: `${((hovered! + 0.5) / months.length) * 100}%` }}
-                        className="pointer-events-none absolute -top-1 z-10 -translate-x-1/2 rounded-2xl bg-primary-solid px-3 py-2 text-[11px] leading-tight whitespace-nowrap text-white shadow-lg"
+                        style={{ left: `${(geo.toX(hovered!) / WIDTH) * 100}%` }}
+                        className="pointer-events-none absolute -top-2 z-10 -translate-x-1/2 rounded-2xl bg-primary-solid px-3 py-2 text-[11px] leading-tight whitespace-nowrap text-white shadow-lg"
                     >
                         <p className="font-semibold">{monthFormat.format(active.month)}</p>
                         <p className="mt-1 flex items-center gap-1.5">
@@ -63,30 +163,9 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                         </p>
                     </div>
                 )}
-
-                <div className="flex h-full min-h-32 items-end gap-1" onMouseLeave={() => setHovered(null)}>
-                    {months.map((entry, index) => (
-                        <div
-                            key={entry.month.toISOString()}
-                            onMouseEnter={() => setHovered(index)}
-                            className="flex h-full min-w-0 flex-1 cursor-default items-end justify-center gap-0.5"
-                        >
-                            {/* 4px rounded cap, square at the baseline, capped width so
-                                wide cards get air rather than fat bars. */}
-                            <div
-                                style={{ height: `${Math.max(2, (entry.in / peak) * 100)}%` }}
-                                className={cx("w-full max-w-5 rounded-t-md bg-tile-aqua transition-opacity duration-100", hovered !== null && hovered !== index && "opacity-40")}
-                            />
-                            <div
-                                style={{ height: `${Math.max(2, (entry.out / peak) * 100)}%` }}
-                                className={cx("w-full max-w-5 rounded-t-md bg-tile-yellow transition-opacity duration-100", hovered !== null && hovered !== index && "opacity-40")}
-                            />
-                        </div>
-                    ))}
-                </div>
             </div>
 
-            <div className="flex gap-1">
+            <div className="flex">
                 {months.map((entry, index) => (
                     <span
                         key={entry.month.toISOString()}
