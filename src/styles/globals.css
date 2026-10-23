@@ -194,5 +194,11 @@ input[type="search"]::-webkit-search-cancel-button {
        ::-webkit overrides — the OS keeps its own look and behaviour. */
     html {
         scrollbar-width: thin;
+
+        /* React-aria locks body scroll while a popover is open, which removes
+           the scrollbar and shifts the whole page sideways. Reserving the gutter
+           permanently means opening a popover — or repainting for a theme
+           change while one is open — can never move the layout. */
+        scrollbar-gutter: stable;
     }
 }
