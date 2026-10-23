@@ -86,7 +86,7 @@ export const DashboardPage = () => {
         () => [
             {
                 label: "Safe to spend",
-                value: <Amount value={last(safeToSpend)} />,
+                value: <Amount value={last(safeToSpend)} compactSymbol />,
                 delta: 12,
                 deltaSuffix: "%",
                 tone: "aqua",
@@ -96,7 +96,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Spent this week",
-                value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} />,
+                value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} compactSymbol />,
                 delta: -8,
                 deltaSuffix: "%",
                 tone: "blue",
@@ -106,7 +106,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Total balance",
-                value: <Amount value={last(totalBalance)} />,
+                value: <Amount value={last(totalBalance)} compactSymbol />,
                 delta: -4,
                 deltaSuffix: "%",
                 tone: "yellow",
@@ -116,7 +116,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Saved this month",
-                value: <Amount value={last(savedPerMonth)} />,
+                value: <Amount value={last(savedPerMonth)} compactSymbol />,
                 delta: 6,
                 deltaSuffix: "%",
                 tone: "magenta",
