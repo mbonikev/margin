@@ -198,6 +198,11 @@
        painted with it comes out darker than the panel it sits on. */
     --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 10%, var(--color-bg-popover));
 
+    /* A fainter version of the standard hairline, for popover edges. Mixed with
+       transparent rather than using a `/opacity` modifier, which Tailwind bakes
+       into a static hex and so would stop following the theme. */
+    --ring-color-popover: color-mix(in oklab, var(--color-border-secondary_alt) 45%, transparent);
+
     /* Tailwind builds `bg-*` from the --background-color-* namespace, which is
        how Untitled UI's own bg-primary/bg-secondary utilities exist. */
     --background-color-popover: var(--color-bg-popover);
