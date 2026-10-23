@@ -68,7 +68,7 @@ export const DashboardPage = () => {
     return (
         <section
             aria-label="Overview"
-            className="grid gap-1.5 md:grid-cols-2 md:gap-2 lg:min-h-[26rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)_minmax(0,1fr)]"
+            className="grid gap-1.5 md:grid-cols-2 md:gap-2 lg:min-h-[26rem] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1.1fr)_minmax(0,0.8fr)]"
         >
             {/* Left — four stat tiles in a 2x2 */}
             <div className="grid grid-cols-2 gap-1.5 md:gap-2">
