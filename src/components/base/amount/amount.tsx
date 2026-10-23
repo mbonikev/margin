@@ -40,7 +40,7 @@ export const Amount = ({ value, withCode, hideSymbol, className }: AmountProps) 
     return (
         <span title={hidden ? undefined : formatExact(value)} className={cx("tabular-nums", className)}>
             {/* `em` so the symbol scales with whatever size the figure is set at. */}
-            {!withCode && !hideSymbol && <span className="mr-[0.25em] align-baseline text-[0.68em] font-medium opacity-60">{currency.symbol}</span>}
+            {!withCode && !hideSymbol && <span className="mr-[0.22em] align-baseline text-[0.8em] font-medium opacity-70">{currency.symbol}</span>}
             {mask(text)}
         </span>
     );
