@@ -51,15 +51,15 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
     }, [items]);
 
     return (
-        <Card className={cx("flex flex-col gap-3", className)}>
+        <Card className={cx("flex flex-col gap-2.5", className)}>
             <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Recent</h2>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2.5">
                 {groups.map(([label, entries]) => (
                     <section key={label}>
-                        <h3 className="px-2 text-xs font-medium text-quaternary">{label}</h3>
+                        <h3 className="px-2 text-[11px] leading-none font-medium text-quaternary">{label}</h3>
 
-                        <ul className="-mx-2 mt-1 flex flex-col gap-0.5">
+                        <ul className="-mx-2 mt-0.5 flex flex-col">
                             {entries.map((item) => {
                                 const kind = kinds[item.kind];
                                 const Icon = kind.icon;
@@ -68,15 +68,15 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
                                     <li key={item.id}>
                                         <button
                                             type="button"
-                                            className="no-press flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left transition duration-100 ease-linear hover:bg-secondary"
+                                            className="no-press flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left transition duration-100 ease-linear hover:bg-secondary"
                                         >
-                                            <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-full", kind.chip)}>
-                                                <Icon className="size-4.5" />
+                                            <span className={cx("flex size-8 shrink-0 items-center justify-center rounded-full", kind.chip)}>
+                                                <Icon className="size-4" />
                                             </span>
 
                                             <span className="min-w-0 flex-1">
                                                 <span className="block truncate text-sm font-medium text-primary">{item.name}</span>
-                                                <span className="block truncate text-xs text-tertiary">
+                                                <span className="block truncate text-[11px] text-tertiary">
                                                     {item.account} · {timeFormat.format(item.at)}
                                                 </span>
                                             </span>
