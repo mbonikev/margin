@@ -59,9 +59,9 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -14, scale: 0.97 }}
                             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute inset-0"
+                            className="absolute inset-x-0 top-0"
                         >
-                            <AccountCard account={active} className="h-full" />
+                            <AccountCard account={active} />
                         </motion.div>
                     </AnimatePresence>
                 </div>
