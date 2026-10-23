@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 import { cx } from "@/utils/cx";
 
 export const Field = ({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) => (
@@ -29,14 +29,6 @@ export const AmountField = ({ symbol, value, onValueChange }: { symbol: string; 
             onChange={(event) => onValueChange(event.target.value.replace(/[^\d]/g, ""))}
             className="w-full min-w-0 bg-transparent text-2xl font-semibold tracking-tight tabular-nums text-primary outline-hidden placeholder:text-quaternary"
         />
-    </span>
-);
-
-export const SelectField = ({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) => (
-    <span className={shell}>
-        <select {...props} className={cx(control, "appearance-none", className)}>
-            {children}
-        </select>
     </span>
 );
 

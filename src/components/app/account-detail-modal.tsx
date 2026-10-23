@@ -1,6 +1,7 @@
 import type { Account } from "@/components/app/account-card";
 import { Amount } from "@/components/ui/amount";
-import { Field, ModalActions, SelectField, TextField } from "@/components/ui/field";
+import { Select } from "@/components/base/select/select";
+import { Field, ModalActions, TextField } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 
 /** The last few balance readings for one account. */
@@ -64,14 +65,19 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account }: { isOpen
                 <TextField defaultValue={account.kind} />
             </Field>
 
-            <Field label="Card colour" hint="Accounts are easiest to recognise by colour.">
-                <SelectField defaultValue={account.theme}>
-                    <option value="blue">Blue</option>
-                    <option value="graphite">Graphite</option>
-                    <option value="emerald">Emerald</option>
-                    <option value="plum">Plum</option>
-                </SelectField>
-            </Field>
+            <Select
+                label="Card colour"
+                hint="Accounts are easiest to recognise by colour."
+                defaultSelectedKey={account.theme}
+                items={[
+                    { id: "blue", label: "Blue" },
+                    { id: "graphite", label: "Graphite" },
+                    { id: "emerald", label: "Emerald" },
+                    { id: "plum", label: "Plum" },
+                ]}
+            >
+                {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+            </Select>
 
             <ModalActions onCancel={() => onOpenChange(false)} onConfirm={() => onOpenChange(false)} confirmLabel="Save changes" />
         </div>

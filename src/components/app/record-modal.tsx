@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
+import { getLocalTimeZone, today } from "@internationalized/date";
+import type { DateValue } from "react-aria-components";
 import type { Account } from "@/components/app/account-card";
-import { AmountField, Field, ModalActions, SelectField, TextField } from "@/components/ui/field";
+import { InputDate } from "@/components/base/input/input-date";
+import { Select } from "@/components/base/select/select";
+import { AmountField, Field, ModalActions, TextField } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 import { useCurrency } from "@/providers/currency-provider";
 
@@ -21,8 +25,6 @@ interface RecordModalProps {
     onSave?: (entry: { kind: RecordKind; name: string; amount: number; accountId: string; date: string }) => void;
 }
 
-const today = () => new Date().toISOString().slice(0, 10);
-
 export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave }: RecordModalProps) => {
     const { currency } = useCurrency();
     const text = copy[kind];
@@ -30,7 +32,7 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave }: Re
     const [name, setName] = useState("");
     const [amount, setAmount] = useState("");
     const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
-    const [date, setDate] = useState(today);
+    const [date, setDate] = useState<DateValue | null>(() => today(getLocalTimeZone()));
 
     // Reset on open so a half-finished entry never leaks into the next one.
     useEffect(() => {
@@ -38,7 +40,7 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave }: Re
         setName("");
         setAmount("");
         setAccountId(accounts[0]?.id ?? "");
-        setDate(today());
+        setDate(today(getLocalTimeZone()));
     }, [isOpen, accounts]);
 
     return (
@@ -58,26 +60,27 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave }: Re
                 </Field>
 
                 {kind !== "goal" && (
-                    <Field label="Account">
-                        <SelectField value={accountId} onChange={(event) => setAccountId(event.target.value)}>
-                            {accounts.map((account) => (
-                                <option key={account.id} value={account.id}>
-                                    {account.name}
-                                </option>
-                            ))}
-                        </SelectField>
-                    </Field>
+                    <Select
+                        label="Account"
+                        selectedKey={accountId}
+                        onSelectionChange={(key) => setAccountId(String(key))}
+                        items={accounts.map((account) => ({ id: account.id, label: account.name, supportingText: account.kind }))}
+                    >
+                        {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                    </Select>
                 )}
 
-                <Field label={kind === "commitment" ? "First due date" : kind === "goal" ? "Starting from" : "When"}>
-                    <TextField type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-                </Field>
+                <InputDate
+                    label={kind === "commitment" ? "First due date" : kind === "goal" ? "Starting from" : "When"}
+                    value={date}
+                    onChange={setDate}
+                />
 
                 <ModalActions
                     onCancel={() => onOpenChange(false)}
                     confirmLabel={text.confirm}
                     onConfirm={() => {
-                        onSave?.({ kind, name, amount: Number(amount || 0), accountId, date });
+                        onSave?.({ kind, name, amount: Number(amount || 0), accountId, date: date?.toString() ?? "" });
                         onOpenChange(false);
                     }}
                 />
