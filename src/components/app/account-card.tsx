@@ -84,9 +84,9 @@ const Sheen = () => {
     return (
         <motion.span
             aria-hidden="true"
-            initial={{ x: "-110%" }}
-            animate={{ x: "210%" }}
-            transition={{ duration: 1.6, ease: [0.4, 0, 0.3, 1], delay: 0.16 }}
+            initial={{ x: "-55%" }}
+            animate={{ x: "190%" }}
+            transition={{ duration: 1.3, ease: [0.4, 0, 0.3, 1], delay: 0.05 }}
             className="pointer-events-none absolute inset-y-0 left-0 w-1/2 -skew-x-12 bg-[linear-gradient(100deg,transparent_0%,rgba(255,255,255,0.06)_30%,rgba(255,255,255,0.32)_50%,rgba(255,255,255,0.06)_70%,transparent_100%)] mix-blend-overlay"
         />
     );
