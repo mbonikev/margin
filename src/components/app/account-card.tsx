@@ -139,7 +139,14 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
         <div className="relative flex items-center gap-2">
             <Logo variant="mark" className="h-[1.35rem] bg-white" />
             <span className="text-white/40">/</span>
-            <span className="text-[0.7875rem] font-medium">{account.kind}</span>
+            <button
+                type="button"
+                onClick={() => copy("Card type", account.kind)}
+                title="Copy card type"
+                className="no-press -mx-1.5 rounded-lg px-1.5 py-0.5 text-[0.7875rem] font-medium transition duration-100 ease-linear hover:bg-white/12"
+            >
+                {account.kind}
+            </button>
         </div>
 
         <div className="relative mt-4 flex items-center gap-3">
@@ -149,7 +156,14 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
 
         {/* Not font-mono: the generic monospace fallback reads thin and dead.
             The display face with tabular figures gives the chunky card look. */}
-        <p className="relative mb-[0.45rem] text-[1.125rem] font-semibold tracking-[0.16em] tabular-nums text-white/90 md:mb-[0.675rem] md:text-[1.35rem]">{reference}</p>
+        <button
+            type="button"
+            onClick={() => copy("Card ID", reference)}
+            title="Copy card ID"
+            className="no-press relative -mx-2 mb-[0.45rem] w-fit rounded-xl px-2 py-1 text-left text-[1.125rem] font-semibold tracking-[0.16em] tabular-nums text-white/90 transition duration-100 ease-linear hover:bg-white/12 md:mb-[0.675rem] md:text-[1.35rem]"
+        >
+            {reference}
+        </button>
 
         <AnimatePresence>
             {copied && (
@@ -172,7 +186,7 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
                     type="button"
                     onClick={() => copy("Account name", account.name)}
                     title="Copy account name"
-                    className="no-press block max-w-full truncate rounded text-left text-[0.7875rem] font-medium text-white/75 transition hover:text-white"
+                    className="no-press -mx-1.5 block max-w-full truncate rounded-lg px-1.5 py-0.5 text-left text-[0.7875rem] font-medium text-white/75 transition duration-100 ease-linear hover:bg-white/12 hover:text-white"
                 >
                     {account.name}
                 </button>
@@ -180,7 +194,7 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
                     type="button"
                     onClick={() => copy("Balance", formatExact(account.balance))}
                     title="Copy balance"
-                    className="no-press block max-w-full rounded text-left transition hover:opacity-90"
+                    className="no-press -mx-1.5 block max-w-full rounded-lg px-1.5 py-0.5 text-left transition duration-100 ease-linear hover:bg-white/12"
                 >
                     <Amount value={account.balance} compactSymbol className="mt-0.5 block truncate text-[1.6rem] font-semibold tracking-tight" />
                 </button>
