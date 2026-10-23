@@ -55,8 +55,9 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
             <div className="flex flex-1 items-center">
                 {/* The frame owns the aspect ratio. It must not be a flex child
                     itself — flex-1 would stretch it and override the ratio. */}
-                {/* Height is width / 1.586 — so the width cap is the size control. */}
-                <div className="relative aspect-[1.586/1] w-full max-w-[23rem]">
+                {/* Fixed height rather than an aspect ratio: the card must not change
+                    height as the column resizes. Width stays fluid up to the cap. */}
+                <div className="relative h-52 w-full max-w-[23rem]">
                     <AnimatePresence mode="wait" initial={false}>
                         <motion.div
                             key={active.id}
@@ -64,7 +65,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -14, scale: 0.97 }}
                             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute inset-x-0 top-0"
+                            className="absolute inset-0"
                         >
                             <AccountCard account={active} />
                         </motion.div>

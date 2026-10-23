@@ -55,7 +55,7 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
     const mask = account.mask ?? "card";
 
     return (
-    <div className={cx("relative flex aspect-[1.586/1] w-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 text-white shadow-lg", themes[account.theme], className)}>
+    <div className={cx("relative flex size-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 text-white shadow-lg", themes[account.theme], className)}>
         <Blobs />
 
         <div className="relative flex items-center gap-2">
