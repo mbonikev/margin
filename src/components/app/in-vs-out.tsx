@@ -90,7 +90,7 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                     Money in
                 </span>
                 <span className="flex items-center gap-1.5">
-                    <span className="h-0.5 w-4 rounded-full bg-chart-neutral" />
+                    <span className="h-0.5 w-4 rounded-full bg-tile-yellow" />
                     Money out
                 </span>
             </div>
@@ -104,8 +104,8 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                             <stop offset="100%" className="text-brand" stopColor="currentColor" stopOpacity="0" />
                         </linearGradient>
                         <linearGradient id={`${gradientId}-out`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" className="text-chart-neutral" stopColor="currentColor" stopOpacity="0.14" />
-                            <stop offset="100%" className="text-chart-neutral" stopColor="currentColor" stopOpacity="0" />
+                            <stop offset="0%" className="text-tile-yellow" stopColor="currentColor" stopOpacity="0.14" />
+                            <stop offset="100%" className="text-tile-yellow" stopColor="currentColor" stopOpacity="0" />
                         </linearGradient>
                     </defs>
 
@@ -125,13 +125,13 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                     )}
 
                     {/* non-scaling-stroke keeps 2px true under a stretched viewBox. */}
-                    <path d={geo.outPath} className="stroke-chart-neutral" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                    <path d={geo.outPath} className="stroke-tile-yellow" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                     <path d={geo.inPath} className="stroke-brand" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
 
                     {months.map((entry, index) => (
                         <g key={entry.month.toISOString()}>
                             {/* Surface ring so the dots stay legible where the lines cross. */}
-                            <circle cx={geo.toX(index)} cy={geo.toY(entry.out)} r={index === hovered ? 5 : 3.5} className="fill-chart-neutral stroke-bg-primary" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+                            <circle cx={geo.toX(index)} cy={geo.toY(entry.out)} r={index === hovered ? 5 : 3.5} className="fill-tile-yellow stroke-bg-primary" strokeWidth={2} vectorEffect="non-scaling-stroke" />
                             <circle cx={geo.toX(index)} cy={geo.toY(entry.in)} r={index === hovered ? 5 : 3.5} className="fill-brand stroke-bg-primary" strokeWidth={2} vectorEffect="non-scaling-stroke" />
 
                             <rect
@@ -158,7 +158,7 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                             <Amount value={active.in} hideSymbol />
                         </p>
                         <p className="mt-0.5 flex items-center gap-1.5">
-                            <span className="size-1.5 rounded-full bg-chart-neutral" />
+                            <span className="size-1.5 rounded-full bg-tile-yellow" />
                             <Amount value={active.out} hideSymbol />
                         </p>
                     </div>

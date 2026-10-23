@@ -209,11 +209,6 @@
     --background-color-popover-hover: var(--color-bg-popover-hover);
     --background-color-brand-popover: var(--color-bg-brand-popover);
 
-    /* The comparison series in charts. Neutral on purpose: a grey has almost no
-       chroma, so it stays distinct from all ten accents and needs no hue
-       comparison to read — the most colour-vision-robust partner available. */
-    --color-chart-neutral: var(--color-ink-muted);
-
     /* Translucent page background for the sticky header. A `/75` modifier bakes
        the light-mode value into a static colour, so it would not follow dark. */
     --color-bg-header: color-mix(in oklab, var(--color-bg-secondary) 75%, transparent);
@@ -225,7 +220,5 @@
         --color-bg-popover: var(--color-neutral-800);
         --color-bg-popover-hover: var(--color-neutral-700);
         --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 26%, var(--color-bg-popover));
-        /* ink-muted is a light-mode source value; on a dark surface it is nearly black. */
-        --color-chart-neutral: var(--color-neutral-400);
     }
 }
