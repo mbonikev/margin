@@ -116,6 +116,12 @@
     :root:not(.dark-mode) {
         --color-bg-primary: var(--color-surface);
         --color-bg-secondary: var(--color-canvas);
+
+        /* Untitled UI maps this to brand-50 — an 8% mix into white. That reads
+           fine for a mid-tone accent but vanishes for a light one like amber.
+           Mixing into the canvas instead means the chip is always a step darker
+           than a white card, whatever hue the accent is. */
+        --color-bg-brand-primary: color-mix(in oklab, var(--color-brand) 8%, var(--color-canvas));
     }
 }
 
@@ -161,6 +167,13 @@
     --color-tile-yellow-tint: color-mix(in oklab, var(--color-tile-yellow) 16%, var(--color-bg-primary));
     --color-tile-magenta-tint: color-mix(in oklab, var(--color-tile-magenta) 16%, var(--color-bg-primary));
 
+    /* Readable text steps for the semantic colours, same pattern as the tiles.
+       78% keeps them vivid while clearing 4.5:1 on a white surface. */
+    --color-positive-ink: color-mix(in oklab, var(--color-positive) 78%, black);
+    --color-negative-ink: color-mix(in oklab, var(--color-negative) 78%, black);
+    --color-positive-tint: color-mix(in oklab, var(--color-positive) 14%, var(--color-bg-primary));
+    --color-negative-tint: color-mix(in oklab, var(--color-negative) 14%, var(--color-bg-primary));
+
     --color-tile-aqua-ink: color-mix(in oklab, var(--color-tile-aqua) 74%, black);
     --color-tile-blue-ink: color-mix(in oklab, var(--color-tile-blue) 80%, black);
     --color-tile-yellow-ink: color-mix(in oklab, var(--color-tile-yellow) 62%, black);
@@ -173,6 +186,9 @@
         --color-tile-blue: #3987e5;
         --color-tile-yellow: #c98500;
         --color-tile-magenta: #d55181;
+
+        --color-positive-ink: color-mix(in oklab, var(--color-positive) 72%, white);
+        --color-negative-ink: color-mix(in oklab, var(--color-negative) 72%, white);
 
         --color-tile-aqua-ink: color-mix(in oklab, var(--color-tile-aqua) 70%, white);
         --color-tile-blue-ink: color-mix(in oklab, var(--color-tile-blue) 72%, white);
@@ -208,6 +224,20 @@
     --background-color-popover: var(--color-bg-popover);
     --background-color-popover-hover: var(--color-bg-popover-hover);
     --background-color-brand-popover: var(--color-bg-brand-popover);
+
+    /* The comparison series in charts. Amber is deliberately absent from the
+       accent picker, so it can never collide with the user's choice —
+       min ΔE 16.2 light / 10.4 dark against the nine that remain. */
+    --color-chart-compare: #eda100;
+
+    /* A third reserved series colour, measured the same way — min ΔE 13.2
+       against the nine accents and the reserved amber. */
+    --color-chart-third: #5d3a7a;
+
+    /* Translucent page background for the sticky header. A `/75` modifier bakes
+       the light-mode value into a static colour, so it would not follow dark. */
+    --color-bg-header: color-mix(in oklab, var(--color-bg-secondary) 92%, transparent);
+    --background-color-header: var(--color-bg-header);
 }
 
 @layer base {
@@ -215,5 +245,7 @@
         --color-bg-popover: var(--color-neutral-800);
         --color-bg-popover-hover: var(--color-neutral-700);
         --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 26%, var(--color-bg-popover));
+        --color-chart-compare: #c98500;
+        --color-chart-third: #9c74c4;
     }
 }

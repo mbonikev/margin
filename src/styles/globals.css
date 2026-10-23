@@ -148,37 +148,6 @@ input[type="search"]::-webkit-search-cancel-button {
     transition: none !important;
 }
 
-@layer base {
-    /* Standard properties — Firefox, and Chrome 121+. `.scrollbar-hide` is a
-       class so it still wins over this universal selector. */
-    * {
-        scrollbar-width: thin;
-        scrollbar-color: var(--color-border-primary) transparent;
-    }
-
-    /* WebKit. The transparent border plus content-box clip leaves the thumb
-       looking ~4px wide while keeping a 10px grab target. */
-    ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
-    }
-
-    ::-webkit-scrollbar-track,
-    ::-webkit-scrollbar-corner {
-        background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background-color: var(--color-border-primary);
-        background-clip: content-box;
-        border: 3px solid transparent;
-        border-radius: 9999px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background-color: var(--color-fg-quaternary);
-    }
-}
 
 @layer base {
     /* Press feedback. Controls compress slightly when pressed, which is what
@@ -217,5 +186,69 @@ input[type="search"]::-webkit-search-cancel-button {
     /* Opt out for wide surfaces — a whole list row shrinking reads as a glitch. */
     .no-press:active {
         transform: none !important;
+    }
+}
+
+@layer base {
+    /* Browser-default scrollbars, just the compact variant. No colours or
+       ::-webkit overrides — the OS keeps its own look and behaviour. */
+    /* Declared here rather than from JS: the browser then paints native UI —
+       scrollbars, form controls, the canvas — in the right mode on first paint,
+       and it cannot fall out of sync with the .dark-mode class. */
+    :root {
+        color-scheme: light;
+    }
+
+    :root.dark-mode {
+        color-scheme: dark;
+    }
+
+    html {
+        scrollbar-width: thin;
+
+        /* React-aria locks body scroll while a popover is open, which removes
+           the scrollbar and shifts the whole page sideways. Reserving the gutter
+           permanently means opening a popover — or repainting for a theme
+           change while one is open — can never move the layout. */
+        scrollbar-gutter: stable;
+    }
+}
+
+/* Liquid progress. The wave layers are twice as wide as the bar and hold two
+   full periods, so translating exactly -50% loops seamlessly. Transform-only,
+   so these run on the compositor. The reduced-motion block above stops them. */
+@keyframes margin-wave {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes margin-bubble {
+    0% {
+        transform: translate(0, 10%) scale(0.4);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.9;
+    }
+    70% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translate(var(--drift, 4px), -210%) scale(1);
+        opacity: 0;
+    }
+}
+
+@layer base {
+    /* The account slider is dragged with pointer events, so the browser must not
+       start its own image/SVG drag inside it. */
+    [data-no-native-drag],
+    [data-no-native-drag] * {
+        -webkit-user-drag: none;
+        user-select: none;
     }
 }

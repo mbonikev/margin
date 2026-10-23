@@ -1,7 +1,9 @@
 import { Tab, TabList, TabPanel, Tabs } from "react-aria-components";
-import { CurrencySettings } from "@/components/application/settings/currency-settings";
-import { ThemeControls } from "@/components/application/theme/theme-controls";
-import { Card } from "@/components/base/card/card";
+import { CurrencySettings } from "@/components/app/currency-settings";
+import { EmailSettings } from "@/components/app/email-settings";
+import { ProfileSettings } from "@/components/app/profile-settings";
+import { ThemeControls } from "@/components/app/theme-controls";
+import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
 
 const tabs = [
@@ -10,13 +12,6 @@ const tabs = [
     { id: "email", label: "Morning email" },
     { id: "appearance", label: "Appearance" },
 ];
-
-const Placeholder = ({ title, note }: { title: string; note: string }) => (
-    <div>
-        <h2 className="text-md font-semibold text-primary">{title}</h2>
-        <p className="mt-0.5 text-sm text-tertiary">{note}</p>
-    </div>
-);
 
 export const SettingsPage = () => (
     <Tabs defaultSelectedKey="currency" className="flex flex-col gap-3">
@@ -39,7 +34,7 @@ export const SettingsPage = () => (
 
         <Card className="p-5 md:p-6">
             <TabPanel id="profile" className="outline-hidden">
-                <Placeholder title="Profile" note="Your name, email and timezone. Timezone decides when the morning email lands." />
+                <ProfileSettings />
             </TabPanel>
 
             <TabPanel id="currency" className="outline-hidden">
@@ -47,7 +42,7 @@ export const SettingsPage = () => (
             </TabPanel>
 
             <TabPanel id="email" className="outline-hidden">
-                <Placeholder title="Morning email" note="Send time, tone, and whether quiet days are skipped." />
+                <EmailSettings />
             </TabPanel>
 
             <TabPanel id="appearance" className="outline-hidden">

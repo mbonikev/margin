@@ -19,7 +19,6 @@ export const accentColors: AccentColor[] = [
     { id: "plum", label: "Plum", hex: "#a84fc4" },
     { id: "rose", label: "Rose", hex: "#d6457e" },
     { id: "coral", label: "Coral", hex: "#e0613f" },
-    { id: "amber", label: "Amber", hex: "#d49420" },
     { id: "slate", label: "Slate", hex: "#5b6670" },
 ];
 
@@ -76,10 +75,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
         const apply = () => {
             const isDark = mode === "dark" || (mode === "system" && query.matches);
-            withoutTransitions(() => {
-                document.documentElement.classList.toggle("dark-mode", isDark);
-                document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-            });
+            // `color-scheme` rides on the class via CSS — see globals.css.
+            withoutTransitions(() => document.documentElement.classList.toggle("dark-mode", isDark));
         };
 
         apply();

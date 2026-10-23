@@ -1,11 +1,17 @@
 import { useMemo } from "react";
-import type { Account } from "@/components/application/accounts/account-card";
-import { AccountHero } from "@/components/application/dashboard/account-hero";
-import type { Commitment } from "@/components/application/dashboard/upcoming-list";
-import { UpcomingList } from "@/components/application/dashboard/upcoming-list";
-import type { StatTileProps } from "@/components/application/dashboard/stat-tile";
-import { StatTile } from "@/components/application/dashboard/stat-tile";
-import { Amount } from "@/components/base/amount/amount";
+import { AccountHero } from "@/components/app/account-hero";
+import { accounts } from "@/data/accounts";
+import type { Commitment } from "@/components/app/upcoming-list";
+import { UpcomingList } from "@/components/app/upcoming-list";
+import type { Activity } from "@/components/app/recent-activity";
+import { RecentActivity } from "@/components/app/recent-activity";
+import type { Goal } from "@/components/app/savings-goals";
+import { SavingsGoals } from "@/components/app/savings-goals";
+import type { MonthFlow } from "@/components/app/in-vs-out";
+import { InVsOut } from "@/components/app/in-vs-out";
+import type { StatTileProps } from "@/components/app/stat-tile";
+import { StatTile } from "@/components/app/stat-tile";
+import { Amount } from "@/components/ui/amount";
 import { useCurrency } from "@/providers/currency-provider";
 import { usePrivacy } from "@/providers/privacy-provider";
 
@@ -17,20 +23,57 @@ const savedPerMonth = [7420000, 8150000, 9030000, 8640000, 10310000, 11470000, 1
 
 const last = (series: number[]) => series[series.length - 1];
 
-const accounts: Account[] = [
-    { id: "momo", name: "MTN MoMo", kind: "Mobile money", balance: 684000, updated: "Updated today", theme: "blue" },
-    { id: "equity", name: "Equity Bank", kind: "Current", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
-    { id: "savings", name: "Laptop fund", kind: "Savings", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
-    { id: "cash", name: "Cash", kind: "Wallet", balance: 4000, updated: "Updated today", theme: "plum" },
-];
+
+/** Relative to today so the list never goes stale while this is placeholder data. */
+const inDays = (days: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date;
+};
 
 const upcoming: Commitment[] = [
-    { id: "netflix", name: "Netflix", due: "Today", amount: 18000, pressure: "ok" },
-    { id: "rent", name: "Rent", due: "Tomorrow", amount: 450000, pressure: "over" },
-    { id: "data", name: "Phone bundle", due: "Fri 31", amount: 25000, pressure: "ok" },
-    { id: "school", name: "School fees", due: "Nov 3", amount: 180000, pressure: "tight" },
-    { id: "gym", name: "Gym", due: "Nov 5", amount: 30000, pressure: "ok" },
-    { id: "insurance", name: "Insurance", due: "Nov 12", amount: 64000, pressure: "ok" },
+    { id: "netflix", name: "Netflix", due: inDays(0), amount: 18000, pressure: "ok" },
+    { id: "rent", name: "Rent", due: inDays(1), amount: 450000, pressure: "over" },
+    { id: "data", name: "Phone bundle", due: inDays(8), amount: 25000, pressure: "ok" },
+    { id: "school", name: "School fees", due: inDays(11), amount: 180000, pressure: "tight" },
+    { id: "gym", name: "Gym", due: inDays(13), amount: 30000, pressure: "ok" },
+    { id: "insurance", name: "Insurance", due: inDays(20), amount: 64000, pressure: "ok" },
+];
+
+/** Six months back, so the labels stay correct whenever this is viewed. */
+const monthsAgo = (count: number) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - count);
+    return date;
+};
+
+const goals: Goal[] = [
+    { id: "laptop", name: "Laptop", saved: 168000, target: 420000, startedAt: monthsAgo(4) },
+    { id: "emergency", name: "Emergency fund", saved: 744000, target: 1200000, startedAt: monthsAgo(14) },
+    { id: "trip", name: "Trip home", saved: 62000, target: 400000, startedAt: monthsAgo(1) },
+];
+
+const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000);
+
+const activity: Activity[] = [
+    { id: "a1", kind: "balance", name: "Balance updated", account: "MTN MoMo", note: "Checked after lunch", at: hoursAgo(2), amount: 684000, balanceAfter: 684000 },
+    { id: "a2", kind: "expense", name: "Groceries", account: "Cash", note: "Weekly shop", at: hoursAgo(20), amount: 12400, balanceAfter: 4000 },
+    { id: "a3", kind: "expense", name: "Airtime", account: "MTN MoMo", at: hoursAgo(26), amount: 2000, balanceAfter: 696400 },
+    { id: "a4", kind: "income", name: "Client payment", account: "Equity Bank", note: "Invoice #114", at: hoursAgo(50), amount: 320000, balanceAfter: 612000 },
+    { id: "a5", kind: "expense", name: "Transport", account: "MTN MoMo", at: hoursAgo(74), amount: 4500, balanceAfter: 698400 },
+    { id: "a6", kind: "balance", name: "Balance updated", account: "Equity Bank", at: hoursAgo(96), amount: 612000, balanceAfter: 612000 },
+    { id: "a7", kind: "expense", name: "Rent", account: "Equity Bank", note: "October", at: hoursAgo(120), amount: 450000, balanceAfter: 292000 },
+    { id: "a8", kind: "income", name: "Refund", account: "Cash", note: "Returned headphones", at: hoursAgo(144), amount: 18000, balanceAfter: 16400 },
+];
+
+const flows: MonthFlow[] = [
+    { month: monthsAgo(5), in: 980000, out: 812000 },
+    { month: monthsAgo(4), in: 1040000, out: 1105000 },
+    { month: monthsAgo(3), in: 960000, out: 744000 },
+    { month: monthsAgo(2), in: 1180000, out: 905000 },
+    { month: monthsAgo(1), in: 1020000, out: 1240000 },
+    { month: monthsAgo(0), in: 1310000, out: 868000 },
 ];
 
 export const DashboardPage = () => {
@@ -42,7 +85,7 @@ export const DashboardPage = () => {
         () => [
             {
                 label: "Safe to spend",
-                value: <Amount value={last(safeToSpend)} />,
+                value: <Amount value={last(safeToSpend)} compactSymbol />,
                 delta: 12,
                 deltaSuffix: "%",
                 tone: "aqua",
@@ -52,7 +95,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Spent this week",
-                value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} />,
+                value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} compactSymbol />,
                 delta: -8,
                 deltaSuffix: "%",
                 tone: "blue",
@@ -62,7 +105,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Total balance",
-                value: <Amount value={last(totalBalance)} />,
+                value: <Amount value={last(totalBalance)} compactSymbol />,
                 delta: -4,
                 deltaSuffix: "%",
                 tone: "yellow",
@@ -72,7 +115,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Saved this month",
-                value: <Amount value={last(savedPerMonth)} />,
+                value: <Amount value={last(savedPerMonth)} compactSymbol />,
                 delta: 6,
                 deltaSuffix: "%",
                 tone: "magenta",
@@ -85,7 +128,8 @@ export const DashboardPage = () => {
     );
 
     return (
-        <section
+        <div className="flex flex-col gap-1.5 md:gap-2">
+            <section
             aria-label="Overview"
             className="grid gap-1.5 md:grid-cols-2 md:gap-2 lg:min-h-[27rem] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1.1fr)_minmax(0,0.8fr)]"
         >
@@ -101,6 +145,16 @@ export const DashboardPage = () => {
 
             {/* Right — same width as the left column, full height */}
             <UpcomingList items={upcoming} className="min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />
-        </section>
+            </section>
+
+            <section aria-label="Outlook" className="grid gap-1.5 md:gap-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+                <InVsOut months={flows} className="min-h-72" />
+                <SavingsGoals goals={goals} />
+            </section>
+
+            <section aria-label="Activity">
+                <RecentActivity items={activity} />
+            </section>
+        </div>
     );
 };
