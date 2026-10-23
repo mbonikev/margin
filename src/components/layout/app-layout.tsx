@@ -1,6 +1,6 @@
 import { HiOutlineArrowPath, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineFlag, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { NavLink, Outlet, useLocation } from "react-router";
+import { motion, useReducedMotion } from "motion/react";
+import { NavLink, Outlet } from "react-router";
 import { AccountPopover } from "@/components/application/account/account-popover";
 import { CurrencySelect } from "@/components/application/currency/currency-select";
 import { PrivacyToggle } from "@/components/application/privacy/privacy-toggle";
@@ -67,8 +67,6 @@ const NavLinks = ({ layoutId }: { layoutId: string }) => {
 };
 
 export const AppLayout = () => {
-    const location = useLocation();
-    const reduceMotion = useReducedMotion();
 
     return (
         <div className="min-h-screen bg-secondary">
@@ -135,17 +133,7 @@ export const AppLayout = () => {
             </header>
 
             <main className="mx-auto w-full max-w-[88rem] px-4 pb-28 md:px-8 md:pb-16">
-                <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                        key={location.pathname}
-                        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
-                    >
-                        <Outlet />
-                    </motion.div>
-                </AnimatePresence>
+                <Outlet />
             </main>
 
             <nav
