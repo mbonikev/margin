@@ -65,13 +65,19 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
         const node = scroller.current;
         if (!node) return;
 
-        const middle = node.scrollLeft + node.clientWidth / 2;
+        // Measured against the scroller's own rect: offsetLeft is relative to the
+        // nearest positioned ancestor, which is not this element.
+        const viewport = node.getBoundingClientRect();
+        const middle = viewport.left + viewport.width / 2;
+
         let nearest = accounts[0].id;
         let best = Infinity;
 
         for (const child of node.children) {
             const slide = child as HTMLElement;
-            const distance = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - middle);
+            const box = slide.getBoundingClientRect();
+            const distance = Math.abs(box.left + box.width / 2 - middle);
+
             if (distance < best) {
                 best = distance;
                 nearest = slide.dataset.account ?? nearest;
