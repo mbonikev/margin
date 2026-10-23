@@ -44,7 +44,7 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
 
                             {/* Saved leads, target recedes — they are not equal facts. */}
                             <p className="shrink-0 text-xs text-quaternary">
-                                <Amount value={goal.saved} hideSymbol className="font-semibold text-secondary" />
+                                <Amount value={goal.saved} className="font-semibold text-secondary" />
                                 <span className="mx-1">of</span>
                                 <Amount value={goal.target} hideSymbol />
                             </p>
@@ -59,7 +59,7 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
 
                         <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-xs text-tertiary">
                             <span>
-                                <Amount value={Math.max(0, goal.target - goal.saved)} hideSymbol /> to go
+                                <Amount value={Math.max(0, goal.target - goal.saved)} /> to go
                             </span>
                             <span className="text-quaternary">·</span>
                             <span className="text-quaternary" title={`Started ${sinceFormat.format(goal.startedAt)}`}>
