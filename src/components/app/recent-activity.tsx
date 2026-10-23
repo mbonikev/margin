@@ -18,6 +18,10 @@ export interface Activity {
     kind: ActivityKind;
     name: string;
     account: string;
+    /** Free note the user attached when recording it. */
+    note?: string;
+    /** That account's balance immediately after this entry, in the base currency. */
+    balanceAfter?: number;
     /** A real timestamp — every column below is derived from it. */
     at: Date;
     /** Amount in the base currency. */
@@ -49,20 +53,26 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
             <div className="-mx-2 overflow-x-auto">
                 <table className="w-full border-separate border-spacing-0 text-left">
                     <thead>
-                        <tr className="text-[11px] font-medium text-quaternary">
-                            <th scope="col" className="px-2 pb-2 font-medium">
+                        <tr className="text-xs font-medium text-quaternary">
+                            <th scope="col" className="px-2.5 pb-2.5 font-medium">
                                 Activity
                             </th>
-                            <th scope="col" className="hidden px-2 pb-2 font-medium sm:table-cell">
+                            <th scope="col" className="hidden px-2.5 pb-2.5 font-medium sm:table-cell">
                                 Type
                             </th>
-                            <th scope="col" className="hidden px-2 pb-2 font-medium md:table-cell">
+                            <th scope="col" className="hidden px-2.5 pb-2.5 font-medium md:table-cell">
                                 Account
                             </th>
-                            <th scope="col" className="px-2 pb-2 font-medium">
+                            <th scope="col" className="hidden px-2.5 pb-2.5 font-medium xl:table-cell">
+                                Note
+                            </th>
+                            <th scope="col" className="px-2.5 pb-2.5 font-medium">
                                 When
                             </th>
-                            <th scope="col" className="px-2 pb-2 text-right font-medium">
+                            <th scope="col" className="hidden px-2.5 pb-2.5 text-right font-medium lg:table-cell">
+                                Balance after
+                            </th>
+                            <th scope="col" className="px-2.5 pb-2.5 text-right font-medium">
                                 Amount
                             </th>
                         </tr>
@@ -75,28 +85,36 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
 
                             return (
                                 <tr key={item.id} className="group cursor-default">
-                                    <td className="rounded-l-xl px-2 py-2 transition duration-100 ease-linear group-hover:bg-secondary">
-                                        <div className="flex items-center gap-2.5">
-                                            <span className={cx("flex size-8 shrink-0 items-center justify-center rounded-full", kind.chip)}>
-                                                <Icon className="size-4" />
+                                    <td className="rounded-l-xl px-2.5 py-2.5 transition duration-100 ease-linear group-hover:bg-secondary">
+                                        <div className="flex items-center gap-3">
+                                            <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-full", kind.chip)}>
+                                                <Icon className="size-4.5" />
                                             </span>
                                             <span className="truncate text-sm font-medium text-primary">{item.name}</span>
                                         </div>
                                     </td>
 
-                                    <td className="hidden px-2 py-2 text-xs text-tertiary transition duration-100 ease-linear group-hover:bg-secondary sm:table-cell">
+                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary transition duration-100 ease-linear group-hover:bg-secondary sm:table-cell">
                                         {kind.label}
                                     </td>
 
-                                    <td className="hidden px-2 py-2 text-xs text-tertiary transition duration-100 ease-linear group-hover:bg-secondary md:table-cell">
+                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary transition duration-100 ease-linear group-hover:bg-secondary md:table-cell">
                                         {item.account}
                                     </td>
 
-                                    <td className="px-2 py-2 text-xs whitespace-nowrap text-tertiary transition duration-100 ease-linear group-hover:bg-secondary">
+                                    <td className="hidden max-w-48 truncate px-2.5 py-2.5 text-sm text-quaternary transition duration-100 ease-linear group-hover:bg-secondary xl:table-cell">
+                                        {item.note ?? "—"}
+                                    </td>
+
+                                    <td className="px-2.5 py-2.5 text-sm whitespace-nowrap text-tertiary transition duration-100 ease-linear group-hover:bg-secondary">
                                         {whenLabel(item.at)} · {timeFormat.format(item.at)}
                                     </td>
 
-                                    <td className={cx("rounded-r-xl px-2 py-2 text-right text-sm font-semibold whitespace-nowrap transition duration-100 ease-linear group-hover:bg-secondary", kind.amount)}>
+                                    <td className="hidden px-2.5 py-2.5 text-right text-sm whitespace-nowrap text-tertiary transition duration-100 ease-linear group-hover:bg-secondary lg:table-cell">
+                                        {item.balanceAfter === undefined ? "—" : <Amount value={item.balanceAfter} hideSymbol />}
+                                    </td>
+
+                                    <td className={cx("rounded-r-xl px-2.5 py-2.5 text-right text-sm font-semibold whitespace-nowrap transition duration-100 ease-linear group-hover:bg-secondary", kind.amount)}>
                                         {kind.sign}
                                         <Amount value={item.amount} />
                                     </td>

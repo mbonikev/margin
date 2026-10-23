@@ -63,14 +63,14 @@ const goals: Goal[] = [
 const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000);
 
 const activity: Activity[] = [
-    { id: "a1", kind: "balance", name: "Balance updated", account: "MTN MoMo", at: hoursAgo(2), amount: 684000 },
-    { id: "a2", kind: "expense", name: "Groceries", account: "Cash", at: hoursAgo(20), amount: 12400 },
-    { id: "a3", kind: "expense", name: "Airtime", account: "MTN MoMo", at: hoursAgo(26), amount: 2000 },
-    { id: "a4", kind: "income", name: "Client payment", account: "Equity Bank", at: hoursAgo(50), amount: 320000 },
-    { id: "a5", kind: "expense", name: "Transport", account: "MTN MoMo", at: hoursAgo(74), amount: 4500 },
-    { id: "a6", kind: "balance", name: "Balance updated", account: "Equity Bank", at: hoursAgo(96), amount: 612000 },
-    { id: "a7", kind: "expense", name: "Rent", account: "Equity Bank", at: hoursAgo(120), amount: 450000 },
-    { id: "a8", kind: "income", name: "Refund", account: "Cash", at: hoursAgo(144), amount: 18000 },
+    { id: "a1", kind: "balance", name: "Balance updated", account: "MTN MoMo", note: "Checked after lunch", at: hoursAgo(2), amount: 684000, balanceAfter: 684000 },
+    { id: "a2", kind: "expense", name: "Groceries", account: "Cash", note: "Weekly shop", at: hoursAgo(20), amount: 12400, balanceAfter: 4000 },
+    { id: "a3", kind: "expense", name: "Airtime", account: "MTN MoMo", at: hoursAgo(26), amount: 2000, balanceAfter: 696400 },
+    { id: "a4", kind: "income", name: "Client payment", account: "Equity Bank", note: "Invoice #114", at: hoursAgo(50), amount: 320000, balanceAfter: 612000 },
+    { id: "a5", kind: "expense", name: "Transport", account: "MTN MoMo", at: hoursAgo(74), amount: 4500, balanceAfter: 698400 },
+    { id: "a6", kind: "balance", name: "Balance updated", account: "Equity Bank", at: hoursAgo(96), amount: 612000, balanceAfter: 612000 },
+    { id: "a7", kind: "expense", name: "Rent", account: "Equity Bank", note: "October", at: hoursAgo(120), amount: 450000, balanceAfter: 292000 },
+    { id: "a8", kind: "income", name: "Refund", account: "Cash", note: "Returned headphones", at: hoursAgo(144), amount: 18000, balanceAfter: 16400 },
 ];
 
 const flows: MonthFlow[] = [
