@@ -48,19 +48,23 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
 
             {/* Fixed aspect on the frame, card absolutely placed inside it — so the
                 outgoing and incoming cards overlap without the panel resizing. */}
-            <div className="relative mx-auto aspect-[1.586/1] w-full max-w-sm flex-1">
-                <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                        key={active.id}
-                        initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -14, scale: 0.97 }}
-                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute inset-0"
-                    >
-                        <AccountCard account={active} className="h-full" />
-                    </motion.div>
-                </AnimatePresence>
+            <div className="flex flex-1 items-center justify-center">
+                {/* The frame owns the aspect ratio. It must not be a flex child
+                    itself — flex-1 would stretch it and override the ratio. */}
+                <div className="relative aspect-[1.586/1] w-full max-w-sm">
+                    <AnimatePresence mode="wait" initial={false}>
+                        <motion.div
+                            key={active.id}
+                            initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.97 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -14, scale: 0.97 }}
+                            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                            className="absolute inset-0"
+                        >
+                            <AccountCard account={active} className="h-full" />
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
