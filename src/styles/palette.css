@@ -226,7 +226,7 @@
 
     /* Translucent page background for the sticky header. A `/75` modifier bakes
        the light-mode value into a static colour, so it would not follow dark. */
-    --color-bg-header: color-mix(in oklab, var(--color-bg-secondary) 75%, transparent);
+    --color-bg-header: color-mix(in oklab, var(--color-bg-secondary) 92%, transparent);
     --background-color-header: var(--color-bg-header);
 }
 
