@@ -17,10 +17,10 @@ const savedPerMonth = [7420000, 8150000, 9030000, 8640000, 10310000, 11470000, 1
 const last = (series: number[]) => series[series.length - 1];
 
 const accounts: Account[] = [
-    { id: "momo", name: "MTN MoMo", kind: "Mobile money", tail: "2640", balance: 684000, updated: "Updated today", theme: "blue" },
-    { id: "equity", name: "Equity Bank", kind: "Current", tail: "9152", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
-    { id: "savings", name: "Laptop fund", kind: "Savings", tail: "0471", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
-    { id: "cash", name: "Cash", kind: "Wallet", tail: "7318", balance: 4000, updated: "Updated today", theme: "plum" },
+    { id: "momo", name: "MTN MoMo", kind: "Mobile money", balance: 684000, updated: "Updated today", theme: "blue" },
+    { id: "equity", name: "Equity Bank", kind: "Current", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
+    { id: "savings", name: "Laptop fund", kind: "Savings", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
+    { id: "cash", name: "Cash", kind: "Wallet", balance: 4000, updated: "Updated today", theme: "plum" },
 ];
 
 export const DashboardPage = () => {
