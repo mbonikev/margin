@@ -57,7 +57,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                     itself — flex-1 would stretch it and override the ratio. */}
                 {/* Fixed height rather than an aspect ratio: the card must not change
                     height as the column resizes. Width stays fluid up to the cap. */}
-                <div className="relative h-60 w-full">
+                <div className="relative h-54 w-full">
                     <AnimatePresence mode="wait" initial={false}>
                         <motion.div
                             key={active.id}
