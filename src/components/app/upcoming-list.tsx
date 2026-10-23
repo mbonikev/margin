@@ -6,13 +6,6 @@ import { cx } from "@/utils/cx";
 /** How comfortably the balance covers this one. */
 export type Pressure = "ok" | "tight" | "over";
 
-/** Most rows stay neutral on purpose — only the ones that need attention carry colour. */
-const pressureChip: Record<Pressure, string> = {
-    ok: "bg-brand-primary text-brand-secondary",
-    tight: "bg-tile-yellow-tint text-tile-yellow-ink",
-    over: "bg-tile-magenta-tint text-tile-magenta-ink",
-};
-
 export interface Commitment {
     id: string;
     name: string;
@@ -51,7 +44,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
                             className="no-press flex w-full items-center gap-2.5 rounded-2xl px-2 py-1.5 text-left transition duration-100 ease-linear hover:bg-secondary"
                         >
                             {/* A calendar tile reads faster down a column than a row of pills. */}
-                            <span className={cx("flex size-10 shrink-0 flex-col items-center justify-center rounded-xl leading-none", pressureChip[item.pressure])}>
+                            <span className="flex size-10 shrink-0 flex-col items-center justify-center rounded-xl bg-brand-primary leading-none text-brand-secondary">
                                 <span className="text-sm font-semibold">{dayFormat.format(item.due)}</span>
                                 <span className="mt-0.5 text-[9px] font-medium uppercase opacity-70">{monthFormat.format(item.due)}</span>
                             </span>
