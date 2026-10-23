@@ -46,7 +46,7 @@ export const ProfileMenu = () => {
         >
             <Dialog aria-label="Account" className="outline-hidden">
                 <div className="flex flex-col gap-0.5 p-1">
-                    <PanelItem icon={HiOutlineUser} label="View profile" />
+                    <PanelItem icon={HiOutlineUser} label="View profile" onPress={() => void navigate("/profile")} />
                     <PanelItem icon={HiOutlineCog6Tooth} label="Settings" onPress={() => void navigate("/settings")} />
                 </div>
 
@@ -57,7 +57,7 @@ export const ProfileMenu = () => {
                 <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
 
                 <div className="p-1">
-                    <PanelItem icon={HiOutlineArrowRightOnRectangle} label="Sign out" />
+                    <PanelItem icon={HiOutlineArrowRightOnRectangle} label="Sign out" onPress={() => void navigate("/signin")} />
                 </div>
             </Dialog>
         </Popover>
