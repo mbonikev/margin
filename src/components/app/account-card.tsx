@@ -181,7 +181,9 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
         </AnimatePresence>
 
         <div className="relative flex items-end justify-between gap-3">
-            <div className="min-w-0">
+            {/* flex-1, not just min-w-0: without it this block shrinks below its
+                content to make room for the date, and the balance truncates. */}
+            <div className="min-w-0 flex-1">
                 <button
                     type="button"
                     onClick={() => copy("Account name", account.name)}
