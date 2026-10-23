@@ -17,7 +17,7 @@ const buildBubbles = (seed: number) =>
         return {
             id: index,
             left: 6 + ((index * 13 + Math.floor(random * 40)) % 84),
-            size: 4 + Math.round(random * 5),
+            size: 3 + Math.round(random * 3),
             delay: (random * 3.4).toFixed(2),
             duration: (2.8 + random * 2.6).toFixed(2),
         };
@@ -33,9 +33,9 @@ export const Progress = ({ value, label, className }: ProgressProps) => {
             aria-valuenow={percent}
             aria-valuemin={0}
             aria-valuemax={100}
-            className={cx("relative h-9 w-full overflow-hidden rounded-full bg-tertiary", className)}
+            className={cx("relative h-7 w-full overflow-hidden rounded-full bg-tertiary", className)}
         >
-            <div style={{ width: `${percent}%` }} className="absolute inset-y-0 left-0 overflow-hidden rounded-full bg-brand transition-[width] duration-500 ease-out">
+            <div style={{ width: `${percent}%` }} className="absolute inset-y-0 left-0 overflow-hidden rounded-l-full rounded-r-md bg-brand transition-[width] duration-500 ease-out">
                 {/* The liquid: a slow highlight drifting across the fill. */}
                 <span
                     aria-hidden="true"
