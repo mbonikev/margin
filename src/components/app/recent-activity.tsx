@@ -7,10 +7,12 @@ import { cx } from "@/utils/cx";
 
 export type ActivityKind = "balance" | "expense" | "income";
 
+/* Solid chips carry the vibrancy; the amount text stays at a step that clears
+   4.5:1, since a vivid green or red is unreadable at 14px on white. */
 const kinds: Record<ActivityKind, { icon: FC<{ className?: string }>; chip: string; sign: string; amount: string; label: string }> = {
-    balance: { icon: HiOutlineScale, chip: "bg-secondary text-tertiary", sign: "", amount: "text-primary", label: "Balance" },
-    expense: { icon: HiOutlineArrowTrendingDown, chip: "bg-tile-magenta-tint text-tile-magenta-ink", sign: "−", amount: "text-tile-magenta-ink", label: "Expense" },
-    income: { icon: HiOutlineArrowTrendingUp, chip: "bg-tile-aqua-tint text-tile-aqua-ink", sign: "+", amount: "text-tile-aqua-ink", label: "Income" },
+    balance: { icon: HiOutlineScale, chip: "bg-tile-blue text-white", sign: "", amount: "text-tile-blue-ink", label: "Balance" },
+    expense: { icon: HiOutlineArrowTrendingDown, chip: "bg-negative text-white", sign: "−", amount: "text-negative-ink", label: "Expense" },
+    income: { icon: HiOutlineArrowTrendingUp, chip: "bg-positive text-white", sign: "+", amount: "text-positive-ink", label: "Income" },
 };
 
 export interface Activity {
@@ -85,7 +87,7 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
 
                             return (
                                 <tr key={item.id} className="group cursor-default">
-                                    <td className="rounded-l-xl px-2.5 py-2.5 transition duration-100 ease-linear group-hover:bg-secondary">
+                                    <td className="rounded-l-full px-4 py-2.5 transition duration-100 ease-linear group-hover:bg-secondary">
                                         <div className="flex items-center gap-3">
                                             <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-full", kind.chip)}>
                                                 <Icon className="size-4.5" />
@@ -114,7 +116,7 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
                                         {item.balanceAfter === undefined ? "—" : <Amount value={item.balanceAfter} hideSymbol />}
                                     </td>
 
-                                    <td className={cx("rounded-r-xl px-2.5 py-2.5 text-right text-sm font-semibold whitespace-nowrap transition duration-100 ease-linear group-hover:bg-secondary", kind.amount)}>
+                                    <td className={cx("rounded-r-full px-4 py-2.5 text-right text-sm font-semibold whitespace-nowrap transition duration-100 ease-linear group-hover:bg-secondary", kind.amount)}>
                                         {kind.sign}
                                         <Amount value={item.amount} />
                                     </td>

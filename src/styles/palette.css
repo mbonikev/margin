@@ -167,6 +167,13 @@
     --color-tile-yellow-tint: color-mix(in oklab, var(--color-tile-yellow) 16%, var(--color-bg-primary));
     --color-tile-magenta-tint: color-mix(in oklab, var(--color-tile-magenta) 16%, var(--color-bg-primary));
 
+    /* Readable text steps for the semantic colours, same pattern as the tiles.
+       78% keeps them vivid while clearing 4.5:1 on a white surface. */
+    --color-positive-ink: color-mix(in oklab, var(--color-positive) 78%, black);
+    --color-negative-ink: color-mix(in oklab, var(--color-negative) 78%, black);
+    --color-positive-tint: color-mix(in oklab, var(--color-positive) 14%, var(--color-bg-primary));
+    --color-negative-tint: color-mix(in oklab, var(--color-negative) 14%, var(--color-bg-primary));
+
     --color-tile-aqua-ink: color-mix(in oklab, var(--color-tile-aqua) 74%, black);
     --color-tile-blue-ink: color-mix(in oklab, var(--color-tile-blue) 80%, black);
     --color-tile-yellow-ink: color-mix(in oklab, var(--color-tile-yellow) 62%, black);
@@ -179,6 +186,9 @@
         --color-tile-blue: #3987e5;
         --color-tile-yellow: #c98500;
         --color-tile-magenta: #d55181;
+
+        --color-positive-ink: color-mix(in oklab, var(--color-positive) 72%, white);
+        --color-negative-ink: color-mix(in oklab, var(--color-negative) 72%, white);
 
         --color-tile-aqua-ink: color-mix(in oklab, var(--color-tile-aqua) 70%, white);
         --color-tile-blue-ink: color-mix(in oklab, var(--color-tile-blue) 72%, white);
