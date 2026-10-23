@@ -131,3 +131,84 @@
         --color-text-brand-secondary: var(--color-brand-300);
     }
 }
+
+/* ============================================================
+   STAT TILE ACCENTS
+   Deliberately NOT derived from --color-brand: these stay put
+   when the user switches accent. Validated as a categorical set
+   against the light and dark chart surfaces.
+   ============================================================ */
+
+@theme {
+    --color-tile-aqua: #1baf7a;
+    --color-tile-blue: #2a78d6;
+    --color-tile-yellow: #eda100;
+    --color-tile-magenta: #e87ba4;
+
+    /* Readable text/icon step of each hue — the mark colours themselves
+       sit below 3:1 on a white surface. */
+    /* Hover state for a bar that is not the current period — the hue, but light. */
+    --color-tile-aqua-soft: color-mix(in oklab, var(--color-tile-aqua) 38%, var(--color-bg-primary));
+    --color-tile-blue-soft: color-mix(in oklab, var(--color-tile-blue) 38%, var(--color-bg-primary));
+    --color-tile-yellow-soft: color-mix(in oklab, var(--color-tile-yellow) 42%, var(--color-bg-primary));
+    --color-tile-magenta-soft: color-mix(in oklab, var(--color-tile-magenta) 42%, var(--color-bg-primary));
+
+    /* Pill backgrounds. Defined as tokens rather than a `/15` alpha utility,
+       because Tailwind bakes that alpha into a static hex at build time and it
+       would not follow the dark-mode overrides below. */
+    --color-tile-aqua-tint: color-mix(in oklab, var(--color-tile-aqua) 14%, var(--color-bg-primary));
+    --color-tile-blue-tint: color-mix(in oklab, var(--color-tile-blue) 14%, var(--color-bg-primary));
+    --color-tile-yellow-tint: color-mix(in oklab, var(--color-tile-yellow) 16%, var(--color-bg-primary));
+    --color-tile-magenta-tint: color-mix(in oklab, var(--color-tile-magenta) 16%, var(--color-bg-primary));
+
+    --color-tile-aqua-ink: color-mix(in oklab, var(--color-tile-aqua) 74%, black);
+    --color-tile-blue-ink: color-mix(in oklab, var(--color-tile-blue) 80%, black);
+    --color-tile-yellow-ink: color-mix(in oklab, var(--color-tile-yellow) 62%, black);
+    --color-tile-magenta-ink: color-mix(in oklab, var(--color-tile-magenta) 66%, black);
+}
+
+@layer base {
+    :root.dark-mode {
+        --color-tile-aqua: #199e70;
+        --color-tile-blue: #3987e5;
+        --color-tile-yellow: #c98500;
+        --color-tile-magenta: #d55181;
+
+        --color-tile-aqua-ink: color-mix(in oklab, var(--color-tile-aqua) 70%, white);
+        --color-tile-blue-ink: color-mix(in oklab, var(--color-tile-blue) 72%, white);
+        --color-tile-yellow-ink: color-mix(in oklab, var(--color-tile-yellow) 72%, white);
+        --color-tile-magenta-ink: color-mix(in oklab, var(--color-tile-magenta) 76%, white);
+    }
+}
+
+/* ============================================================
+   POPOVER SURFACE
+   In light mode a white panel on the grey canvas reads fine on
+   shadow alone. In dark mode cards are already near-black, so a
+   panel sharing their colour disappears — it needs to sit a step
+   lighter than whatever it floats above.
+   ============================================================ */
+
+@theme {
+    --color-bg-popover: var(--color-surface);
+    --color-bg-popover-hover: var(--color-canvas);
+
+    /* The brand tint used *inside* a popover. bg-brand-primary is mixed against
+       the card surface, which is darker than a popover in dark mode — so a hover
+       painted with it comes out darker than the panel it sits on. */
+    --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 10%, var(--color-bg-popover));
+
+    /* Tailwind builds `bg-*` from the --background-color-* namespace, which is
+       how Untitled UI's own bg-primary/bg-secondary utilities exist. */
+    --background-color-popover: var(--color-bg-popover);
+    --background-color-popover-hover: var(--color-bg-popover-hover);
+    --background-color-brand-popover: var(--color-bg-brand-popover);
+}
+
+@layer base {
+    :root.dark-mode {
+        --color-bg-popover: var(--color-neutral-800);
+        --color-bg-popover-hover: var(--color-neutral-700);
+        --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 26%, var(--color-bg-popover));
+    }
+}
