@@ -3,6 +3,13 @@ import type { Account } from "@/components/app/account-card";
 import { AccountHero } from "@/components/app/account-hero";
 import type { Commitment } from "@/components/app/upcoming-list";
 import { UpcomingList } from "@/components/app/upcoming-list";
+import type { Activity } from "@/components/app/recent-activity";
+import { RecentActivity } from "@/components/app/recent-activity";
+import type { Goal } from "@/components/app/savings-goals";
+import { SavingsGoals } from "@/components/app/savings-goals";
+import type { RunwayPoint } from "@/components/app/runway-chart";
+import { RunwayChart } from "@/components/app/runway-chart";
+import { MorningEmail } from "@/components/app/morning-email";
 import type { StatTileProps } from "@/components/app/stat-tile";
 import { StatTile } from "@/components/app/stat-tile";
 import { Amount } from "@/components/ui/amount";
@@ -39,6 +46,26 @@ const upcoming: Commitment[] = [
     { id: "gym", name: "Gym", due: inDays(13), amount: 30000, pressure: "ok" },
     { id: "insurance", name: "Insurance", due: inDays(20), amount: 64000, pressure: "ok" },
 ];
+
+const goals: Goal[] = [
+    { id: "laptop", name: "Laptop", saved: 168000, target: 420000 },
+    { id: "emergency", name: "Emergency fund", saved: 744000, target: 1200000 },
+    { id: "trip", name: "Trip home", saved: 62000, target: 400000 },
+];
+
+const activity: Activity[] = [
+    { id: "a1", kind: "balance", name: "Balance updated", account: "MTN MoMo", when: "2h ago", amount: 684000 },
+    { id: "a2", kind: "expense", name: "Groceries", account: "Cash", when: "Yesterday", amount: 12400 },
+    { id: "a3", kind: "income", name: "Client payment", account: "Equity Bank", when: "2d ago", amount: 320000 },
+    { id: "a4", kind: "expense", name: "Transport", account: "MTN MoMo", when: "3d ago", amount: 4500 },
+];
+
+/** 14 days behind, 16 projected — the crossing is what the card is for. */
+const projection: RunwayPoint[] = Array.from({ length: 31 }, (_, index) => {
+    const day = index - 14;
+    const balance = day <= 0 ? 1_468_000 + day * 9_000 + (index % 3) * 14_000 : Math.max(0, 1_468_000 - day * 92_000);
+    return { day, balance };
+});
 
 export const DashboardPage = () => {
     const { formatWithCode } = useCurrency();
@@ -92,7 +119,8 @@ export const DashboardPage = () => {
     );
 
     return (
-        <section
+        <div className="flex flex-col gap-1.5 md:gap-2">
+            <section
             aria-label="Overview"
             className="grid gap-1.5 md:grid-cols-2 md:gap-2 lg:min-h-[27rem] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1.1fr)_minmax(0,0.8fr)]"
         >
@@ -108,6 +136,17 @@ export const DashboardPage = () => {
 
             {/* Right — same width as the left column, full height */}
             <UpcomingList items={upcoming} className="min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />
-        </section>
+            </section>
+
+            <section aria-label="Outlook" className="grid gap-1.5 md:gap-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+                <RunwayChart points={projection} className="min-h-72" />
+                <SavingsGoals goals={goals} />
+            </section>
+
+            <section aria-label="Activity" className="grid gap-1.5 md:grid-cols-2 md:gap-2">
+                <MorningEmail streak={14} sendsAt="7:00" preview="You've got 48,200 spare. Eight days till payday, eleven days of pace. You're good." />
+                <RecentActivity items={activity} />
+            </section>
+        </div>
     );
 };
