@@ -3,6 +3,7 @@ import { HiOutlineCog6Tooth, HiOutlinePlus, HiOutlineScale } from "react-icons/h
 import type { Account } from "@/components/app/account-card";
 import { AccountCard } from "@/components/app/account-card";
 import { AccountSettingsModal } from "@/components/app/account-detail-modal";
+import { AddAccountModal } from "@/components/app/add-account-modal";
 import { UpdateBalanceModal } from "@/components/app/update-balance-modal";
 import { ActionButton } from "@/components/ui/action-button";
 import { Amount } from "@/components/ui/amount";
@@ -16,6 +17,7 @@ const isStale = (account: Account) => /(\d+)d ago/.test(account.updated) && Numb
 
 export const AccountsPage = () => {
     const [target, setTarget] = useState<{ account: Account; modal: "balance" | "settings" } | null>(null);
+    const [adding, setAdding] = useState(false);
 
     const total = accounts.reduce((sum, account) => sum + account.balance, 0);
     const stale = accounts.filter(isStale);
@@ -45,7 +47,7 @@ export const AccountsPage = () => {
                 <Card className="flex flex-col gap-4">
                     <div className="flex items-center justify-between gap-3">
                         <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Your accounts</h2>
-                        <ActionButton icon={HiOutlinePlus}>Add account</ActionButton>
+                        <ActionButton icon={HiOutlinePlus} onClick={() => setAdding(true)}>Add account</ActionButton>
                     </div>
 
                     <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -72,6 +74,8 @@ export const AccountsPage = () => {
                     </ul>
                 </Card>
             </section>
+
+            <AddAccountModal isOpen={adding} onOpenChange={setAdding} />
 
             {target?.modal === "balance" && (
                 <UpdateBalanceModal isOpen onOpenChange={(open) => !open && setTarget(null)} account={target.account} />
