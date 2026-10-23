@@ -9,7 +9,7 @@ import { usePrivacy } from "@/providers/privacy-provider";
 /** Placeholder figures — swap for real data once the backend exists. */
 const safeToSpend = [32000, 28400, 41200, 36800, 44100, 39500, 48200];
 const spentThisWeek = [5200, 6400, 3900, 4800, 3100, 4600, 3400];
-const daysOfRunway = [18, 17, 15, 16, 14, 12, 11];
+const totalBalance = [1520000, 1495000, 1610000, 1575000, 1540000, 1505000, 1468000];
 const savedPerMonth = [7420000, 8150000, 9030000, 8640000, 10310000, 11470000, 12480000];
 
 const last = (series: number[]) => series[series.length - 1];
@@ -42,13 +42,14 @@ export const DashboardPage = () => {
                 formatBar: formatBarAmount,
             },
             {
-                label: "Days of runway",
-                value: String(last(daysOfRunway)),
-                delta: -3,
+                label: "Total balance",
+                value: <Amount value={last(totalBalance)} />,
+                delta: -4,
+                deltaSuffix: "%",
                 tone: "yellow",
                 period: "days",
-                bars: daysOfRunway,
-                formatBar: (value) => `${value} days`,
+                bars: totalBalance,
+                formatBar: formatBarAmount,
             },
             {
                 label: "Saved this month",
