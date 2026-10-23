@@ -4,6 +4,7 @@ import { Button as AriaButton } from "react-aria-components";
 import { HiOutlineChevronDown, HiOutlineClock, HiOutlineCog6Tooth, HiOutlineScale } from "react-icons/hi2";
 import type { Account } from "@/components/app/account-card";
 import { AccountCard } from "@/components/app/account-card";
+import { AccountHistoryModal, AccountSettingsModal } from "@/components/app/account-detail-modal";
 import { UpdateBalanceModal } from "@/components/app/update-balance-modal";
 import { ActionButton } from "@/components/ui/action-button";
 import { Card } from "@/components/ui/card";
@@ -18,7 +19,7 @@ const actions = [
 
 export const AccountHero = ({ accounts, className }: { accounts: Account[]; className?: string }) => {
     const [activeId, setActiveId] = useState(accounts[0].id);
-    const [updating, setUpdating] = useState(false);
+    const [openModal, setOpenModal] = useState<"balance" | "history" | "settings" | null>(null);
     const scroller = useRef<HTMLDivElement>(null);
     const active = accounts.find((item) => item.id === activeId) ?? accounts[0];
 
@@ -180,13 +181,15 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
 
             <div className="flex flex-wrap items-center gap-1.5">
                 {actions.map((action) => (
-                    <ActionButton key={action.id} icon={action.icon} onClick={action.id === "balance" ? () => setUpdating(true) : undefined}>
+                    <ActionButton key={action.id} icon={action.icon} onClick={() => setOpenModal(action.id as "balance" | "history" | "settings")}>
                         {action.label}
                     </ActionButton>
                 ))}
             </div>
 
-            <UpdateBalanceModal isOpen={updating} onOpenChange={setUpdating} account={active} />
+            <UpdateBalanceModal isOpen={openModal === "balance"} onOpenChange={(open) => setOpenModal(open ? "balance" : null)} account={active} />
+            <AccountHistoryModal isOpen={openModal === "history"} onOpenChange={(open) => setOpenModal(open ? "history" : null)} account={active} />
+            <AccountSettingsModal isOpen={openModal === "settings"} onOpenChange={(open) => setOpenModal(open ? "settings" : null)} account={active} />
         </Card>
     );
 };

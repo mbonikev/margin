@@ -1,6 +1,11 @@
 import { HiOutlineArrowPath, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineFlag, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
+import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { NavLink, Outlet } from "react-router";
+import type { RecordKind } from "@/components/app/record-modal";
+import { RecordModal } from "@/components/app/record-modal";
+import { UpdateBalanceModal } from "@/components/app/update-balance-modal";
+import { accounts } from "@/data/accounts";
 import { ProfileMenu } from "@/components/app/profile-menu";
 import { CurrencySelect } from "@/components/app/currency-select";
 import { PrivacyToggle } from "@/components/app/privacy-toggle";
@@ -67,6 +72,8 @@ const NavLinks = ({ layoutId }: { layoutId: string }) => {
 };
 
 export const AppLayout = () => {
+    const [recording, setRecording] = useState<RecordKind | null>(null);
+    const [updatingBalance, setUpdatingBalance] = useState(false);
 
     return (
         <div className="min-h-screen overflow-x-clip bg-secondary">
@@ -96,7 +103,12 @@ export const AppLayout = () => {
                         </Button>
 
                         <Dropdown.Popover placement="bottom right">
-                            <Dropdown.Menu>
+                            <Dropdown.Menu
+                                onAction={(key) => {
+                                    if (key === "balance") setUpdatingBalance(true);
+                                    else setRecording(key as RecordKind);
+                                }}
+                            >
                                 {recordActions.map((type) => (
                                     <Dropdown.Item key={type.id} id={type.id} label={type.label} icon={type.icon} />
                                 ))}
@@ -151,6 +163,14 @@ export const AppLayout = () => {
                     <NavLinks layoutId="nav-pill-bottom" />
                 </div>
             </nav>
+
+            <UpdateBalanceModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} account={accounts[0]} />
+            <RecordModal
+                kind={recording ?? "expense"}
+                isOpen={recording !== null}
+                onOpenChange={(open) => !open && setRecording(null)}
+                accounts={accounts}
+            />
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import type { Account } from "@/components/app/account-card";
 import { AccountHero } from "@/components/app/account-hero";
+import { accounts } from "@/data/accounts";
 import type { Commitment } from "@/components/app/upcoming-list";
 import { UpcomingList } from "@/components/app/upcoming-list";
 import type { Activity } from "@/components/app/recent-activity";
@@ -23,12 +23,6 @@ const savedPerMonth = [7420000, 8150000, 9030000, 8640000, 10310000, 11470000, 1
 
 const last = (series: number[]) => series[series.length - 1];
 
-const accounts: Account[] = [
-    { id: "momo", name: "MTN MoMo", kind: "Mobile money", balance: 684000, updated: "Updated today", theme: "blue" },
-    { id: "equity", name: "Equity Bank", kind: "Current", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
-    { id: "savings", name: "Laptop fund", kind: "Savings", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
-    { id: "cash", name: "Cash", kind: "Wallet", balance: 4000, updated: "Updated today", theme: "plum" },
-];
 
 /** Relative to today so the list never goes stale while this is placeholder data. */
 const inDays = (days: number) => {

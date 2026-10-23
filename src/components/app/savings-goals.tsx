@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { HiOutlinePlus } from "react-icons/hi2";
 import { Amount } from "@/components/ui/amount";
+import { RecordModal } from "@/components/app/record-modal";
+import { accounts } from "@/data/accounts";
 import { ActionButton } from "@/components/ui/action-button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
@@ -25,12 +28,15 @@ const elapsed = (from: Date) => {
     return `${Math.floor(months / 12)}y ${months % 12}m in`;
 };
 
-export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: string }) => (
+export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: string }) => {
+    const [creating, setCreating] = useState(false);
+
+    return (
     <Card className={cx("flex flex-col gap-4", className)}>
         <div className="flex items-center justify-between gap-3">
             <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Goals</h2>
 
-<ActionButton icon={HiOutlinePlus}>New goal</ActionButton>
+<ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>New goal</ActionButton>
         </div>
 
         <ul className="flex flex-col gap-4">
@@ -70,5 +76,7 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
                 );
             })}
         </ul>
+        <RecordModal kind="goal" isOpen={creating} onOpenChange={setCreating} accounts={accounts} />
     </Card>
-);
+    );
+};
