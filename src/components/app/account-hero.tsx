@@ -31,8 +31,6 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
 
         drag.current = { active: true, startX: event.clientX, startScroll: node.scrollLeft, moved: false };
         setDragging(true);
-        // Keeps events coming even if the pointer leaves a child mid-drag.
-        event.currentTarget.setPointerCapture(event.pointerId);
     }, []);
 
     const onPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
@@ -40,8 +38,16 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
         if (!node || !drag.current.active) return;
 
         const delta = event.clientX - drag.current.startX;
-        if (Math.abs(delta) > 4) drag.current.moved = true;
-        node.scrollLeft = drag.current.startScroll - delta;
+
+        if (!drag.current.moved && Math.abs(delta) > 4) {
+            drag.current.moved = true;
+            // Captured only once this is genuinely a drag. Capturing on pointerdown
+            // would retarget the click to this element and the copy buttons inside
+            // the card would never receive it.
+            event.currentTarget.setPointerCapture(event.pointerId);
+        }
+
+        if (drag.current.moved) node.scrollLeft = drag.current.startScroll - delta;
     }, []);
 
     const endDrag = useCallback((event?: ReactPointerEvent<HTMLDivElement>) => {
