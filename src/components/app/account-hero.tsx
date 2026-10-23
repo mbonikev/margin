@@ -101,7 +101,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                             onClick={() => scrollTo(account.id)}
                             className={cx(
                                 "h-1.5 rounded-full transition-all duration-200 ease-out",
-                                account.id === active.id ? "w-5 bg-brand" : "w-1.5 bg-tertiary hover:bg-ink-faint",
+                                account.id === active.id ? "w-5 bg-brand" : "w-1.5 bg-tertiary hover:bg-brand",
                             )}
                         />
                     ))}
