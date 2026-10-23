@@ -68,10 +68,11 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
     return (
         <Card className={cx("flex flex-col justify-between gap-3", className)}>
             <div>
-                <p className="truncate text-xs font-medium text-tertiary md:text-sm">{label}</p>
-
-                <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1">
-                    <span className="text-2xl font-semibold tracking-tight tabular-nums text-primary md:text-3xl">{value}</span>
+                {/* The delta rides the label row, not the figure's. Beside the
+                    number it wraps on long values — and a masked figure is a
+                    different width again — which changed the card's height. */}
+                <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-xs font-medium text-tertiary md:text-sm">{label}</p>
 
                     {delta !== undefined && (
                         <span className={cx("flex h-5 shrink-0 items-center gap-0.5 rounded-full px-1.5 text-xs font-semibold tabular-nums", palette.pill)}>
@@ -82,6 +83,8 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
                         </span>
                     )}
                 </div>
+
+                <div className="mt-1 truncate text-2xl font-semibold tracking-tight tabular-nums text-primary md:text-3xl">{value}</div>
             </div>
 
             <div>
