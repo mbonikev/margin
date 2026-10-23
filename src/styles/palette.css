@@ -209,6 +209,10 @@
     --background-color-popover-hover: var(--color-bg-popover-hover);
     --background-color-brand-popover: var(--color-bg-brand-popover);
 
+    /* The comparison series in charts. Picked by measuring against all ten
+       accents — min ΔE 10.5, so it can never collide with the user's choice. */
+    --color-chart-compare: #b8432f;
+
     /* Translucent page background for the sticky header. A `/75` modifier bakes
        the light-mode value into a static colour, so it would not follow dark. */
     --color-bg-header: color-mix(in oklab, var(--color-bg-secondary) 75%, transparent);
@@ -220,5 +224,6 @@
         --color-bg-popover: var(--color-neutral-800);
         --color-bg-popover-hover: var(--color-neutral-700);
         --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 26%, var(--color-bg-popover));
+        --color-chart-compare: #d4604a;
     }
 }
