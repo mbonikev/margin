@@ -1,15 +1,17 @@
 import { HiOutlineArrowRight } from "react-icons/hi2";
 import { Amount } from "@/components/base/amount/amount";
 import { Card } from "@/components/base/card/card";
+import { useCurrency } from "@/providers/currency-provider";
 import { cx } from "@/utils/cx";
 
 /** How comfortably the balance covers this one. */
 export type Pressure = "ok" | "tight" | "over";
 
-const pressureDot: Record<Pressure, string> = {
-    ok: "bg-tile-aqua",
-    tight: "bg-tile-yellow",
-    over: "bg-tile-magenta",
+/** Most rows stay neutral on purpose — only the ones that need attention carry colour. */
+const pressureChip: Record<Pressure, string> = {
+    ok: "bg-secondary text-tertiary",
+    tight: "bg-tile-yellow-tint text-tile-yellow-ink",
+    over: "bg-tile-magenta-tint text-tile-magenta-ink",
 };
 
 export interface Commitment {
@@ -22,45 +24,49 @@ export interface Commitment {
     pressure: Pressure;
 }
 
-export const UpcomingList = ({ items, className }: { items: Commitment[]; className?: string }) => (
-    <Card className={cx("flex flex-col gap-3", className)}>
-        <div className="flex items-center justify-between gap-3">
-            <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Upcoming</h2>
+export const UpcomingList = ({ items, className }: { items: Commitment[]; className?: string }) => {
+    const { currency } = useCurrency();
+    const total = items.reduce((sum, item) => sum + item.amount, 0);
 
-            <button
-                type="button"
-                className="flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-semibold text-brand-secondary transition duration-100 ease-linear hover:bg-brand-primary"
-            >
-                View all
-                <HiOutlineArrowRight className="size-4" />
-            </button>
-        </div>
+    return (
+        <Card className={cx("flex flex-col gap-3", className)}>
+            <div className="flex items-center justify-between gap-3">
+                <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Upcoming</h2>
 
-        <ul className="-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto">
-            {items.map((item) => (
-                <li key={item.id}>
-                    <button
-                        type="button"
-                        className="no-press flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left transition duration-100 ease-linear hover:bg-secondary"
-                    >
-                        <span aria-hidden="true" className={cx("size-2 shrink-0 rounded-full", pressureDot[item.pressure])} />
+                <button
+                    type="button"
+                    className="flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-semibold text-brand-secondary transition duration-100 ease-linear hover:bg-brand-primary"
+                >
+                    View all
+                    <HiOutlineArrowRight className="size-4" />
+                </button>
+            </div>
 
-                        <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium text-primary">{item.name}</span>
-                            <span className="block truncate text-xs text-tertiary">{item.due}</span>
-                        </span>
+            <ul className="-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
+                {items.map((item) => (
+                    <li key={item.id}>
+                        <button
+                            type="button"
+                            className="no-press flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition duration-100 ease-linear hover:bg-secondary"
+                        >
+                            {/* Fixed width so the dates form a clean column. */}
+                            <span className={cx("w-16 shrink-0 rounded-full py-1 text-center text-[11px] font-medium", pressureChip[item.pressure])}>{item.due}</span>
 
-                        <Amount value={item.amount} className="shrink-0 text-sm font-semibold text-primary" />
-                    </button>
-                </li>
-            ))}
-        </ul>
+                            <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{item.name}</span>
 
-        <p className="text-xs text-quaternary">
-            <span className="font-medium text-tertiary">
-                <Amount value={items.reduce((total, item) => total + item.amount, 0)} />
-            </span>{" "}
-            due in the next 30 days
-        </p>
-    </Card>
-);
+                            <Amount value={item.amount} hideSymbol className="shrink-0 text-sm font-semibold text-primary" />
+                        </button>
+                    </li>
+                ))}
+            </ul>
+
+            <div className="flex items-baseline justify-between gap-2 pt-1">
+                <p className="text-xs text-tertiary">Next 30 days</p>
+                <p className="text-sm font-semibold text-primary">
+                    <Amount value={total} />
+                    <span className="ml-1 text-xs font-medium text-quaternary">{currency.code}</span>
+                </p>
+            </div>
+        </Card>
+    );
+};
