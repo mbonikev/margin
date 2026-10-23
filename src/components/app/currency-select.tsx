@@ -16,7 +16,7 @@ export const CurrencySelect = () => {
         <Dropdown.Root>
             <AriaButton
                 aria-label={`Display currency: ${currency.name}`}
-                className="flex h-11 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-medium text-tertiary transition duration-100 ease-linear outline-focus-ring hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 md:h-9"
+                className="hidden h-11 shrink-0 items-center gap-2 rounded-full px-3 sm:flex text-sm font-medium text-tertiary transition duration-100 ease-linear outline-focus-ring hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 md:h-9"
             >
                 <Flag country={currency.country} className="size-5" />
                 {/* Fixed width: codes are all 3 letters but not all the same
