@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { Button as AriaButton } from "react-aria-components";
 import { HiOutlineChevronDown, HiOutlineClock, HiOutlineCog6Tooth, HiOutlineScale } from "react-icons/hi2";
 import type { Account } from "@/components/app/account-card";
@@ -18,6 +19,42 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
     const [activeId, setActiveId] = useState(accounts[0].id);
     const scroller = useRef<HTMLDivElement>(null);
     const active = accounts.find((item) => item.id === activeId) ?? accounts[0];
+
+    // Drag-to-scroll. The threshold matters: without it, a 2px wobble while
+    // pressing a copyable field would swallow the click.
+    const drag = useRef({ active: false, startX: 0, startScroll: 0, moved: false });
+    const [dragging, setDragging] = useState(false);
+
+    const onPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+        const node = scroller.current;
+        if (!node || event.button !== 0) return;
+
+        drag.current = { active: true, startX: event.clientX, startScroll: node.scrollLeft, moved: false };
+        setDragging(true);
+    }, []);
+
+    const onPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+        const node = scroller.current;
+        if (!node || !drag.current.active) return;
+
+        const delta = event.clientX - drag.current.startX;
+        if (Math.abs(delta) > 4) drag.current.moved = true;
+        node.scrollLeft = drag.current.startScroll - delta;
+    }, []);
+
+    const endDrag = useCallback(() => {
+        if (!drag.current.active) return;
+        drag.current.active = false;
+        setDragging(false);
+    }, []);
+
+    // Runs in the capture phase so a drag never reaches a copy button.
+    const onClickCapture = useCallback((event: React.MouseEvent) => {
+        if (!drag.current.moved) return;
+        event.preventDefault();
+        event.stopPropagation();
+        drag.current.moved = false;
+    }, []);
 
     const scrollTo = useCallback((id: string) => {
         scroller.current?.querySelector(`[data-account="${id}"]`)?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
@@ -82,7 +119,16 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                 <div
                     ref={scroller}
                     onScroll={onScroll}
-                    className="scrollbar-hide -mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-1"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={endDrag}
+                    onPointerLeave={endDrag}
+                    onClickCapture={onClickCapture}
+                    className={cx(
+                        "scrollbar-hide -mx-1 flex gap-3 overflow-x-auto px-1 select-none",
+                        // Snapping fights a manual scrollLeft, so it is off mid-drag.
+                        dragging ? "cursor-grabbing" : "cursor-grab snap-x snap-mandatory scroll-smooth",
+                    )}
                 >
                     {accounts.map((account) => (
                         <div key={account.id} data-account={account.id} className="h-60 w-full shrink-0 snap-center">
