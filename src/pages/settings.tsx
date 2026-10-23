@@ -1,7 +1,7 @@
 import { Tab, TabList, TabPanel, Tabs } from "react-aria-components";
-import { CurrencySettings } from "@/components/application/settings/currency-settings";
-import { ThemeControls } from "@/components/application/theme/theme-controls";
-import { Card } from "@/components/base/card/card";
+import { CurrencySettings } from "@/components/app/currency-settings";
+import { ThemeControls } from "@/components/app/theme-controls";
+import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
 
 const tabs = [

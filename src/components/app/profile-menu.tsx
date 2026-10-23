@@ -2,9 +2,9 @@ import type { FC } from "react";
 import { useNavigate } from "react-router";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import { HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth, HiOutlineUser } from "react-icons/hi2";
-import { ThemeControls } from "@/components/application/theme/theme-controls";
+import { ThemeControls } from "@/components/app/theme-controls";
 import { Avatar } from "@/components/base/avatar/avatar";
-import { Separator } from "@/components/foundations/separator";
+import { Separator } from "@/components/ui/separator";
 import { cx } from "@/utils/cx";
 
 const PanelItem = ({ icon: Icon, label, onPress }: { icon: FC<{ className?: string }>; label: string; onPress?: () => void }) => (
@@ -21,7 +21,7 @@ const PanelItem = ({ icon: Icon, label, onPress }: { icon: FC<{ className?: stri
     </button>
 );
 
-export const AccountPopover = () => {
+export const ProfileMenu = () => {
     const navigate = useNavigate();
 
     return (

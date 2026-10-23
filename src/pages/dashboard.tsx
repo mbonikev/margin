@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import type { Account } from "@/components/application/accounts/account-card";
-import { AccountHero } from "@/components/application/dashboard/account-hero";
-import type { Commitment } from "@/components/application/dashboard/upcoming-list";
-import { UpcomingList } from "@/components/application/dashboard/upcoming-list";
-import type { StatTileProps } from "@/components/application/dashboard/stat-tile";
-import { StatTile } from "@/components/application/dashboard/stat-tile";
-import { Amount } from "@/components/base/amount/amount";
+import type { Account } from "@/components/app/account-card";
+import { AccountHero } from "@/components/app/account-hero";
+import type { Commitment } from "@/components/app/upcoming-list";
+import { UpcomingList } from "@/components/app/upcoming-list";
+import type { StatTileProps } from "@/components/app/stat-tile";
+import { StatTile } from "@/components/app/stat-tile";
+import { Amount } from "@/components/ui/amount";
 import { useCurrency } from "@/providers/currency-provider";
 import { usePrivacy } from "@/providers/privacy-provider";
 

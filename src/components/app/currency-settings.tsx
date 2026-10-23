@@ -1,6 +1,6 @@
 import { HiArrowPath, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { Button } from "@/components/base/buttons/button";
-import { Flag } from "@/components/foundations/flag";
+import { Flag } from "@/components/ui/flag";
 import { BASE_CURRENCY, currencies, useCurrency } from "@/providers/currency-provider";
 import { cx } from "@/utils/cx";
 

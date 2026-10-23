@@ -2,9 +2,9 @@ import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Button as AriaButton } from "react-aria-components";
 import { HiOutlineChevronDown, HiOutlineClock, HiOutlineCog6Tooth, HiOutlineScale } from "react-icons/hi2";
-import type { Account } from "@/components/application/accounts/account-card";
-import { AccountCard } from "@/components/application/accounts/account-card";
-import { Card } from "@/components/base/card/card";
+import type { Account } from "@/components/app/account-card";
+import { AccountCard } from "@/components/app/account-card";
+import { Card } from "@/components/ui/card";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
 import { cx } from "@/utils/cx";
 

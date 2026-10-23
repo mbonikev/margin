@@ -1,7 +1,7 @@
 import type { Selection } from "react-aria-components";
 import { Button as AriaButton } from "react-aria-components";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
-import { Flag, flagIcon } from "@/components/foundations/flag";
+import { Flag, flagIcon } from "@/components/ui/flag";
 import { currencies, useCurrency } from "@/providers/currency-provider";
 
 export const CurrencySelect = () => {

@@ -1,15 +1,15 @@
 import { HiOutlineArrowPath, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineFlag, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
 import { motion, useReducedMotion } from "motion/react";
 import { NavLink, Outlet } from "react-router";
-import { AccountPopover } from "@/components/application/account/account-popover";
-import { CurrencySelect } from "@/components/application/currency/currency-select";
-import { PrivacyToggle } from "@/components/application/privacy/privacy-toggle";
-import { NotificationsPopover } from "@/components/application/notifications/notifications-popover";
+import { ProfileMenu } from "@/components/app/profile-menu";
+import { CurrencySelect } from "@/components/app/currency-select";
+import { PrivacyToggle } from "@/components/app/privacy-toggle";
+import { NotificationsPopover } from "@/components/app/notifications-popover";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
-import { Coffee } from "@/components/foundations/icons/coffee";
-import { Logo } from "@/components/foundations/logo/logo";
-import { Separator } from "@/components/foundations/separator";
+import { Coffee } from "@/components/ui/coffee-icon";
+import { Logo } from "@/components/ui/logo";
+import { Separator } from "@/components/ui/separator";
 import { cx } from "@/utils/cx";
 
 const navItems = [
@@ -127,7 +127,7 @@ export const AppLayout = () => {
                         <CurrencySelect />
 
                         <NotificationsPopover />
-                        <AccountPopover />
+                        <ProfileMenu />
                     </div>
                 </div>
             </header>

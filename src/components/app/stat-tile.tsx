@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { HiArrowDown, HiArrowUp } from "react-icons/hi2";
-import { Card } from "@/components/base/card/card";
+import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
 
 export type TileTone = "aqua" | "blue" | "yellow" | "magenta";

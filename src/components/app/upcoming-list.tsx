@@ -1,6 +1,6 @@
 import { HiOutlineArrowRight } from "react-icons/hi2";
-import { Amount } from "@/components/base/amount/amount";
-import { Card } from "@/components/base/card/card";
+import { Amount } from "@/components/ui/amount";
+import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
 
 /** How comfortably the balance covers this one. */

@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router";
-import { AppLayout } from "@/components/layout/app-layout";
+import { AppLayout } from "@/components/app/app-layout";
 import { DashboardPage } from "@/pages/dashboard";
 import { AccountsPage } from "@/pages/accounts";
 import { SettingsPage } from "@/pages/settings";

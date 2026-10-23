@@ -1,5 +1,5 @@
-import { Amount } from "@/components/base/amount/amount";
-import { Logo } from "@/components/foundations/logo/logo";
+import { Amount } from "@/components/ui/amount";
+import { Logo } from "@/components/ui/logo";
 import { cx } from "@/utils/cx";
 
 export type CardTheme = "blue" | "graphite" | "emerald" | "plum";
