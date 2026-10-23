@@ -1,16 +1,16 @@
 import type { FC } from "react";
-import { useMemo } from "react";
-import { HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineScale } from "react-icons/hi2";
+import { HiOutlineArrowRight, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineScale } from "react-icons/hi2";
+import { ActionButton } from "@/components/ui/action-button";
 import { Amount } from "@/components/ui/amount";
 import { Card } from "@/components/ui/card";
 import { cx } from "@/utils/cx";
 
 export type ActivityKind = "balance" | "expense" | "income";
 
-const kinds: Record<ActivityKind, { icon: FC<{ className?: string }>; chip: string; sign: string; amount: string }> = {
-    balance: { icon: HiOutlineScale, chip: "bg-secondary text-tertiary", sign: "", amount: "text-primary" },
-    expense: { icon: HiOutlineArrowTrendingDown, chip: "bg-tile-magenta-tint text-tile-magenta-ink", sign: "−", amount: "text-tile-magenta-ink" },
-    income: { icon: HiOutlineArrowTrendingUp, chip: "bg-tile-aqua-tint text-tile-aqua-ink", sign: "+", amount: "text-tile-aqua-ink" },
+const kinds: Record<ActivityKind, { icon: FC<{ className?: string }>; chip: string; sign: string; amount: string; label: string }> = {
+    balance: { icon: HiOutlineScale, chip: "bg-secondary text-tertiary", sign: "", amount: "text-primary", label: "Balance" },
+    expense: { icon: HiOutlineArrowTrendingDown, chip: "bg-tile-magenta-tint text-tile-magenta-ink", sign: "−", amount: "text-tile-magenta-ink", label: "Expense" },
+    income: { icon: HiOutlineArrowTrendingUp, chip: "bg-tile-aqua-tint text-tile-aqua-ink", sign: "+", amount: "text-tile-aqua-ink", label: "Income" },
 };
 
 export interface Activity {
@@ -18,80 +18,93 @@ export interface Activity {
     kind: ActivityKind;
     name: string;
     account: string;
-    /** A real timestamp — the day heading and the time are both derived from it. */
+    /** A real timestamp — every column below is derived from it. */
     at: Date;
     /** Amount in the base currency. */
     amount: number;
 }
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" });
-const dayFormat = new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "short" });
+const dateFormat = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
 
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 
-const dayLabel = (date: Date) => {
+const whenLabel = (date: Date) => {
     const days = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86_400_000);
     if (days <= 0) return "Today";
     if (days === 1) return "Yesterday";
-    return dayFormat.format(date);
+    return dateFormat.format(date);
 };
 
 export const RecentActivity = ({ items, className }: { items: Activity[]; className?: string }) => {
-    // Grouped by day: four rows of "2h ago / Yesterday / 2d ago" are harder to
-    // place than a heading that says the day once.
-    const groups = useMemo(() => {
-        const byDay = new Map<string, Activity[]>();
-
-        for (const item of [...items].sort((a, b) => b.at.getTime() - a.at.getTime())) {
-            const label = dayLabel(item.at);
-            byDay.set(label, [...(byDay.get(label) ?? []), item]);
-        }
-
-        return [...byDay.entries()];
-    }, [items]);
+    const rows = [...items].sort((a, b) => b.at.getTime() - a.at.getTime());
 
     return (
-        <Card className={cx("flex flex-col gap-2.5", className)}>
-            <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Recent</h2>
+        <Card className={cx("flex flex-col gap-3", className)}>
+            <div className="flex items-center justify-between gap-3">
+                <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Recent</h2>
+                <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
+            </div>
 
-            <div className="flex flex-col gap-2.5">
-                {groups.map(([label, entries]) => (
-                    <section key={label}>
-                        <h3 className="px-2 text-[11px] leading-none font-medium text-quaternary">{label}</h3>
+            <div className="-mx-2 overflow-x-auto">
+                <table className="w-full border-separate border-spacing-0 text-left">
+                    <thead>
+                        <tr className="text-[11px] font-medium text-quaternary">
+                            <th scope="col" className="px-2 pb-2 font-medium">
+                                Activity
+                            </th>
+                            <th scope="col" className="hidden px-2 pb-2 font-medium sm:table-cell">
+                                Type
+                            </th>
+                            <th scope="col" className="hidden px-2 pb-2 font-medium md:table-cell">
+                                Account
+                            </th>
+                            <th scope="col" className="px-2 pb-2 font-medium">
+                                When
+                            </th>
+                            <th scope="col" className="px-2 pb-2 text-right font-medium">
+                                Amount
+                            </th>
+                        </tr>
+                    </thead>
 
-                        <ul className="-mx-2 mt-0.5 flex flex-col">
-                            {entries.map((item) => {
-                                const kind = kinds[item.kind];
-                                const Icon = kind.icon;
+                    <tbody>
+                        {rows.map((item) => {
+                            const kind = kinds[item.kind];
+                            const Icon = kind.icon;
 
-                                return (
-                                    <li key={item.id}>
-                                        <button
-                                            type="button"
-                                            className="no-press flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left transition duration-100 ease-linear hover:bg-secondary"
-                                        >
+                            return (
+                                <tr key={item.id} className="group cursor-default">
+                                    <td className="rounded-l-xl px-2 py-2 transition duration-100 ease-linear group-hover:bg-secondary">
+                                        <div className="flex items-center gap-2.5">
                                             <span className={cx("flex size-8 shrink-0 items-center justify-center rounded-full", kind.chip)}>
                                                 <Icon className="size-4" />
                                             </span>
+                                            <span className="truncate text-sm font-medium text-primary">{item.name}</span>
+                                        </div>
+                                    </td>
 
-                                            <span className="min-w-0 flex-1">
-                                                <span className="block truncate text-sm font-medium text-primary">{item.name}</span>
-                                                <span className="block truncate text-[11px] text-tertiary">
-                                                    {item.account} · {timeFormat.format(item.at)}
-                                                </span>
-                                            </span>
+                                    <td className="hidden px-2 py-2 text-xs text-tertiary transition duration-100 ease-linear group-hover:bg-secondary sm:table-cell">
+                                        {kind.label}
+                                    </td>
 
-                                            <span className={cx("shrink-0 text-sm font-semibold", kind.amount)}>
-                                                {kind.sign}
-                                                <Amount value={item.amount} />
-                                            </span>
-                                        </button>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </section>
-                ))}
+                                    <td className="hidden px-2 py-2 text-xs text-tertiary transition duration-100 ease-linear group-hover:bg-secondary md:table-cell">
+                                        {item.account}
+                                    </td>
+
+                                    <td className="px-2 py-2 text-xs whitespace-nowrap text-tertiary transition duration-100 ease-linear group-hover:bg-secondary">
+                                        {whenLabel(item.at)} · {timeFormat.format(item.at)}
+                                    </td>
+
+                                    <td className={cx("rounded-r-xl px-2 py-2 text-right text-sm font-semibold whitespace-nowrap transition duration-100 ease-linear group-hover:bg-secondary", kind.amount)}>
+                                        {kind.sign}
+                                        <Amount value={item.amount} />
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             </div>
         </Card>
     );

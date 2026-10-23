@@ -9,7 +9,6 @@ import type { Goal } from "@/components/app/savings-goals";
 import { SavingsGoals } from "@/components/app/savings-goals";
 import type { MonthFlow } from "@/components/app/in-vs-out";
 import { InVsOut } from "@/components/app/in-vs-out";
-import { PaydayCycle } from "@/components/app/payday-cycle";
 import type { StatTileProps } from "@/components/app/stat-tile";
 import { StatTile } from "@/components/app/stat-tile";
 import { Amount } from "@/components/ui/amount";
@@ -61,17 +60,17 @@ const goals: Goal[] = [
     { id: "trip", name: "Trip home", saved: 62000, target: 400000, startedAt: monthsAgo(1) },
 ];
 
-/** Anchored to today so the card never goes stale while this is placeholder data. */
-const cycleStart = new Date(Date.now() - 18 * 86_400_000);
-const nextPayday = new Date(Date.now() + 12 * 86_400_000);
-
 const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000);
 
 const activity: Activity[] = [
     { id: "a1", kind: "balance", name: "Balance updated", account: "MTN MoMo", at: hoursAgo(2), amount: 684000 },
     { id: "a2", kind: "expense", name: "Groceries", account: "Cash", at: hoursAgo(20), amount: 12400 },
-    { id: "a3", kind: "income", name: "Client payment", account: "Equity Bank", at: hoursAgo(50), amount: 320000 },
-    { id: "a4", kind: "expense", name: "Transport", account: "MTN MoMo", at: hoursAgo(74), amount: 4500 },
+    { id: "a3", kind: "expense", name: "Airtime", account: "MTN MoMo", at: hoursAgo(26), amount: 2000 },
+    { id: "a4", kind: "income", name: "Client payment", account: "Equity Bank", at: hoursAgo(50), amount: 320000 },
+    { id: "a5", kind: "expense", name: "Transport", account: "MTN MoMo", at: hoursAgo(74), amount: 4500 },
+    { id: "a6", kind: "balance", name: "Balance updated", account: "Equity Bank", at: hoursAgo(96), amount: 612000 },
+    { id: "a7", kind: "expense", name: "Rent", account: "Equity Bank", at: hoursAgo(120), amount: 450000 },
+    { id: "a8", kind: "income", name: "Refund", account: "Cash", at: hoursAgo(144), amount: 18000 },
 ];
 
 const flows: MonthFlow[] = [
@@ -159,8 +158,7 @@ export const DashboardPage = () => {
                 <SavingsGoals goals={goals} />
             </section>
 
-            <section aria-label="Activity" className="grid gap-1.5 md:grid-cols-2 md:gap-2">
-                <PaydayCycle cycleStart={cycleStart} nextPayday={nextPayday} available={1310000} spent={1048000} />
+            <section aria-label="Activity">
                 <RecentActivity items={activity} />
             </section>
         </div>
