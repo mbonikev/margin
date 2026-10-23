@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getLocalTimeZone, today } from "@internationalized/date";
 import type { DateValue } from "react-aria-components";
 import type { Account } from "@/components/app/account-card";
-import { InputDate } from "@/components/base/input/input-date";
+import { DatePicker } from "@/components/application/date-picker/date-picker";
 import { Select } from "@/components/base/select/select";
 import { AmountField, Field, ModalActions, TextField } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
@@ -70,11 +70,11 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave }: Re
                     </Select>
                 )}
 
-                <InputDate
-                    label={kind === "commitment" ? "First due date" : kind === "goal" ? "Starting from" : "When"}
-                    value={date}
-                    onChange={setDate}
-                />
+                <Field label={kind === "commitment" ? "First due date" : kind === "goal" ? "Starting from" : "When"}>
+                    <span className="mt-1.5 block">
+                        <DatePicker value={date} onChange={setDate} />
+                    </span>
+                </Field>
 
                 <ModalActions
                     onCancel={() => onOpenChange(false)}
