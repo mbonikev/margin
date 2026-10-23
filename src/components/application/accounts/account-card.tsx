@@ -83,8 +83,18 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
     const reference = account.ref ?? accountRef(account.id);
 
     return (
-    <div className={cx("relative flex size-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 text-white shadow-lg", themes[account.theme], className)}>
+    <div className={cx([
+                "relative flex size-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 text-white",
+                // Depth, in three parts: a tight contact shadow, two wide soft ones
+                // for the cast, and inset edges so the top catches light and the
+                // bottom falls into shadow — what makes it read as a solid object.
+                "shadow-[0_2px_4px_rgba(0,0,0,0.16),0_14px_28px_-10px_rgba(0,0,0,0.45),0_32px_64px_-24px_rgba(0,0,0,0.35)]",
+                "inset-shadow-[0_1px_0_rgba(255,255,255,0.22),0_-1px_0_rgba(0,0,0,0.28)]",
+            ], themes[account.theme], className)}>
         <Blobs />
+
+        {/* Light falling from above, so the surface isn't uniformly flat. */}
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/14 via-transparent to-black/18" />
 
         <div className="relative flex items-center gap-2">
             <Logo variant="mark" className="h-6 bg-white" />
