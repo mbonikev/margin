@@ -84,7 +84,7 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
 
     return (
     <div className={cx([
-                "relative flex size-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 text-white",
+                "relative flex size-full flex-col justify-between overflow-hidden rounded-[1.35rem] p-[1.125rem] text-white",
                 // Depth, in three parts: a tight contact shadow, two wide soft ones
                 // for the cast, and inset edges so the top catches light and the
                 // bottom falls into shadow — what makes it read as a solid object.
@@ -97,26 +97,26 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
         <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/14 via-transparent to-black/18" />
 
         <div className="relative flex items-center gap-2">
-            <Logo variant="mark" className="h-6 bg-white" />
+            <Logo variant="mark" className="h-[1.35rem] bg-white" />
             <span className="text-white/40">/</span>
-            <span className="text-sm font-medium">{account.kind}</span>
+            <span className="text-[0.7875rem] font-medium">{account.kind}</span>
         </div>
 
         <div className="relative flex items-center gap-3">
-            <Contactless className="size-5 text-white/80" />
-            <Chip className="h-6 w-8 text-white/85" />
+            <Contactless className="size-[1.125rem] text-white/80" />
+            <Chip className="h-[1.35rem] w-[1.8rem] text-white/85" />
         </div>
 
         {/* Not font-mono: the generic monospace fallback reads thin and dead.
             The display face with tabular figures gives the chunky card look. */}
-        <p className="relative mb-2 text-xl font-semibold tracking-[0.16em] tabular-nums text-white/90 md:mb-3 md:text-2xl">{reference}</p>
+        <p className="relative mb-[0.45rem] text-[1.125rem] font-semibold tracking-[0.16em] tabular-nums text-white/90 md:mb-[0.675rem] md:text-[1.35rem]">{reference}</p>
 
         <div className="relative flex items-end justify-between gap-3">
             <div className="min-w-0">
-                <p className="truncate text-xs font-medium text-white/75">{account.name}</p>
-                <Amount value={account.balance} className="mt-0.5 block truncate text-2xl font-semibold tracking-tight" />
+                <p className="truncate text-[0.675rem] font-medium text-white/75">{account.name}</p>
+                <Amount value={account.balance} className="mt-0.5 block truncate text-[1.35rem] font-semibold tracking-tight" />
             </div>
-            <p className="shrink-0 text-xs font-medium text-white/70">{account.updated}</p>
+            <p className="shrink-0 text-[0.675rem] font-medium text-white/70">{account.updated}</p>
         </div>
     </div>
     );
