@@ -70,7 +70,10 @@ export const AppLayout = () => {
 
     return (
         <div className="min-h-screen overflow-x-clip bg-secondary">
-            <header className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
+            {/* Full-width wrapper so the blur spans the viewport, with the inner
+                row still constrained to the page width. */}
+            <header className="sticky top-0 z-50 bg-header backdrop-blur-xl">
+                <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
                 <NavLink to="/" aria-label="Margin — home" className="rounded-md outline-brand focus-visible:outline-2 focus-visible:outline-offset-4">
                     {/* The wordmark is ~117px wide at this height — too much of a
                         393px viewport once the controls are laid out beside it. */}
@@ -131,6 +134,7 @@ export const AppLayout = () => {
 
                         <NotificationsPopover />
                         <ProfileMenu />
+                    </div>
                     </div>
                 </div>
             </header>

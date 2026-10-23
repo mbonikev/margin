@@ -208,6 +208,11 @@
     --background-color-popover: var(--color-bg-popover);
     --background-color-popover-hover: var(--color-bg-popover-hover);
     --background-color-brand-popover: var(--color-bg-brand-popover);
+
+    /* Translucent page background for the sticky header. A `/75` modifier bakes
+       the light-mode value into a static colour, so it would not follow dark. */
+    --color-bg-header: color-mix(in oklab, var(--color-bg-secondary) 75%, transparent);
+    --background-color-header: var(--color-bg-header);
 }
 
 @layer base {
