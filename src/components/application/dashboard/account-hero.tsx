@@ -56,7 +56,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                 {/* The frame owns the aspect ratio. It must not be a flex child
                     itself — flex-1 would stretch it and override the ratio. */}
                 {/* Height is width / 1.586 — so the width cap is the size control. */}
-                <div className="relative aspect-[1.586/1] w-full max-w-[20rem]">
+                <div className="relative aspect-[1.586/1] w-full max-w-[23rem]">
                     <AnimatePresence mode="wait" initial={false}>
                         <motion.div
                             key={active.id}
