@@ -2,6 +2,8 @@ import { HiOutlineArrowPath, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingU
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { NavLink, Outlet, useLocation } from "react-router";
 import { AccountPopover } from "@/components/application/account/account-popover";
+import { CurrencySelect } from "@/components/application/currency/currency-select";
+import { PrivacyToggle } from "@/components/application/privacy/privacy-toggle";
 import { NotificationsPopover } from "@/components/application/notifications/notifications-popover";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
@@ -76,6 +78,8 @@ export const AppLayout = () => {
                 </NavLink>
 
                 <div className="flex items-center gap-2">
+                    <PrivacyToggle />
+
                     <Dropdown.Root>
                         <Button
                             color="primary"
@@ -121,6 +125,8 @@ export const AppLayout = () => {
                         </Button>
 
                         <Separator className="mx-1.5 hidden lg:block" />
+
+                        <CurrencySelect />
 
                         <NotificationsPopover />
                         <AccountPopover />
