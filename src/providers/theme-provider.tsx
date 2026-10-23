@@ -76,10 +76,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
         const apply = () => {
             const isDark = mode === "dark" || (mode === "system" && query.matches);
-            withoutTransitions(() => {
-                document.documentElement.classList.toggle("dark-mode", isDark);
-                document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-            });
+            // `color-scheme` rides on the class via CSS — see globals.css.
+            withoutTransitions(() => document.documentElement.classList.toggle("dark-mode", isDark));
         };
 
         apply();

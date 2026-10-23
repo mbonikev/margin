@@ -192,6 +192,17 @@ input[type="search"]::-webkit-search-cancel-button {
 @layer base {
     /* Browser-default scrollbars, just the compact variant. No colours or
        ::-webkit overrides — the OS keeps its own look and behaviour. */
+    /* Declared here rather than from JS: the browser then paints native UI —
+       scrollbars, form controls, the canvas — in the right mode on first paint,
+       and it cannot fall out of sync with the .dark-mode class. */
+    :root {
+        color-scheme: light;
+    }
+
+    :root.dark-mode {
+        color-scheme: dark;
+    }
+
     html {
         scrollbar-width: thin;
 
