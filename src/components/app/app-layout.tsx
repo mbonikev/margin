@@ -72,10 +72,13 @@ export const AppLayout = () => {
         <div className="min-h-screen overflow-x-clip bg-secondary">
             <header className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
                 <NavLink to="/" aria-label="Margin — home" className="rounded-md outline-brand focus-visible:outline-2 focus-visible:outline-offset-4">
-                    <Logo className="h-9 md:h-7" />
+                    {/* The wordmark is ~117px wide at this height — too much of a
+                        393px viewport once the controls are laid out beside it. */}
+                    <Logo variant="mark" className="h-9 sm:hidden" />
+                    <Logo className="hidden h-7 sm:block" />
                 </NavLink>
 
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 shrink items-center gap-1.5 sm:gap-2">
                     <PrivacyToggle />
 
                     <Dropdown.Root>
