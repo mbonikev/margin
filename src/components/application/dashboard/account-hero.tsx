@@ -22,7 +22,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
     return (
         <Card className={cx("flex flex-col gap-4", className)}>
             <div className="flex items-center justify-between gap-3">
-                <h2 className="truncate text-md font-semibold text-primary">Accounts</h2>
+                <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Accounts</h2>
 
                 <Dropdown.Root>
                     <AriaButton className="flex h-9 items-center gap-1.5 rounded-full bg-secondary px-3.5 text-sm font-medium text-secondary outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
