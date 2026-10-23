@@ -31,6 +31,8 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
 
         drag.current = { active: true, startX: event.clientX, startScroll: node.scrollLeft, moved: false };
         setDragging(true);
+        // Keeps events coming even if the pointer leaves a child mid-drag.
+        event.currentTarget.setPointerCapture(event.pointerId);
     }, []);
 
     const onPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
@@ -42,10 +44,14 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
         node.scrollLeft = drag.current.startScroll - delta;
     }, []);
 
-    const endDrag = useCallback(() => {
+    const endDrag = useCallback((event?: ReactPointerEvent<HTMLDivElement>) => {
         if (!drag.current.active) return;
         drag.current.active = false;
         setDragging(false);
+
+        if (event && event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+        }
     }, []);
 
     // Runs in the capture phase so a drag never reaches a copy button.
@@ -124,11 +130,15 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                     keyboard and trackpad gestures all come for free. */}
                 <div
                     ref={scroller}
+                    data-no-native-drag
                     onScroll={onScroll}
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={endDrag}
-                    onPointerLeave={endDrag}
+                    onPointerCancel={endDrag}
+                    /* SVGs and images are natively draggable; the browser would
+                       start its own drag and we would never see a pointermove. */
+                    onDragStart={(event) => event.preventDefault()}
                     onClickCapture={onClickCapture}
                     className={cx(
                         "scrollbar-hide -mx-1 flex gap-3 overflow-x-auto px-1 select-none",

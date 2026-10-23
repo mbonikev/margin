@@ -242,3 +242,13 @@ input[type="search"]::-webkit-search-cancel-button {
         opacity: 0;
     }
 }
+
+@layer base {
+    /* The account slider is dragged with pointer events, so the browser must not
+       start its own image/SVG drag inside it. */
+    [data-no-native-drag],
+    [data-no-native-drag] * {
+        -webkit-user-drag: none;
+        user-select: none;
+    }
+}
