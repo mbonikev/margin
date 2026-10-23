@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { useNavigate } from "react-router";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import { HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth, HiOutlineUser } from "react-icons/hi2";
 import { ThemeControls } from "@/components/application/theme/theme-controls";
@@ -12,7 +13,7 @@ const PanelItem = ({ icon: Icon, label, onPress }: { icon: FC<{ className?: stri
         onClick={onPress}
         className={cx(
             "flex h-9 w-full items-center rounded-full px-3.5 text-sm font-medium text-tertiary transition duration-100 ease-linear",
-            "hover:bg-brand-primary hover:text-brand-secondary",
+            "hover:bg-brand-popover hover:text-brand-secondary",
         )}
     >
         <Icon className="mr-3 size-5 shrink-0" />
@@ -20,7 +21,10 @@ const PanelItem = ({ icon: Icon, label, onPress }: { icon: FC<{ className?: stri
     </button>
 );
 
-export const AccountPopover = () => (
+export const AccountPopover = () => {
+    const navigate = useNavigate();
+
+    return (
     <DialogTrigger>
         <AriaButton
             aria-label="Account menu"
@@ -34,7 +38,7 @@ export const AccountPopover = () => (
             offset={8}
             className={({ isEntering, isExiting }) =>
                 cx(
-                    "w-[min(16rem,calc(100vw-2rem))] origin-(--trigger-anchor-point) overflow-hidden rounded-3xl bg-primary shadow-xl will-change-transform",
+                    "w-[min(16rem,calc(100vw-2rem))] origin-(--trigger-anchor-point) overflow-hidden rounded-[1.625rem] bg-popover shadow-xl ring-1 ring-popover md:rounded-[1.375rem] will-change-transform",
                     isEntering && "duration-150 ease-out animate-in fade-in placement-bottom:slide-in-from-top-0.5",
                     isExiting && "duration-100 ease-in animate-out fade-out placement-bottom:slide-out-to-top-0.5",
                 )
@@ -43,7 +47,7 @@ export const AccountPopover = () => (
             <Dialog aria-label="Account" className="outline-hidden">
                 <div className="flex flex-col gap-0.5 p-1">
                     <PanelItem icon={HiOutlineUser} label="View profile" />
-                    <PanelItem icon={HiOutlineCog6Tooth} label="Settings" />
+                    <PanelItem icon={HiOutlineCog6Tooth} label="Settings" onPress={() => void navigate("/settings")} />
                 </div>
 
                 <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
@@ -59,3 +63,4 @@ export const AccountPopover = () => (
         </Popover>
     </DialogTrigger>
 );
+};

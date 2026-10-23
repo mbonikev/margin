@@ -16,7 +16,7 @@ export const ThemeControls = () => {
         <div className="px-2 py-1.5">
             <p className="px-1.5 pb-1.5 text-xs font-medium text-quaternary">Theme</p>
 
-            <div className="flex items-center gap-0.5 rounded-full bg-secondary p-0.5">
+            <div className="flex items-center gap-0.5 rounded-full bg-popover-hover p-0.5">
                 {modes.map((item) => {
                     const Icon = item.icon;
                     const isActive = mode === item.id;

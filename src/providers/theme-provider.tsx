@@ -51,6 +51,19 @@ const write = (key: string, value: string) => {
     }
 };
 
+/**
+ * Flipping the theme repaints hundreds of colours at once. Anything carrying a
+ * CSS transition would animate that repaint and visibly lag behind the rest of
+ * the page, so transitions are suppressed for one frame while it happens.
+ */
+const withoutTransitions = (mutate: () => void) => {
+    const root = document.documentElement;
+    root.classList.add("theme-switching");
+    mutate();
+    // Two frames: one to flush the style change, one to let it paint.
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("theme-switching")));
+};
+
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const [mode, setModeState] = useState<ThemeMode>(() => read(MODE_KEY, "system") as ThemeMode);
     const [accentId, setAccentId] = useState<string>(() => read(ACCENT_KEY, "green"));
@@ -63,8 +76,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
         const apply = () => {
             const isDark = mode === "dark" || (mode === "system" && query.matches);
-            document.documentElement.classList.toggle("dark-mode", isDark);
-            document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+            withoutTransitions(() => {
+                document.documentElement.classList.toggle("dark-mode", isDark);
+                document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+            });
         };
 
         apply();
@@ -74,8 +89,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
     // One variable drives every brand tint, hover and border in the app.
     useEffect(() => {
-        document.documentElement.style.setProperty("--color-brand", accent.hex);
-        document.documentElement.style.setProperty("--color-focus", accent.hex);
+        withoutTransitions(() => {
+            document.documentElement.style.setProperty("--color-brand", accent.hex);
+            document.documentElement.style.setProperty("--color-focus", accent.hex);
+        });
     }, [accent]);
 
     const setMode = useCallback((next: ThemeMode) => {

@@ -68,7 +68,7 @@ const NotificationRow = ({ item }: { item: NotificationItem }) => {
     const Icon = item.icon;
 
     return (
-        <button type="button" className="flex w-full gap-3 px-4 py-3 text-left transition duration-100 ease-linear hover:bg-secondary">
+        <button type="button" className="no-press flex w-full gap-3 px-4 py-3 text-left transition duration-100 ease-linear hover:bg-popover-hover">
             <Avatar
                 size="sm"
                 src={item.avatarUrl}
@@ -123,7 +123,7 @@ export const NotificationsPopover = () => {
                 offset={8}
                 className={({ isEntering, isExiting }) =>
                     cx(
-                        "w-[min(22rem,calc(100vw-2rem))] origin-(--trigger-anchor-point) overflow-hidden rounded-3xl bg-primary shadow-xl will-change-transform",
+                        "w-[min(22rem,calc(100vw-2rem))] origin-(--trigger-anchor-point) overflow-hidden rounded-3xl bg-popover shadow-xl ring-1 ring-popover will-change-transform",
                         isEntering && "duration-150 ease-out animate-in fade-in placement-bottom:slide-in-from-top-0.5",
                         isExiting && "duration-100 ease-in animate-out fade-out placement-bottom:slide-out-to-top-0.5",
                     )
@@ -135,7 +135,7 @@ export const NotificationsPopover = () => {
                             <header className="flex items-center gap-2 px-4 pt-4 pb-2">
                                 <h2 className="flex-1 text-md font-semibold text-primary">Notifications</h2>
 
-                                <div className="flex items-center gap-0.5 rounded-full bg-secondary p-0.5">
+                                <div className="flex items-center gap-0.5 rounded-full bg-popover-hover p-0.5">
                                     {filters.map((key) => (
                                         <button
                                             key={key}
@@ -178,15 +178,15 @@ export const NotificationsPopover = () => {
                             </div>
 
                             <footer className="flex items-center gap-1 px-3 py-2">
-                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-primary hover:text-brand-secondary">
+                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-popover hover:text-brand-secondary">
                                     <HiOutlineCheck className="size-4" />
                                     Mark all read
                                 </button>
-                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-primary hover:text-brand-secondary">
+                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-popover hover:text-brand-secondary">
                                     <HiOutlineTrash className="size-4" />
                                     Clear all
                                 </button>
-                                <button type="button" className="ml-auto flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-brand-secondary transition hover:bg-brand-primary">
+                                <button type="button" className="ml-auto flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-brand-secondary transition hover:bg-brand-popover">
                                     View all
                                     <HiOutlineArrowRight className="size-4" />
                                 </button>

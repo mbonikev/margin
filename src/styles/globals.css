@@ -138,3 +138,84 @@ input[type="search"]::-webkit-search-cancel-button {
         scroll-behavior: auto !important;
     }
 }
+
+/* Set for one frame by the theme provider while light/dark or the accent flips,
+   so nothing animates the repaint and lags behind the rest of the page. */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+    transition: none !important;
+}
+
+@layer base {
+    /* Standard properties — Firefox, and Chrome 121+. `.scrollbar-hide` is a
+       class so it still wins over this universal selector. */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border-primary) transparent;
+    }
+
+    /* WebKit. The transparent border plus content-box clip leaves the thumb
+       looking ~4px wide while keeping a 10px grab target. */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: var(--color-border-primary);
+        background-clip: content-box;
+        border: 3px solid transparent;
+        border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: var(--color-fg-quaternary);
+    }
+}
+
+@layer base {
+    /* Press feedback. Controls compress slightly when pressed, which is what
+       makes them feel physical. `:active` fires for mouse, touch and keyboard
+       Space/Enter alike, and `scale` is compositor-only so it costs no layout. */
+    button,
+    [role="button"],
+    [role="menuitem"],
+    [role="tab"],
+    [role="option"],
+    [role="switch"],
+    [data-pressed],
+    a[href],
+    summary {
+        transition-property: transform, color, background-color, box-shadow, opacity;
+        transition-duration: 140ms;
+        transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    button:not(:disabled):active,
+    [role="button"]:not([aria-disabled="true"]):active,
+    [role="menuitem"]:not([aria-disabled="true"]):active,
+    [role="tab"]:not([aria-disabled="true"]):active,
+    [role="option"]:not([aria-disabled="true"]):active,
+    [role="switch"]:not([aria-disabled="true"]):active,
+    a[href]:active,
+    summary:active,
+    /* react-aria calls preventDefault on pointerdown, so :active never fires on
+       its components — they expose data-pressed instead. */
+    [data-pressed]:not([aria-disabled="true"]) {
+        /* Faster in than out: the press is instant, the release settles. */
+        transition-duration: 60ms;
+        transform: scale(0.985);
+    }
+
+    /* Opt out for wide surfaces — a whole list row shrinking reads as a glitch. */
+    .no-press:active {
+        transform: none !important;
+    }
+}

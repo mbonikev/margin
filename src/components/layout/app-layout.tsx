@@ -1,7 +1,9 @@
 import { HiOutlineArrowPath, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineFlag, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { NavLink, Outlet, useLocation } from "react-router";
+import { motion, useReducedMotion } from "motion/react";
+import { NavLink, Outlet } from "react-router";
 import { AccountPopover } from "@/components/application/account/account-popover";
+import { CurrencySelect } from "@/components/application/currency/currency-select";
+import { PrivacyToggle } from "@/components/application/privacy/privacy-toggle";
 import { NotificationsPopover } from "@/components/application/notifications/notifications-popover";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
@@ -65,17 +67,17 @@ const NavLinks = ({ layoutId }: { layoutId: string }) => {
 };
 
 export const AppLayout = () => {
-    const location = useLocation();
-    const reduceMotion = useReducedMotion();
 
     return (
         <div className="min-h-screen bg-secondary">
-            <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
+            <header className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
                 <NavLink to="/" aria-label="Margin — home" className="rounded-md outline-brand focus-visible:outline-2 focus-visible:outline-offset-4">
                     <Logo className="h-9 md:h-7" />
                 </NavLink>
 
                 <div className="flex items-center gap-2">
+                    <PrivacyToggle />
+
                     <Dropdown.Root>
                         <Button
                             color="primary"
@@ -122,24 +124,16 @@ export const AppLayout = () => {
 
                         <Separator className="mx-1.5 hidden lg:block" />
 
+                        <CurrencySelect />
+
                         <NotificationsPopover />
                         <AccountPopover />
                     </div>
                 </div>
             </header>
 
-            <main className="mx-auto w-full max-w-7xl px-4 pb-28 md:px-8 md:pb-16">
-                <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                        key={location.pathname}
-                        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
-                    >
-                        <Outlet />
-                    </motion.div>
-                </AnimatePresence>
+            <main className="mx-auto w-full max-w-[88rem] px-4 pb-28 md:px-8 md:pb-16">
+                <Outlet />
             </main>
 
             <nav
