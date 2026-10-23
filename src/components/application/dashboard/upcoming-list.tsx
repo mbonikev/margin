@@ -1,7 +1,6 @@
 import { HiOutlineArrowRight } from "react-icons/hi2";
 import { Amount } from "@/components/base/amount/amount";
 import { Card } from "@/components/base/card/card";
-import { useCurrency } from "@/providers/currency-provider";
 import { cx } from "@/utils/cx";
 
 /** How comfortably the balance covers this one. */
@@ -9,7 +8,7 @@ export type Pressure = "ok" | "tight" | "over";
 
 /** Most rows stay neutral on purpose — only the ones that need attention carry colour. */
 const pressureChip: Record<Pressure, string> = {
-    ok: "bg-tertiary text-tertiary",
+    ok: "bg-brand-primary text-brand-secondary",
     tight: "bg-tile-yellow-tint text-tile-yellow-ink",
     over: "bg-tile-magenta-tint text-tile-magenta-ink",
 };
@@ -25,7 +24,6 @@ export interface Commitment {
 }
 
 export const UpcomingList = ({ items, className }: { items: Commitment[]; className?: string }) => {
-    const { currency } = useCurrency();
     const total = items.reduce((sum, item) => sum + item.amount, 0);
 
     return (
@@ -54,7 +52,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
 
                             <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{item.name}</span>
 
-                            <Amount value={item.amount} hideSymbol className="shrink-0 text-sm font-semibold text-primary" />
+                            <Amount value={item.amount} className="shrink-0 text-sm font-semibold text-primary" />
                         </button>
                     </li>
                 ))}
@@ -62,10 +60,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
 
             <div className="flex items-baseline justify-between gap-2 pt-1">
                 <p className="text-xs text-tertiary">Next 30 days</p>
-                <p className="text-sm font-semibold text-primary">
-                    <Amount value={total} />
-                    <span className="ml-1 text-xs font-medium text-quaternary">{currency.code}</span>
-                </p>
+<Amount value={total} className="text-base font-semibold text-primary" />
             </div>
         </Card>
     );
