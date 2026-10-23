@@ -116,6 +116,12 @@
     :root:not(.dark-mode) {
         --color-bg-primary: var(--color-surface);
         --color-bg-secondary: var(--color-canvas);
+
+        /* Untitled UI maps this to brand-50 — an 8% mix into white. That reads
+           fine for a mid-tone accent but vanishes for a light one like amber.
+           Mixing into the canvas instead means the chip is always a step darker
+           than a white card, whatever hue the accent is. */
+        --color-bg-brand-primary: color-mix(in oklab, var(--color-brand) 20%, var(--color-canvas));
     }
 }
 
