@@ -17,12 +17,10 @@ const savedPerMonth = [7420000, 8150000, 9030000, 8640000, 10310000, 11470000, 1
 const last = (series: number[]) => series[series.length - 1];
 
 const accounts: Account[] = [
-    // Mobile money is a phone number, a bank account is a card number, and cash
-    // has no identifier at all — the mask has to match what the account really is.
-    { id: "momo", name: "MTN MoMo", kind: "Mobile money", mask: "phone", tail: "640", balance: 684000, updated: "Updated today", theme: "blue" },
-    { id: "equity", name: "Equity Bank", kind: "Current", mask: "card", tail: "9152", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
-    { id: "savings", name: "Laptop fund", kind: "Savings", mask: "card", tail: "0471", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
-    { id: "cash", name: "Cash", kind: "Wallet", mask: "none", balance: 4000, updated: "Updated today", theme: "plum" },
+    { id: "momo", name: "MTN MoMo", kind: "Mobile money", tail: "2640", balance: 684000, updated: "Updated today", theme: "blue" },
+    { id: "equity", name: "Equity Bank", kind: "Current", tail: "9152", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
+    { id: "savings", name: "Laptop fund", kind: "Savings", tail: "0471", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
+    { id: "cash", name: "Cash", kind: "Wallet", tail: "7318", balance: 4000, updated: "Updated today", theme: "plum" },
 ];
 
 export const DashboardPage = () => {
