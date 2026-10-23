@@ -5,16 +5,28 @@ import { useCurrency } from "@/providers/currency-provider";
 import { Logo } from "@/components/ui/logo";
 import { cx } from "@/utils/cx";
 
-export type CardTheme = "blue" | "graphite" | "emerald" | "plum";
+export type CardTheme = "blue" | "indigo" | "violet" | "plum" | "rose" | "crimson" | "amber" | "emerald" | "teal" | "slate" | "graphite";
 
 /** Flat, saturated card stock. Fixed art — people learn an account by its colour,
  *  so this deliberately ignores the selected accent. */
 const themes: Record<CardTheme, string> = {
     blue: "bg-[#2c5fe0]",
-    graphite: "bg-[#22262a]",
-    emerald: "bg-[#13795a]",
+    indigo: "bg-[#3b3a9e]",
+    violet: "bg-[#5b3a9e]",
     plum: "bg-[#7a3f70]",
+    rose: "bg-[#a13058]",
+    crimson: "bg-[#a8322f]",
+    amber: "bg-[#9a6016]",
+    emerald: "bg-[#13795a]",
+    teal: "bg-[#0f6670]",
+    slate: "bg-[#3f4a57]",
+    graphite: "bg-[#22262a]",
 };
+
+/** Ordered for the picker — the swatch row reads as a spectrum. */
+export const cardThemes = Object.keys(themes) as CardTheme[];
+
+export const cardThemeClass = (theme: CardTheme) => themes[theme];
 
 export interface Account {
     id: string;
