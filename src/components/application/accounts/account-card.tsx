@@ -103,8 +103,8 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
         </div>
 
         <div className="relative flex items-center gap-3">
-            <Contactless className="size-[1.125rem] text-white/80" />
-            <Chip className="h-[1.35rem] w-[1.8rem] text-white/85" />
+            <Contactless className="size-[1.375rem] text-white/80" />
+            <Chip className="h-[1.625rem] w-[2.17rem] text-white/85" />
         </div>
 
         {/* Not font-mono: the generic monospace fallback reads thin and dead.
@@ -113,10 +113,10 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
 
         <div className="relative flex items-end justify-between gap-3">
             <div className="min-w-0">
-                <p className="truncate text-[0.675rem] font-medium text-white/75">{account.name}</p>
-                <Amount value={account.balance} className="mt-0.5 block truncate text-[1.35rem] font-semibold tracking-tight" />
+                <p className="truncate text-[0.7875rem] font-medium text-white/75">{account.name}</p>
+                <Amount value={account.balance} className="mt-0.5 block truncate text-[1.6rem] font-semibold tracking-tight" />
             </div>
-            <p className="shrink-0 text-[0.675rem] font-medium text-white/70">{account.updated}</p>
+            <p className="shrink-0 text-[0.7875rem] font-medium text-white/70">{account.updated}</p>
         </div>
     </div>
     );
