@@ -70,7 +70,7 @@ export const AppLayout = () => {
 
     return (
         <div className="min-h-screen bg-secondary">
-            <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
+            <header className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
                 <NavLink to="/" aria-label="Margin — home" className="rounded-md outline-brand focus-visible:outline-2 focus-visible:outline-offset-4">
                     <Logo className="h-9 md:h-7" />
                 </NavLink>
@@ -128,7 +128,7 @@ export const AppLayout = () => {
                 </div>
             </header>
 
-            <main className="mx-auto w-full max-w-7xl px-4 pb-28 md:px-8 md:pb-16">
+            <main className="mx-auto w-full max-w-[88rem] px-4 pb-28 md:px-8 md:pb-16">
                 <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                         key={location.pathname}
