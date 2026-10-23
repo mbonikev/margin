@@ -105,7 +105,7 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
                         )}
                     </AnimatePresence>
 
-                    <div className="flex h-10 items-end gap-0.5 md:h-12" onMouseLeave={() => setHovered(null)}>
+                    <div className="flex h-10 items-end gap-1 md:h-12" onMouseLeave={() => setHovered(null)}>
                         {bars.map((bar, index) => (
                             /* The whole column is the hit target, not just the bar. */
                             <div
@@ -126,7 +126,7 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
                 </div>
 
                 {ticks && (
-                    <div className="mt-1.5 flex gap-0.5">
+                    <div className="mt-1.5 flex gap-1">
                         {ticks.map((tick, index) => (
                             <span
                                 key={tick + index}
