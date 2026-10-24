@@ -1,19 +1,20 @@
 import { useMemo } from "react";
-import { AccountHero } from "@/components/app/account-hero";
-import { accounts } from "@/data/accounts";
-import type { Commitment } from "@/components/app/upcoming-list";
-import { UpcomingList } from "@/components/app/upcoming-list";
-import type { Activity } from "@/components/app/recent-activity";
-import { RecentActivity } from "@/components/app/recent-activity";
-import type { Goal } from "@/components/app/savings-goals";
-import { SavingsGoals } from "@/components/app/savings-goals";
-import type { MonthFlow } from "@/components/app/in-vs-out";
-import { InVsOut } from "@/components/app/in-vs-out";
-import type { StatTileProps } from "@/components/app/stat-tile";
-import { StatTile } from "@/components/app/stat-tile";
-import { Amount } from "@/components/ui/amount";
-import { useCurrency } from "@/providers/currency-provider";
-import { usePrivacy } from "@/providers/privacy-provider";
+import { AccountHero } from "@/components/accounts";
+import { useAccounts } from "@/providers";
+import type { Commitment } from "@/components/dashboard";
+import { UpcomingList } from "@/components/dashboard";
+import type { Activity } from "@/components/dashboard";
+import { RecentActivity } from "@/components/dashboard";
+import type { Goal } from "@/components/dashboard";
+import { SavingsGoals } from "@/components/dashboard";
+import type { MonthFlow } from "@/components/dashboard";
+import { InVsOut } from "@/components/dashboard";
+import type { StatTileProps } from "@/components/dashboard";
+import { StatTile } from "@/components/dashboard";
+import { Amount } from "@/components/ui";
+import { useCurrency } from "@/providers";
+import { usePreferences } from "@/providers";
+import { usePrivacy } from "@/providers";
 
 /** Placeholder figures — swap for real data once the backend exists. */
 const safeToSpend = [32000, 28400, 41200, 36800, 44100, 39500, 48200];
@@ -77,6 +78,8 @@ const flows: MonthFlow[] = [
 ];
 
 export const DashboardPage = () => {
+    const { accounts } = useAccounts();
+    const { preferences } = usePreferences();
     const { formatWithCode } = useCurrency();
     const { mask } = usePrivacy();
     const formatBarAmount = (amount: number) => mask(formatWithCode(amount));
@@ -85,7 +88,7 @@ export const DashboardPage = () => {
         () => [
             {
                 label: "Safe to spend",
-                value: <Amount value={last(safeToSpend)} compactSymbol />,
+                value: <Amount value={last(safeToSpend)} compactSymbol compact />,
                 delta: 12,
                 deltaSuffix: "%",
                 tone: "aqua",
@@ -95,7 +98,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Spent this week",
-                value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} compactSymbol />,
+                value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} compactSymbol compact />,
                 delta: -8,
                 deltaSuffix: "%",
                 tone: "blue",
@@ -105,7 +108,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Total balance",
-                value: <Amount value={last(totalBalance)} compactSymbol />,
+                value: <Amount value={last(totalBalance)} compactSymbol compact />,
                 delta: -4,
                 deltaSuffix: "%",
                 tone: "yellow",
@@ -115,7 +118,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Saved this month",
-                value: <Amount value={last(savedPerMonth)} compactSymbol />,
+                value: <Amount value={last(savedPerMonth)} compactSymbol compact />,
                 delta: 6,
                 deltaSuffix: "%",
                 tone: "magenta",
@@ -134,27 +137,33 @@ export const DashboardPage = () => {
             className="grid gap-1.5 md:grid-cols-2 md:gap-2 lg:min-h-[27rem] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1.1fr)_minmax(0,0.8fr)]"
         >
             {/* Left — four stat tiles in a 2x2 */}
-            <div className="grid grid-cols-2 gap-1.5 md:gap-2">
-                {statTiles.map((tile) => (
-                    <StatTile key={tile.label} {...tile} className="min-h-36 md:min-h-40" />
-                ))}
-            </div>
+            {preferences.showStatTiles && (
+                <div className="grid min-w-0 grid-cols-2 gap-1.5 md:gap-2">
+                    {statTiles.map((tile) => (
+                        <StatTile key={tile.label} {...tile} className="min-h-36 md:min-h-40" />
+                    ))}
+                </div>
+            )}
 
             {/* Middle — the hero, stretches to the full height of the section */}
-            <AccountHero accounts={accounts} className="min-h-80 lg:min-h-0" />
+            {preferences.showAccountHero && accounts.length > 0 && <AccountHero accounts={accounts} className="min-w-0 min-h-80 lg:min-h-0" />}
 
             {/* Right — same width as the left column, full height */}
-            <UpcomingList items={upcoming} className="min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />
+            {preferences.showUpcoming && <UpcomingList items={upcoming} className="min-w-0 min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />}
             </section>
 
-            <section aria-label="Outlook" className="grid gap-1.5 md:gap-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-                <InVsOut months={flows} className="min-h-72" />
-                <SavingsGoals goals={goals} />
-            </section>
+            {(preferences.showInVsOut || preferences.showGoals) && (
+                <section aria-label="Outlook" className="grid gap-1.5 md:gap-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+                    {preferences.showInVsOut && <InVsOut months={flows} className="min-w-0 min-h-72" />}
+                    {preferences.showGoals && <SavingsGoals goals={goals} className="min-w-0" />}
+                </section>
+            )}
 
-            <section aria-label="Activity">
-                <RecentActivity items={activity} />
-            </section>
+            {preferences.showActivity && (
+                <section aria-label="Activity">
+                    <RecentActivity items={activity} />
+                </section>
+            )}
         </div>
     );
 };

@@ -1,20 +1,33 @@
 import { Tab, TabList, TabPanel, Tabs } from "react-aria-components";
-import { CurrencySettings } from "@/components/app/currency-settings";
-import { EmailSettings } from "@/components/app/email-settings";
-import { ProfileSettings } from "@/components/app/profile-settings";
-import { ThemeControls } from "@/components/app/theme-controls";
-import { Card } from "@/components/ui/card";
-import { cx } from "@/utils/cx";
+import { AppearanceSettings } from "@/components/settings";
+import { CurrencySettings } from "@/components/settings";
+import { DashboardSettings } from "@/components/settings";
+import { DataSettings } from "@/components/settings";
+import { EmailSettings } from "@/components/settings";
+import { MoneySettings } from "@/components/settings";
+import { NotificationSettings } from "@/components/settings";
+import { PrivacySettings } from "@/components/settings";
+import { ProfileSettings } from "@/components/settings";
+import { Card } from "@/components/ui";
+import { cx } from "@/utils";
 
+/** Ordered by how often a setting here gets changed, not by how it was built. */
 const tabs = [
-    { id: "profile", label: "Profile" },
-    { id: "currency", label: "Currency" },
-    { id: "email", label: "Morning email" },
-    { id: "appearance", label: "Appearance" },
+    { id: "profile", label: "Profile", panel: <ProfileSettings /> },
+    { id: "appearance", label: "Appearance", panel: <AppearanceSettings /> },
+    { id: "dashboard", label: "Dashboard", panel: <DashboardSettings /> },
+    { id: "money", label: "Money", panel: <MoneySettings /> },
+    { id: "currency", label: "Currency", panel: <CurrencySettings /> },
+    { id: "email", label: "Morning email", panel: <EmailSettings /> },
+    { id: "notifications", label: "Notifications", panel: <NotificationSettings /> },
+    { id: "privacy", label: "Privacy", panel: <PrivacySettings /> },
+    { id: "data", label: "Your data", panel: <DataSettings /> },
 ];
 
 export const SettingsPage = () => (
-    <Tabs defaultSelectedKey="currency" className="flex flex-col gap-3">
+    <Tabs defaultSelectedKey="appearance" className="flex flex-col gap-1.5 md:gap-2">
+        {/* The strip scrolls rather than wraps: nine tabs in two rows on a phone
+            would push the panel below the fold. */}
         <TabList aria-label="Settings" className="flex w-full gap-1 overflow-x-auto rounded-full bg-primary p-1 shadow-xs scrollbar-hide md:w-max">
             {tabs.map((tab) => (
                 <Tab
@@ -33,26 +46,11 @@ export const SettingsPage = () => (
         </TabList>
 
         <Card className="p-5 md:p-6">
-            <TabPanel id="profile" className="outline-hidden">
-                <ProfileSettings />
-            </TabPanel>
-
-            <TabPanel id="currency" className="outline-hidden">
-                <CurrencySettings />
-            </TabPanel>
-
-            <TabPanel id="email" className="outline-hidden">
-                <EmailSettings />
-            </TabPanel>
-
-            <TabPanel id="appearance" className="outline-hidden">
-                <div className="flex flex-col gap-1">
-                    <h2 className="text-md font-semibold text-primary">Appearance</h2>
-                    <div className="-mx-2 max-w-sm">
-                        <ThemeControls />
-                    </div>
-                </div>
-            </TabPanel>
+            {tabs.map((tab) => (
+                <TabPanel key={tab.id} id={tab.id} className="outline-hidden">
+                    {tab.panel}
+                </TabPanel>
+            ))}
         </Card>
     </Tabs>
 );

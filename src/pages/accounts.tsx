@@ -1,33 +1,46 @@
 import { useState } from "react";
+import { Tab, TabList, TabPanel, Tabs } from "react-aria-components";
 import { HiOutlineCog6Tooth, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
-import type { Account } from "@/components/app/account-card";
-import { AccountCard } from "@/components/app/account-card";
-import { AccountSettingsModal } from "@/components/app/account-detail-modal";
-import { AddAccountModal } from "@/components/app/add-account-modal";
-import { UpdateBalanceModal } from "@/components/app/update-balance-modal";
-import { ActionButton } from "@/components/ui/action-button";
-import { Amount } from "@/components/ui/amount";
-import { Card } from "@/components/ui/card";
-import { accounts } from "@/data/accounts";
-import { cx } from "@/utils/cx";
+import type { Account } from "@/components/accounts";
+import { AccountCard } from "@/components/accounts";
+import { AccountSettingsModal } from "@/components/accounts";
+import { AccountTrash } from "@/components/accounts";
+import { AddAccountModal } from "@/components/accounts";
+import { UpdateBalanceModal } from "@/components/accounts";
+import { ActionButton } from "@/components/ui";
+import { Amount } from "@/components/ui";
+import { Card } from "@/components/ui";
+import { useAccounts } from "@/providers";
+import { usePreferences } from "@/providers";
+import { cx } from "@/utils";
 
-/** Anything older than this is worth nudging about — stale balances are the one
- *  thing that quietly makes every other number on the dashboard wrong. */
-const isStale = (account: Account) => /(\d+)d ago/.test(account.updated) && Number(RegExp.$1) >= 3;
+/** Stale balances are the one thing that quietly makes every other number on the
+ *  dashboard wrong, so the threshold is the user's to set. */
+const isStale = (account: Account, afterDays: number) => {
+    const match = /(\d+)d ago/.exec(account.updated);
+    return match !== null && Number(match[1]) >= afterDays;
+};
 
 export const AccountsPage = () => {
+    const { accounts, trashed, remove } = useAccounts();
+    const { preferences } = usePreferences();
     const [target, setTarget] = useState<{ account: Account; modal: "balance" | "settings" } | null>(null);
     const [adding, setAdding] = useState(false);
 
     const total = accounts.reduce((sum, account) => sum + account.balance, 0);
-    const stale = accounts.filter(isStale);
+    const stale = accounts.filter((account) => isStale(account, preferences.staleAfterDays));
+
+    const tabs = [
+        { id: "accounts", label: "Your accounts", count: accounts.length },
+        { id: "trash", label: "Trash", count: trashed.length },
+    ];
 
     return (
         <div className="flex flex-col gap-1.5 md:gap-2">
-            <section aria-label="Summary" className="grid gap-1.5 md:grid-cols-3 md:gap-2">
+            <section aria-label="Summary" className="grid min-w-0 gap-1.5 md:grid-cols-3 md:gap-2">
                 <Card>
                     <p className="text-xs font-medium text-tertiary md:text-sm">Total across accounts</p>
-                    <Amount value={total} compactSymbol className="mt-1 block truncate text-2xl font-semibold tracking-tight text-primary md:text-3xl" />
+                    <Amount value={total} compactSymbol compact className="mt-1 block truncate text-2xl font-semibold tracking-tight text-primary md:text-3xl" />
                 </Card>
 
                 <Card>
@@ -43,37 +56,66 @@ export const AccountsPage = () => {
                 </Card>
             </section>
 
-            <section aria-label="Your accounts">
-                <Card className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Your accounts</h2>
-                        <ActionButton icon={HiOutlinePlus} onClick={() => setAdding(true)}>Add account</ActionButton>
-                    </div>
-
-                    <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        {accounts.map((account) => (
-                            <li key={account.id} className="flex flex-col gap-2.5">
-                                <div className="h-52">
-                                    <AccountCard account={account} />
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                    <ActionButton icon={HiOutlineScale} onClick={() => setTarget({ account, modal: "balance" })}>
-                                        Update
-                                    </ActionButton>
-                                    <ActionButton icon={HiOutlineCog6Tooth} onClick={() => setTarget({ account, modal: "settings" })}>
-                                        Settings
-                                    </ActionButton>
-
-                                    {isStale(account) && (
-                                        <span className="ml-auto rounded-full bg-chart-compare/15 px-2.5 py-1 text-xs font-medium text-chart-compare">Stale</span>
-                                    )}
-                                </div>
-                            </li>
+            <Tabs defaultSelectedKey="accounts" className="flex flex-col gap-1.5 md:gap-2">
+                <div className="flex items-center justify-between gap-3">
+                    <TabList aria-label="Accounts" className="flex gap-1 overflow-x-auto rounded-full bg-primary p-1 shadow-xs scrollbar-hide">
+                        {tabs.map((tab) => (
+                            <Tab
+                                key={tab.id}
+                                id={tab.id}
+                                className={({ isSelected }) =>
+                                    cx(
+                                        "flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 text-sm font-medium whitespace-nowrap transition duration-100 ease-linear outline-focus-ring focus-visible:outline-2 focus-visible:-outline-offset-2",
+                                        isSelected ? "bg-brand-primary text-brand-secondary" : "text-tertiary hover:text-secondary",
+                                    )
+                                }
+                            >
+                                {({ isSelected }) => (
+                                    <>
+                                        {tab.label}
+                                        <span className={cx("text-xs tabular-nums", isSelected ? "opacity-70" : "text-quaternary")}>{tab.count}</span>
+                                    </>
+                                )}
+                            </Tab>
                         ))}
-                    </ul>
+                    </TabList>
+
+                    <ActionButton icon={HiOutlinePlus} onClick={() => setAdding(true)} className="bg-primary shadow-xs">
+                        <span className="max-sm:sr-only">Add account</span>
+                    </ActionButton>
+                </div>
+
+                <Card>
+                    <TabPanel id="accounts" className="outline-hidden">
+                        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                            {accounts.map((account) => (
+                                <li key={account.id} className="flex min-w-0 flex-col gap-2.5">
+                                    <div className="h-52">
+                                        <AccountCard account={account} />
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        <ActionButton icon={HiOutlineScale} onClick={() => setTarget({ account, modal: "balance" })}>
+                                            Update
+                                        </ActionButton>
+                                        <ActionButton icon={HiOutlineCog6Tooth} onClick={() => setTarget({ account, modal: "settings" })}>
+                                            Settings
+                                        </ActionButton>
+
+                                        {isStale(account, preferences.staleAfterDays) && (
+                                            <span className="ml-auto rounded-full bg-chart-compare/15 px-2.5 py-1 text-xs font-medium text-chart-compare">Stale</span>
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </TabPanel>
+
+                    <TabPanel id="trash" className="outline-hidden">
+                        <AccountTrash />
+                    </TabPanel>
                 </Card>
-            </section>
+            </Tabs>
 
             <AddAccountModal isOpen={adding} onOpenChange={setAdding} />
 
@@ -81,7 +123,12 @@ export const AccountsPage = () => {
                 <UpdateBalanceModal isOpen onOpenChange={(open) => !open && setTarget(null)} account={target.account} />
             )}
             {target?.modal === "settings" && (
-                <AccountSettingsModal isOpen onOpenChange={(open) => !open && setTarget(null)} account={target.account} />
+                <AccountSettingsModal
+                    isOpen
+                    onOpenChange={(open) => !open && setTarget(null)}
+                    account={target.account}
+                    onDelete={() => remove(target.account.id)}
+                />
             )}
         </div>
     );
