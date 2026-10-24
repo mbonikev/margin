@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { HiArrowPath, HiCheck, HiOutlineArrowDownTray, HiOutlineArrowPath, HiOutlineComputerDesktop, HiOutlineExclamationTriangle, HiOutlineMoon, HiOutlineSun, HiOutlineTrash } from "react-icons/hi2";
+import { HiOutlineXMark, HiArrowPath, HiCheck, HiOutlineArrowDownTray, HiOutlineArrowPath, HiOutlineComputerDesktop, HiOutlineExclamationTriangle, HiOutlineMoon, HiOutlineSun, HiOutlineTrash } from "react-icons/hi2";
 import { Button } from "@/components/base/button";
 import { Select } from "@/components/base/select";
 import { Toggle } from "@/components/base/toggle";
@@ -413,6 +413,68 @@ export const DashboardSettings = () => {
 
 /* ── money-settings.tsx ── */
 
+/**
+ * The account-type list. Removing one never touches accounts already using it —
+ * they keep the string, it just stops being offered to new ones.
+ */
+const AccountKinds = () => {
+    const { preferences, set } = usePreferences();
+    const { accounts } = useAccounts();
+    const [draft, setDraft] = useState("");
+
+    const add = () => {
+        const next = draft.trim();
+        if (next && !preferences.accountKinds.includes(next)) set("accountKinds", [...preferences.accountKinds, next]);
+        setDraft("");
+    };
+
+    return (
+        <div className="flex flex-col gap-2 rounded-2xl bg-secondary px-4 py-3">
+            <ul className="flex flex-wrap gap-1.5">
+                {preferences.accountKinds.map((kind) => {
+                    const inUse = accounts.filter((account) => account.kind === kind).length;
+
+                    return (
+                        <li key={kind}>
+                            <span className="flex h-8 items-center gap-1 rounded-full bg-primary pr-1 pl-3 text-xs font-medium text-secondary">
+                                {kind}
+                                {inUse > 0 && <span className="text-quaternary">· {inUse}</span>}
+                                <button
+                                    type="button"
+                                    onClick={() => set("accountKinds", preferences.accountKinds.filter((item) => item !== kind))}
+                                    aria-label={`Remove ${kind}`}
+                                    title={inUse > 0 ? `${inUse} account${inUse === 1 ? "" : "s"} keep this type` : "Remove"}
+                                    className="flex size-6 items-center justify-center rounded-full text-quaternary transition duration-100 ease-linear hover:bg-negative-tint hover:text-negative-ink"
+                                >
+                                    <HiOutlineXMark className="size-3.5" />
+                                </button>
+                            </span>
+                        </li>
+                    );
+                })}
+
+                {preferences.accountKinds.length === 0 && <li className="py-1 text-xs text-quaternary">No types left. Add one, or type one when adding an account.</li>}
+            </ul>
+
+            <div className="flex items-center gap-2">
+                <input
+                    value={draft}
+                    onChange={(event) => setDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") add();
+                    }}
+                    placeholder="Add a type…"
+                    aria-label="New account type"
+                    className="h-8 min-w-0 flex-1 rounded-full bg-primary px-3 text-xs font-medium text-primary outline-focus-ring placeholder:text-quaternary focus-visible:outline-2 focus-visible:-outline-offset-2"
+                />
+                <ActionButton onClick={add} className="h-8 shrink-0 bg-primary text-xs">
+                    Add
+                </ActionButton>
+            </div>
+        </div>
+    );
+};
+
 export const MoneySettings = () => {
     const { preferences, set } = usePreferences();
     const { currency } = useCurrency();
@@ -443,6 +505,10 @@ export const MoneySettings = () => {
                     value={preferences.showCurrencyCode}
                     onChange={(value) => set("showCurrencyCode", value)}
                 />
+            </SettingGroup>
+
+            <SettingGroup title="Account types" hint="What the Type dropdown offers when you add or edit an account.">
+                <AccountKinds />
             </SettingGroup>
 
             <SettingGroup title="Your month">

@@ -332,10 +332,22 @@ interface AccountSettingsModalProps {
     account: Account;
     /** Omitted where there is nowhere to restore from — the delete row is then hidden. */
     onDelete?: () => void;
+    onSave?: (patch: { name: string; kind: string; theme: CardTheme }) => void;
 }
 
-export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete }: AccountSettingsModalProps) => {
+export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, onSave }: AccountSettingsModalProps) => {
     const [theme, setTheme] = useState<CardTheme>(account.theme);
+    const [kind, setKind] = useState(account.kind);
+    const [name, setName] = useState(account.name);
+
+    // The hero keeps this mounted and swaps the account under it, so the fields
+    // have to be re-seeded each time it opens or you would edit the last one.
+    useEffect(() => {
+        if (!isOpen) return;
+        setName(account.name);
+        setKind(account.kind);
+        setTheme(account.theme);
+    }, [isOpen, account.name, account.kind, account.theme]);
     const { preferences } = usePreferences();
     // One tap when confirmation is off, two when it's on — the ask happens in
     // the button itself rather than stacking a dialog on top of this one.
@@ -350,12 +362,10 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete }
             </div>
 
             <Field label="Name">
-                <TextField defaultValue={account.name} />
+                <TextField value={name} onChange={(event) => setName(event.target.value)} />
             </Field>
 
-            <Field label="Type">
-                <TextField defaultValue={account.kind} />
-            </Field>
+            <KindField value={kind} onChange={setKind} />
 
             <Field label="Card colour" hint="Accounts are easiest to recognise by colour.">
                 <CardThemePicker value={theme} onChange={setTheme} />
@@ -363,7 +373,10 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete }
 
             <ModalActions
                 onCancel={() => onOpenChange(false)}
-                onConfirm={() => onOpenChange(false)}
+                onConfirm={() => {
+                    onSave?.({ name: name.trim() || account.name, kind, theme });
+                    onOpenChange(false);
+                }}
                 confirmLabel="Save changes"
                 leading={
                     onDelete && (
@@ -398,12 +411,69 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete }
 
 /* ── add-account-modal.tsx ── */
 
-const kinds = [
-    { id: "Mobile money", label: "Mobile money" },
-    { id: "Current", label: "Bank account" },
-    { id: "Savings", label: "Savings" },
-    { id: "Wallet", label: "Cash" },
-];
+/** The id of the row that turns the picker into a text field. */
+const NEW_KIND = "__new";
+
+/**
+ * Type picker with a way out: the list is the user's own, and the last row opens
+ * an input instead of selecting. A type the account already has is always
+ * offered, even if it has since been deleted from the list — otherwise editing
+ * an old account would silently change its type.
+ */
+const KindField = ({ value, onChange }: { value: string; onChange: (next: string) => void }) => {
+    const { preferences, set } = usePreferences();
+    const [adding, setAdding] = useState(false);
+    const [draft, setDraft] = useState("");
+
+    const kinds = preferences.accountKinds.includes(value) || !value ? preferences.accountKinds : [...preferences.accountKinds, value];
+    const items = [...kinds.map((kind) => ({ id: kind, label: kind })), { id: NEW_KIND, label: "+ New type…" }];
+
+    const commit = () => {
+        const next = draft.trim();
+        if (next) {
+            if (!preferences.accountKinds.includes(next)) set("accountKinds", [...preferences.accountKinds, next]);
+            onChange(next);
+        }
+        setDraft("");
+        setAdding(false);
+    };
+
+    if (adding) {
+        return (
+            <Field label="New type" hint="Added to your list, so it's there next time.">
+                <div className="flex items-center gap-2">
+                    <TextField
+                        autoFocus
+                        value={draft}
+                        onChange={(event) => setDraft(event.target.value)}
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                                event.preventDefault();
+                                commit();
+                            }
+                            if (event.key === "Escape") setAdding(false);
+                        }}
+                        placeholder="Crypto, SACCO, piggy bank…"
+                    />
+                    <ActionButton onClick={commit} className="mt-1.5 shrink-0 bg-brand-primary text-brand-secondary">
+                        Add
+                    </ActionButton>
+                </div>
+            </Field>
+        );
+    }
+
+    return (
+        <Select
+            label="Type"
+            selectedKey={value}
+            onSelectionChange={(key) => (String(key) === NEW_KIND ? setAdding(true) : onChange(String(key)))}
+            items={items}
+        >
+            {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+        </Select>
+    );
+};
 
 interface AddAccountModalProps {
     isOpen: boolean;
@@ -413,18 +483,19 @@ interface AddAccountModalProps {
 
 export const AddAccountModal = ({ isOpen, onOpenChange, onSave }: AddAccountModalProps) => {
     const { currency } = useCurrency();
+    const { preferences } = usePreferences();
     const [name, setName] = useState("");
-    const [kind, setKind] = useState(kinds[0].id);
+    const [kind, setKind] = useState(preferences.accountKinds[0] ?? "");
     const [balance, setBalance] = useState("");
     const [theme, setTheme] = useState<CardTheme>("blue");
 
     useEffect(() => {
         if (!isOpen) return;
         setName("");
-        setKind(kinds[0].id);
+        setKind(preferences.accountKinds[0] ?? "");
         setBalance("");
         setTheme("blue");
-    }, [isOpen]);
+    }, [isOpen, preferences.accountKinds]);
 
     return (
         <Modal isOpen={isOpen} onOpenChange={onOpenChange} label="Add account">
@@ -438,9 +509,7 @@ export const AddAccountModal = ({ isOpen, onOpenChange, onSave }: AddAccountModa
                     <TextField value={name} onChange={(event) => setName(event.target.value)} placeholder="MTN MoMo" />
                 </Field>
 
-                <Select label="Type" selectedKey={kind} onSelectionChange={(key) => setKind(String(key))} items={kinds}>
-                    {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
-                </Select>
+                <KindField value={kind} onChange={setKind} />
 
                 <Field label="Balance right now" hint="You can change this any time — that's the whole idea.">
                     <AmountField symbol={currency.symbol} value={balance} onValueChange={setBalance} />
@@ -656,7 +725,7 @@ const actions = [
 ];
 
 export const AccountHero = ({ accounts, className }: { accounts: Account[]; className?: string }) => {
-    const { add } = useAccounts();
+    const { add, update } = useAccounts();
     const [activeId, setActiveId] = useState(accounts[0]?.id ?? "");
     const [openModal, setOpenModal] = useState<"balance" | "history" | "settings" | null>(null);
     const [adding, setAdding] = useState(false);
@@ -843,7 +912,12 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
 
             <UpdateBalanceModal isOpen={openModal === "balance"} onOpenChange={(open) => setOpenModal(open ? "balance" : null)} account={active} />
             <AccountHistoryModal isOpen={openModal === "history"} onOpenChange={(open) => setOpenModal(open ? "history" : null)} account={active} />
-            <AccountSettingsModal isOpen={openModal === "settings"} onOpenChange={(open) => setOpenModal(open ? "settings" : null)} account={active} />
+            <AccountSettingsModal
+                isOpen={openModal === "settings"}
+                onOpenChange={(open) => setOpenModal(open ? "settings" : null)}
+                account={active}
+                onSave={(patch) => update(active.id, patch)}
+            />
         </Card>
     );
 };

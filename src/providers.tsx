@@ -146,6 +146,10 @@ export interface Preferences {
     showCardRef: boolean;
 
     // Money
+    /** The account types offered when adding or editing one. Fully editable —
+     *  an account keeps whatever string it was given even if the type is later
+     *  removed from this list. */
+    accountKinds: string[];
     rounding: Rounding;
     showCurrencyCode: boolean;
     weekStart: WeekStart;
@@ -183,6 +187,7 @@ export const defaultPreferences: Preferences = {
     cardSheen: true,
     showCardRef: true,
 
+    accountKinds: ["Mobile money", "Bank account", "Savings", "Cash"],
     rounding: "exact",
     showCurrencyCode: false,
     weekStart: "monday",
@@ -539,6 +544,8 @@ interface AccountsContextValue {
     /** Everything not in the trash — what totals and the card grid are built from. */
     accounts: Account[];
     add: (account: Omit<Account, "id" | "updated">) => void;
+    /** Edits any account, demo set included — the change is stored as an overlay. */
+    update: (id: string, patch: Partial<Account>) => void;
     /** Most recently deleted first, so the thing you just removed is at the top. */
     trashed: TrashedAccount[];
     remove: (id: string) => void;
@@ -567,6 +574,19 @@ const writeTrash = (trash: Trash) => {
 };
 
 const ACCOUNTS_KEY = "margin:accounts";
+const OVERRIDES_KEY = "margin:account-edits";
+
+/** Account id → the fields the user has changed on it. */
+type Overrides = Record<string, Partial<Account>>;
+
+const readOverrides = (): Overrides => {
+    try {
+        const raw = localStorage.getItem(OVERRIDES_KEY);
+        return raw ? (JSON.parse(raw) as Overrides) : {};
+    } catch {
+        return {};
+    }
+};
 
 const readAccounts = (): Account[] => {
     try {
@@ -582,9 +602,27 @@ export const AccountsProvider = ({ children }: { children: ReactNode }) => {
     // Accounts the person actually created. The demo set is layered on top when
     // the setting is on, so turning it off never destroys their own.
     const [own, setOwn] = useState<Account[]>(readAccounts);
+    const [overrides, setOverrides] = useState<Overrides>(readOverrides);
     const [trash, setTrash] = useState<Trash>(readTrash);
 
-    const all = useMemo(() => (preferences.demoData ? [...demoAccounts, ...own] : own), [preferences.demoData, own]);
+    // Edits are an overlay rather than a rewrite, so a demo account can be
+    // renamed without the demo list itself being mutable.
+    const all = useMemo(() => {
+        const base = preferences.demoData ? [...demoAccounts, ...own] : own;
+        return base.map((account) => (overrides[account.id] ? { ...account, ...overrides[account.id] } : account));
+    }, [preferences.demoData, own, overrides]);
+
+    const update = useCallback((id: string, patch: Partial<Account>) => {
+        setOverrides((previous) => {
+            const next = { ...previous, [id]: { ...previous[id], ...patch } };
+            try {
+                localStorage.setItem(OVERRIDES_KEY, JSON.stringify(next));
+            } catch {
+                /* blocked storage — the edit just won't survive a reload */
+            }
+            return next;
+        });
+    }, []);
 
     const add = useCallback((account: Omit<Account, "id" | "updated">) => {
         setOwn((previous) => {
@@ -598,7 +636,7 @@ export const AccountsProvider = ({ children }: { children: ReactNode }) => {
         });
     }, []);
 
-    const update = useCallback((next: (previous: Trash) => Trash) => {
+    const updateTrash = useCallback((next: (previous: Trash) => Trash) => {
         setTrash((previous) => {
             const value = next(previous);
             writeTrash(value);
@@ -606,16 +644,16 @@ export const AccountsProvider = ({ children }: { children: ReactNode }) => {
         });
     }, []);
 
-    const remove = useCallback((id: string) => update((previous) => ({ ...previous, [id]: Date.now() })), [update]);
+    const remove = useCallback((id: string) => updateTrash((previous) => ({ ...previous, [id]: Date.now() })), [updateTrash]);
 
     const restore = useCallback(
         (id: string) =>
-            update((previous) => {
+            updateTrash((previous) => {
                 const rest = { ...previous };
                 delete rest[id];
                 return rest;
             }),
-        [update],
+        [updateTrash],
     );
 
     const purge = useCallback(
@@ -642,11 +680,12 @@ export const AccountsProvider = ({ children }: { children: ReactNode }) => {
                 .map((account) => ({ ...account, deletedAt: trash[account.id] }))
                 .sort((a, b) => b.deletedAt - a.deletedAt),
             add,
+            update,
             remove,
             restore,
             purge,
         }),
-        [all, trash, add, remove, restore, purge],
+        [all, trash, add, update, remove, restore, purge],
     );
 
     return <AccountsContext value={value}>{children}</AccountsContext>;
