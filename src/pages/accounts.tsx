@@ -22,7 +22,7 @@ const isStale = (account: Account, afterDays: number) => {
 };
 
 export const AccountsPage = () => {
-    const { accounts, trashed, add, remove } = useAccounts();
+    const { accounts, trashed, add, update, remove } = useAccounts();
     const { preferences } = usePreferences();
     const [target, setTarget] = useState<{ account: Account; modal: "balance" | "settings" } | null>(null);
     const [adding, setAdding] = useState(false);
@@ -137,6 +137,7 @@ export const AccountsPage = () => {
                     isOpen
                     onOpenChange={(open) => !open && setTarget(null)}
                     account={target.account}
+                    onSave={(patch) => update(target.account.id, patch)}
                     onDelete={() => remove(target.account.id)}
                 />
             )}
