@@ -9,6 +9,7 @@ import { Toggle } from "@/components/base/toggle";
 import { ActionButton } from "@/components/ui";
 import { Field, ModalActions, TextField } from "@/components/ui";
 import { Flag } from "@/components/ui";
+import { BackdropPreview, backdrops } from "@/components/backdrops";
 import { demoProfile } from "@/demo-data";
 import { BASE_CURRENCY, accentColors, currencies, useAccounts, useCurrency, usePreferences, usePrivacy, useTheme } from "@/providers";
 import type { Preferences, ThemeMode } from "@/providers";
@@ -274,13 +275,41 @@ export const ThemeControls = () => {
 
 /* ── profile-settings.tsx ── */
 
-const zones = [
-    { id: "Africa/Kigali", label: "Kigali", supportingText: "GMT+2" },
-    { id: "Africa/Nairobi", label: "Nairobi", supportingText: "GMT+3" },
-    { id: "Africa/Lagos", label: "Lagos", supportingText: "GMT+1" },
-    { id: "Europe/London", label: "London", supportingText: "GMT+0" },
-    { id: "America/New_York", label: "New York", supportingText: "GMT−5" },
-];
+/** The browser's own IANA list — every zone it knows, which is all of them.
+ *  Falls back to a short list on engines without `supportedValuesOf`. */
+const zoneNames: string[] =
+    typeof Intl.supportedValuesOf === "function"
+        ? Intl.supportedValuesOf("timeZone")
+        : ["Africa/Kigali", "Africa/Nairobi", "Africa/Lagos", "Europe/London", "America/New_York", "UTC"];
+
+/** "GMT+2" for a zone, read out of the formatter rather than a hand-kept table —
+ *  it then follows daylight saving without anyone maintaining it. */
+const offsetOf = (zone: string) => {
+    try {
+        const parts = new Intl.DateTimeFormat("en-GB", { timeZone: zone, timeZoneName: "shortOffset" }).formatToParts(new Date());
+        return parts.find((part) => part.type === "timeZoneName")?.value ?? "";
+    } catch {
+        return "";
+    }
+};
+
+const zones = zoneNames.map((zone) => ({
+    id: zone,
+    // "Africa/Kigali" reads as "Kigali", but "America/Indiana/Knox" needs its
+    // middle part to stay distinguishable.
+    label: zone.split("/").slice(1).join(" · ").replace(/_/g, " ") || zone,
+    supportingText: offsetOf(zone),
+}));
+
+/** The device's own zone, which is right far more often than any default. */
+const localZone = (() => {
+    try {
+        const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return zoneNames.includes(zone) ? zone : zoneNames[0];
+    } catch {
+        return zoneNames[0];
+    }
+})();
 
 export const ProfileSettings = () => {
     const { preferences } = usePreferences();
@@ -301,14 +330,21 @@ export const ProfileSettings = () => {
             <TextField key={person.email} type="email" defaultValue={person.email} placeholder="you@example.com" />
         </Field>
 
-        <Select
+        {/* A combobox, not a select: 400-odd zones is a scroll, but one word of
+            typing is a jump. */}
+        <Select.ComboBox
             label="Timezone"
             hint="The email is sent at your local time, not the server's."
-            defaultSelectedKey="Africa/Kigali"
+            placeholder="Search zones"
+            defaultSelectedKey={localZone}
             items={zones}
         >
-            {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
-        </Select>
+            {(item) => (
+                <Select.Item id={item.id} supportingText={item.supportingText}>
+                    {item.label}
+                </Select.Item>
+            )}
+        </Select.ComboBox>
 
         <ModalActions onCancel={() => {}} onConfirm={() => {}} confirmLabel="Save profile" />
     </div>
@@ -330,6 +366,30 @@ export const AppearanceSettings = () => {
             <SettingGroup title="Theme">
                 <div className="-mx-2 max-w-sm">
                     <ThemeControls />
+                </div>
+            </SettingGroup>
+
+            <SettingGroup title="Background" hint="The texture behind the cards. Each one follows your accent colour.">
+                <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+                    {backdrops.map((option) => {
+                        const isActive = preferences.backdrop === option.id;
+
+                        return (
+                            <button
+                                key={option.id}
+                                type="button"
+                                onClick={() => set("backdrop", option.id)}
+                                aria-pressed={isActive}
+                                className={cx(
+                                    "flex flex-col gap-1.5 rounded-2xl p-1.5 text-left transition duration-100 ease-linear",
+                                    isActive ? "bg-brand-primary" : "bg-secondary hover:bg-secondary_hover",
+                                )}
+                            >
+                                <BackdropPreview kind={option.id} className="h-12 w-full ring-1 ring-secondary" />
+                                <span className={cx("px-1 pb-0.5 text-xs font-medium", isActive ? "text-brand-secondary" : "text-tertiary")}>{option.label}</span>
+                            </button>
+                        );
+                    })}
                 </div>
             </SettingGroup>
 

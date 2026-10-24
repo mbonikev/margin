@@ -6,6 +6,7 @@
 
 import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import type { BackdropKind } from "@/components/backdrops";
 import { demoAccounts } from "@/demo-data";
 import type { Account } from "@/components/accounts";
 
@@ -142,6 +143,8 @@ export interface Preferences {
     density: Density;
     textSize: TextSize;
     reduceMotion: boolean;
+    /** Which page texture sits behind the cards. "none" turns it off. */
+    backdrop: BackdropKind;
     cardSheen: boolean;
     showCardRef: boolean;
 
@@ -184,6 +187,7 @@ export const defaultPreferences: Preferences = {
     density: "comfortable",
     textSize: "default",
     reduceMotion: false,
+    backdrop: "dots",
     cardSheen: true,
     showCardRef: true,
 

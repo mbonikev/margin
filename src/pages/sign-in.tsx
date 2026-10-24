@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { HiOutlineEnvelope } from "react-icons/hi2";
 import { useNavigate } from "react-router";
-import { PageBackdrop } from "@/components/illustrations";
+import { PageBackdrop } from "@/components/backdrops";
 import { Field, TextField } from "@/components/ui";
 import { Logo } from "@/components/ui";
 

@@ -9,7 +9,7 @@ import { HiOutlineArrowPath, HiOutlineArrowRight, HiOutlineArrowRightOnRectangle
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { demoNotifications } from "@/demo-data";
 import { AddAccountModal, RecordModal } from "@/components/accounts";
-import { PageBackdrop } from "@/components/illustrations";
+import { PageBackdrop } from "@/components/backdrops";
 import type { RecordKind } from "@/components/accounts";
 import { ThemeControls } from "@/components/settings";
 import { UpdateBalanceModal } from "@/components/accounts";
