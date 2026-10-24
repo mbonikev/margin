@@ -346,11 +346,14 @@ export const ModalActions = ({
     onCancel,
     onConfirm,
     confirmLabel,
+    confirmDisabled,
     leading,
 }: {
     onCancel: () => void;
     onConfirm: () => void;
     confirmLabel: string;
+    /** Greys out the confirm — for a form that can't be completed yet. */
+    confirmDisabled?: boolean;
     /** Sits opposite the confirm button — for the odd destructive action. */
     leading?: ReactNode;
 }) => (
@@ -362,7 +365,8 @@ export const ModalActions = ({
         <button
             type="button"
             onClick={onConfirm}
-            className="h-10 rounded-full bg-brand-solid px-5 text-sm font-semibold text-white transition duration-100 ease-linear hover:bg-brand-solid_hover"
+            disabled={confirmDisabled}
+            className="h-10 rounded-full bg-brand-solid px-5 text-sm font-semibold text-white transition duration-100 ease-linear hover:bg-brand-solid_hover disabled:pointer-events-none disabled:opacity-40"
         >
             {confirmLabel}
         </button>

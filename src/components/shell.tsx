@@ -415,6 +415,7 @@ export const AppLayout = () => {
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
     const [recording, setRecording] = useState<RecordKind | null>(null);
+    const [adding, setAdding] = useState(false);
     const [updatingBalance, setUpdatingBalance] = useState(false);
 
     return (
@@ -498,16 +499,27 @@ export const AppLayout = () => {
                 </div>
             </nav>
 
-            {accounts[0] ? (
-                <UpdateBalanceModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} account={accounts[0]} />
-            ) : (
-                <AddAccountModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} onSave={add} />
-            )}
+            {accounts[0] && <UpdateBalanceModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} account={accounts[0]} />}
+
+            {/* One add-account modal for the whole shell: the header's Record and
+                Update balance actions both land here when there is no account yet. */}
+            <AddAccountModal
+                isOpen={adding || (updatingBalance && !accounts[0])}
+                onOpenChange={(open) => {
+                    setAdding(open);
+                    if (!open) setUpdatingBalance(false);
+                }}
+                onSave={add}
+            />
             <RecordModal
                 kind={recording ?? "expense"}
                 isOpen={recording !== null}
                 onOpenChange={(open) => !open && setRecording(null)}
                 accounts={accounts}
+                onAddAccount={() => {
+                    setRecording(null);
+                    setAdding(true);
+                }}
             />
         </div>
     );
