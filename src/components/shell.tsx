@@ -10,6 +10,7 @@ import { NavLink, Outlet, useNavigate } from "react-router";
 import { demoNotifications } from "@/demo-data";
 import { AddAccountModal, RecordModal } from "@/components/accounts";
 import { PageBackdrop } from "@/components/backdrops";
+import { NoNotificationsArt } from "@/components/illustrations";
 import type { RecordKind } from "@/components/accounts";
 import { ThemeControls } from "@/components/settings";
 import { UpdateBalanceModal } from "@/components/accounts";
@@ -214,7 +215,10 @@ export const NotificationsPopover = () => {
                                         </motion.div>
                                     ))
                                 ) : (
-                                    <p className="px-4 py-10 text-center text-sm text-tertiary">You're all caught up.</p>
+                                    <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+                                        <NoNotificationsArt />
+                                        <p className="text-sm text-tertiary">You're all caught up.</p>
+                                    </div>
                                 )}
                             </div>
 

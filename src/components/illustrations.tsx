@@ -80,3 +80,14 @@ export const NoActivityArt = () => (
         <path d="M40 44h14" {...stroke} opacity="0.35" />
     </Art>
 );
+
+/** A bell at rest, with the one thing worth seeing already ticked off. */
+export const NoNotificationsArt = () => (
+    <Art label="">
+        <path d="M48 16a13 13 0 0 1 13 13v9l4 7H31l4-7v-9a13 13 0 0 1 13-13Z" {...stroke} />
+        <path d="M48 11v5" {...stroke} />
+        <path d="M43 45a5 5 0 0 0 10 0" {...stroke} />
+        <circle cx="64" cy="20" r="7" className="text-brand" fill="currentColor" opacity="0.9" />
+        <path d="M61 20l2 2 4-4" stroke="var(--color-bg-primary)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </Art>
+);
