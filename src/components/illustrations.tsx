@@ -24,7 +24,9 @@ export const PageBackdrop = () => (
             }}
         />
 
-        <Logo variant="mark" className="absolute -top-16 -left-20 h-72 rotate-12 opacity-[0.07] sm:h-96" />
+        {/* Clear of the sticky header: anything above ~5rem is lost behind the
+            blurred bar, so the mark starts below it rather than being cropped. */}
+        <Logo variant="mark" className="absolute top-24 -left-24 h-72 rotate-12 opacity-[0.07] sm:h-96" />
         <Logo variant="mark" className="absolute -right-24 -bottom-24 h-80 -rotate-6 opacity-[0.05] sm:h-[28rem]" />
     </div>
 );
