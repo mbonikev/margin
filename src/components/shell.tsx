@@ -1,7 +1,7 @@
 /** The frame around every page: header, nav, footer and the header's popovers. */
 
 import { motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FC } from "react";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import type { Selection } from "react-aria-components";
@@ -405,6 +405,15 @@ const NavLinks = ({ layoutId }: { layoutId: string }) => {
 
 export const AppLayout = () => {
     const { accounts, add } = useAccounts();
+    // The bar only earns its background once there is content behind it.
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 4);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
     const [recording, setRecording] = useState<RecordKind | null>(null);
     const [updatingBalance, setUpdatingBalance] = useState(false);
 
@@ -414,7 +423,7 @@ export const AppLayout = () => {
 
             {/* Full-width wrapper so the blur spans the viewport, with the inner
                 row still constrained to the page width. */}
-            <header className="sticky top-0 z-50 bg-header backdrop-blur-xl">
+            <header className={cx("sticky top-0 z-50 transition-colors duration-200 ease-linear", scrolled && "bg-header backdrop-blur-xl")}>
                 <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
                 <NavLink to="/" aria-label="Margin — home" className="rounded-md outline-brand focus-visible:outline-2 focus-visible:outline-offset-4">
                     {/* The wordmark is ~117px wide at this height — too much of a
