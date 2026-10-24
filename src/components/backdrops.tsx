@@ -40,8 +40,8 @@ const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.25 } as co
 const Dots = ({ preview }: LayerProps) => (
     <div
         className={cx(
-            "absolute inset-0 [background-image:radial-gradient(var(--color-border-secondary)_1px,transparent_1px)]",
-            preview ? "opacity-100 [background-size:9px_9px]" : "opacity-60 [background-size:22px_22px]",
+            "absolute inset-0 text-quaternary [background-image:radial-gradient(currentColor_1px,transparent_1px)]",
+            preview ? "opacity-45 [background-size:9px_9px]" : "opacity-30 [background-size:22px_22px]",
         )}
         style={preview ? undefined : centreMask}
     />
@@ -50,8 +50,8 @@ const Dots = ({ preview }: LayerProps) => (
 const Grid = ({ preview }: LayerProps) => (
     <div
         className={cx(
-            "absolute inset-0 [background-image:linear-gradient(to_right,var(--color-border-secondary)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border-secondary)_1px,transparent_1px)]",
-            preview ? "opacity-100 [background-size:14px_14px]" : "opacity-50 [background-size:56px_56px]",
+            "absolute inset-0 text-quaternary [background-image:linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)]",
+            preview ? "opacity-40 [background-size:14px_14px]" : "opacity-25 [background-size:56px_56px]",
         )}
         style={preview ? undefined : centreMask}
     />
@@ -60,7 +60,7 @@ const Grid = ({ preview }: LayerProps) => (
 /** Concentric sweeps anchored off two corners — the mark's circle, opened up. */
 const Arcs = ({ preview }: LayerProps) => (
     <svg aria-hidden="true" className="absolute inset-0 size-full text-brand" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <g opacity={preview ? 0.4 : 0.1} {...stroke} vectorEffect="non-scaling-stroke">
+        <g opacity={preview ? 0.4 : 0.18} {...stroke} vectorEffect="non-scaling-stroke">
             <circle cx="2" cy="14" r="18" />
             <circle cx="2" cy="14" r="27" />
             <circle cx="2" cy="14" r="36" />
@@ -71,29 +71,27 @@ const Arcs = ({ preview }: LayerProps) => (
     </svg>
 );
 
-/** Loose circles, like coins set down and forgotten. */
-const Rings = ({ preview }: LayerProps) =>
-    preview ? (
-        <svg aria-hidden="true" className="absolute inset-0 size-full text-brand" viewBox="0 0 120 60">
-            <g {...stroke} opacity="0.45" vectorEffect="non-scaling-stroke">
-                <circle cx="22" cy="20" r="13" />
-                <circle cx="44" cy="38" r="7" />
-                <circle cx="96" cy="42" r="15" />
-                <circle cx="78" cy="16" r="8" />
-            </g>
-        </svg>
-    ) : (
-        <svg aria-hidden="true" className="absolute inset-0 size-full text-brand" viewBox="0 0 400 300">
-            <g {...stroke}>
-                <circle cx="52" cy="62" r="34" opacity="0.16" />
-                <circle cx="96" cy="104" r="16" opacity="0.12" />
-                <circle cx="344" cy="228" r="42" opacity="0.14" />
-                <circle cx="300" cy="188" r="18" opacity="0.1" />
-                <circle cx="366" cy="54" r="22" opacity="0.08" />
-                <circle cx="40" cy="244" r="24" opacity="0.1" />
-            </g>
-        </svg>
-    );
+/** Loose circles, like coins set down and forgotten. Positioned rather than
+ *  drawn in one viewBox, so each one lands in a gutter instead of being
+ *  letterboxed into the middle where the cards cover it. */
+const pageRings = [
+    "top-[8%] -left-28 size-80",
+    "top-[46%] -left-16 size-44",
+    "bottom-[6%] left-[10%] size-56",
+    "-right-28 top-[18%] size-72",
+    "right-[6%] bottom-[22%] size-52",
+    "-right-16 bottom-[-6%] size-96",
+];
+
+const previewRings = ["top-1 left-2 size-10", "bottom-1 left-10 size-6", "top-2 right-6 size-7", "-bottom-2 -right-3 size-14"];
+
+const Rings = ({ preview }: LayerProps) => (
+    <>
+        {(preview ? previewRings : pageRings).map((position) => (
+            <span key={position} className={cx("absolute rounded-full border border-brand", preview ? "opacity-40" : "opacity-20", position)} />
+        ))}
+    </>
+);
 
 /** Long, slow curves across the foot of the page. */
 const Waves = ({ preview }: LayerProps) => (
@@ -104,9 +102,9 @@ const Waves = ({ preview }: LayerProps) => (
         viewBox="0 0 400 160"
     >
         <g {...stroke} vectorEffect="non-scaling-stroke">
-            <path d="M-10 108c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.5 : 0.18} />
-            <path d="M-10 128c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.35 : 0.12} />
-            <path d="M-10 148c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.2 : 0.07} />
+            <path d="M-10 108c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.5 : 0.3} />
+            <path d="M-10 128c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.35 : 0.2} />
+            <path d="M-10 148c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.2 : 0.12} />
         </g>
     </svg>
 );
@@ -123,7 +121,7 @@ const layers: Record<BackdropKind, (props: LayerProps) => React.ReactNode> = {
 /** The real thing: fixed, so it holds still while the page scrolls. */
 export const PageBackdrop = () => {
     const { preferences } = usePreferences();
-    const Layer = layers[preferences.backdrop] ?? layers.dots;
+    const Layer = layers[preferences.backdrop] ?? layers.waves;
 
     if (preferences.backdrop === "none") return null;
 

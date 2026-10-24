@@ -187,7 +187,7 @@ export const defaultPreferences: Preferences = {
     density: "comfortable",
     textSize: "default",
     reduceMotion: false,
-    backdrop: "dots",
+    backdrop: "waves",
     cardSheen: true,
     showCardRef: true,
 
