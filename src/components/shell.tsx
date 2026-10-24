@@ -258,9 +258,17 @@ const PanelItem = ({ icon: Icon, label, onPress }: { icon: FC<{ className?: stri
 
 export const ProfileMenu = () => {
     const navigate = useNavigate();
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Navigating from inside the menu leaves it hanging over the new page, so
+    // the trigger is controlled and every item that routes closes it first.
+    const go = (to: string) => {
+        setIsOpen(false);
+        void navigate(to);
+    };
 
     return (
-    <DialogTrigger>
+    <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
         <AriaButton
             aria-label="Account menu"
             className="group ml-1.5 rounded-full outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -281,8 +289,8 @@ export const ProfileMenu = () => {
         >
             <Dialog aria-label="Account" className="outline-hidden">
                 <div className="flex flex-col gap-0.5 p-1">
-                    <PanelItem icon={HiOutlineUser} label="View profile" onPress={() => void navigate("/profile")} />
-                    <PanelItem icon={HiOutlineCog6Tooth} label="Settings" onPress={() => void navigate("/settings")} />
+                    <PanelItem icon={HiOutlineUser} label="View profile" onPress={() => go("/profile")} />
+                    <PanelItem icon={HiOutlineCog6Tooth} label="Settings" onPress={() => go("/settings")} />
                 </div>
 
                 <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
@@ -292,7 +300,7 @@ export const ProfileMenu = () => {
                 <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
 
                 <div className="p-1">
-                    <PanelItem icon={HiOutlineArrowRightOnRectangle} label="Sign out" onPress={() => void navigate("/signin")} />
+                    <PanelItem icon={HiOutlineArrowRightOnRectangle} label="Sign out" onPress={() => go("/signin")} />
                 </div>
             </Dialog>
         </Popover>
