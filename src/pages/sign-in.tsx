@@ -162,11 +162,11 @@ export const SignInPage = () => {
                                 event.preventDefault();
                                 send();
                             }}
-                            className="flex flex-col gap-4"
+                            className="flex flex-col gap-5"
                         >
                             {/* A code rather than a password: one less thing to lose,
                                 and nothing to chase into a second tab the way a link is. */}
-                            <Field label="Email" hint="We'll send a 6-digit code.">
+                            <Field label="Email">
                                 <TextField
                                     type="email"
                                     required
