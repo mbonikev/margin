@@ -357,7 +357,7 @@ export const AppearanceSettings = () => {
     const { preferences, set } = usePreferences();
 
     return (
-        <div className="flex max-w-2xl flex-col gap-6">
+        <div className="flex max-w-5xl flex-col gap-6">
             <div>
                 <h2 className="text-md font-semibold text-primary">Appearance</h2>
                 <p className="mt-0.5 text-sm text-tertiary">How Margin looks and how much of it fits on screen.</p>
@@ -370,7 +370,7 @@ export const AppearanceSettings = () => {
             </SettingGroup>
 
             <SettingGroup title="Background" hint="The texture behind the cards. Each one follows your accent colour.">
-                <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                     {backdrops.map((option) => {
                         const isActive = preferences.backdrop === option.id;
 
@@ -385,7 +385,7 @@ export const AppearanceSettings = () => {
                                     isActive ? "bg-brand-primary" : "bg-secondary hover:bg-secondary_hover",
                                 )}
                             >
-                                <BackdropPreview kind={option.id} className="h-12 w-full ring-1 ring-secondary" />
+                                <BackdropPreview kind={option.id} className="h-20 w-full ring-1 ring-secondary" />
                                 <span className={cx("px-1 pb-0.5 text-xs font-medium", isActive ? "text-brand-secondary" : "text-tertiary")}>{option.label}</span>
                             </button>
                         );
@@ -450,7 +450,7 @@ export const DashboardSettings = () => {
     const shown = sections.filter((section) => preferences[section.key]).length;
 
     return (
-        <div className="flex max-w-2xl flex-col gap-6">
+        <div className="flex max-w-5xl flex-col gap-6">
             <div>
                 <h2 className="text-md font-semibold text-primary">Dashboard</h2>
                 <p className="mt-0.5 text-sm text-tertiary">Keep what you look at. Hide the rest — {shown} of {sections.length} showing.</p>
@@ -540,7 +540,7 @@ export const MoneySettings = () => {
     const { currency } = useCurrency();
 
     return (
-        <div className="flex max-w-2xl flex-col gap-6">
+        <div className="flex max-w-5xl flex-col gap-6">
             <div>
                 <h2 className="text-md font-semibold text-primary">Money</h2>
                 <p className="mt-0.5 text-sm text-tertiary">How figures are written, and what counts as a month.</p>
@@ -772,7 +772,7 @@ export const NotificationSettings = () => {
     const { preferences, set } = usePreferences();
 
     return (
-        <div className="flex max-w-2xl flex-col gap-6">
+        <div className="flex max-w-5xl flex-col gap-6">
             <div>
                 <h2 className="text-md font-semibold text-primary">Notifications</h2>
                 <p className="mt-0.5 text-sm text-tertiary">What's worth interrupting you for. Everything else waits for the morning email.</p>
@@ -798,7 +798,7 @@ export const PrivacySettings = () => {
     const { hidden, toggle } = usePrivacy();
 
     return (
-        <div className="flex max-w-2xl flex-col gap-6">
+        <div className="flex max-w-5xl flex-col gap-6">
             <div>
                 <h2 className="text-md font-semibold text-primary">Privacy</h2>
                 <p className="mt-0.5 text-sm text-tertiary">Margin never connects to your bank. This is about who can read your screen.</p>
@@ -840,7 +840,7 @@ export const DataSettings = () => {
     };
 
     return (
-        <div className="flex max-w-2xl flex-col gap-6">
+        <div className="flex max-w-5xl flex-col gap-6">
             <div>
                 <h2 className="text-md font-semibold text-primary">Your data</h2>
                 <p className="mt-0.5 text-sm text-tertiary">It lives in this browser. Nothing here leaves your device.</p>

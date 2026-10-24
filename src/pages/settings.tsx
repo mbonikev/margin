@@ -25,7 +25,7 @@ const tabs = [
 ];
 
 export const SettingsPage = () => (
-    <Tabs defaultSelectedKey="appearance" className="flex flex-col gap-1.5 md:gap-2">
+    <Tabs defaultSelectedKey="profile" className="flex flex-col gap-1.5 md:gap-2">
         {/* The strip scrolls rather than wraps: nine tabs in two rows on a phone
             would push the panel below the fold. */}
         <TabList aria-label="Settings" className="flex w-full gap-1 overflow-x-auto rounded-full bg-primary p-1 shadow-xs scrollbar-hide md:w-max">
