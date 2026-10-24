@@ -9,6 +9,7 @@ import { HiOutlineArrowPath, HiOutlineArrowRight, HiOutlineArrowRightOnRectangle
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { demoNotifications } from "@/demo-data";
 import { AddAccountModal, RecordModal } from "@/components/accounts";
+import { PageBackdrop } from "@/components/illustrations";
 import type { RecordKind } from "@/components/accounts";
 import { ThemeControls } from "@/components/settings";
 import { UpdateBalanceModal } from "@/components/accounts";
@@ -306,7 +307,7 @@ const PORTFOLIO_URL = "https://mbonikev.site";
 
 /** One line about who made this, and the only place to say thanks. */
 export const AppFooter = () => (
-    <footer className="mx-auto w-full max-w-[88rem] px-4 pb-24 md:px-8 md:pb-4">
+    <footer className="relative mx-auto w-full max-w-[88rem] px-4 pb-24 md:px-8 md:pb-4">
         {/* Stacked and centred on a phone: side by side, the line has to truncate
             to fit the coffee button, and a half-sentence is worse than two rows. */}
         <div className="flex flex-col items-center gap-2 border-t border-secondary py-3 text-center sm:flex-row sm:justify-between sm:gap-4 sm:text-left">
@@ -400,7 +401,9 @@ export const AppLayout = () => {
     const [updatingBalance, setUpdatingBalance] = useState(false);
 
     return (
-        <div className="min-h-screen overflow-x-clip bg-secondary">
+        <div className="relative min-h-screen overflow-x-clip bg-secondary">
+            <PageBackdrop />
+
             {/* Full-width wrapper so the blur spans the viewport, with the inner
                 row still constrained to the page width. */}
             <header className="sticky top-0 z-50 bg-header backdrop-blur-xl">
@@ -461,7 +464,9 @@ export const AppLayout = () => {
                 </div>
             </header>
 
-            <main className="mx-auto w-full max-w-[88rem] px-4 pb-4 md:px-8 md:pb-6">
+            {/* `relative` on the content: the backdrop is positioned, so static
+                siblings would paint underneath it. */}
+            <main className="relative mx-auto w-full max-w-[88rem] px-4 pb-4 md:px-8 md:pb-6">
                 <Outlet />
             </main>
 

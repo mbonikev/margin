@@ -6,6 +6,29 @@
  * rather than clip art dropped on top.
  */
 
+import { Logo } from "@/components/ui";
+
+/**
+ * The page's furniture: a dot grid and two oversized marks bleeding off opposite
+ * corners, all in brand green at very low alpha. Fixed rather than absolute so
+ * it stays put while the page scrolls, and masked so the middle — where the
+ * cards sit — stays calm.
+ */
+export const PageBackdrop = () => (
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div
+            className="absolute inset-0 opacity-60 [background-image:radial-gradient(var(--color-border-secondary)_1px,transparent_1px)] [background-size:22px_22px]"
+            style={{
+                maskImage: "radial-gradient(ellipse 70% 55% at 50% 50%, transparent 20%, black 85%)",
+                WebkitMaskImage: "radial-gradient(ellipse 70% 55% at 50% 50%, transparent 20%, black 85%)",
+            }}
+        />
+
+        <Logo variant="mark" className="absolute -top-16 -left-20 h-72 rotate-12 opacity-[0.07] sm:h-96" />
+        <Logo variant="mark" className="absolute -right-24 -bottom-24 h-80 -rotate-6 opacity-[0.05] sm:h-[28rem]" />
+    </div>
+);
+
 const stroke = {
     fill: "none",
     stroke: "currentColor",
