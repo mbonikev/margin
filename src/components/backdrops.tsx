@@ -51,7 +51,7 @@ const Grid = ({ preview }: LayerProps) => (
     <div
         className={cx(
             "absolute inset-0 text-quaternary [background-image:linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)]",
-            preview ? "opacity-40 [background-size:14px_14px]" : "opacity-[0.12] [background-size:64px_64px]",
+            preview ? "opacity-40 [background-size:14px_14px]" : "opacity-[0.06] [background-size:64px_64px]",
         )}
         style={preview ? undefined : centreMask}
     />
