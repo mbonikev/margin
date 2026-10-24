@@ -2,21 +2,27 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import App from "@/App";
-import { CurrencyProvider } from "@/providers/currency-provider";
-import { PrivacyProvider } from "@/providers/privacy-provider";
-import { ThemeProvider } from "@/providers/theme-provider";
+import { AccountsProvider } from "@/providers";
+import { CurrencyProvider } from "@/providers";
+import { PreferencesProvider } from "@/providers";
+import { PrivacyProvider } from "@/providers";
+import { ThemeProvider } from "@/providers";
 import "styles/globals.css";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        <ThemeProvider>
-            <CurrencyProvider>
-                <PrivacyProvider>
-                    <BrowserRouter>
-                        <App />
-                    </BrowserRouter>
-                </PrivacyProvider>
-            </CurrencyProvider>
-        </ThemeProvider>
+        <PreferencesProvider>
+            <ThemeProvider>
+                <CurrencyProvider>
+                    <PrivacyProvider>
+                        <AccountsProvider>
+                            <BrowserRouter>
+                                <App />
+                            </BrowserRouter>
+                        </AccountsProvider>
+                    </PrivacyProvider>
+                </CurrencyProvider>
+            </ThemeProvider>
+        </PreferencesProvider>
     </StrictMode>,
 );

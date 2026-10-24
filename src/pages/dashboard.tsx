@@ -1,92 +1,36 @@
 import { useMemo } from "react";
-import { AccountHero } from "@/components/app/account-hero";
-import { accounts } from "@/data/accounts";
-import type { Commitment } from "@/components/app/upcoming-list";
-import { UpcomingList } from "@/components/app/upcoming-list";
-import type { Activity } from "@/components/app/recent-activity";
-import { RecentActivity } from "@/components/app/recent-activity";
-import type { Goal } from "@/components/app/savings-goals";
-import { SavingsGoals } from "@/components/app/savings-goals";
-import type { MonthFlow } from "@/components/app/in-vs-out";
-import { InVsOut } from "@/components/app/in-vs-out";
-import type { StatTileProps } from "@/components/app/stat-tile";
-import { StatTile } from "@/components/app/stat-tile";
-import { Amount } from "@/components/ui/amount";
-import { useCurrency } from "@/providers/currency-provider";
-import { usePrivacy } from "@/providers/privacy-provider";
+import { AccountHero } from "@/components/accounts";
+import { InVsOut, RecentActivity, SavingsGoals, StatTile, UpcomingList } from "@/components/dashboard";
+import type { StatTileProps } from "@/components/dashboard";
+import { Amount } from "@/components/ui";
+import { demoActivity, demoFlows, demoGoals, demoSeries, demoUpcoming } from "@/demo-data";
+import { useAccounts, useCurrency, usePreferences, usePrivacy } from "@/providers";
 
-/** Placeholder figures — swap for real data once the backend exists. */
-const safeToSpend = [32000, 28400, 41200, 36800, 44100, 39500, 48200];
-const spentThisWeek = [5200, 6400, 3900, 4800, 3100, 4600, 3400];
-const totalBalance = [1520000, 1495000, 1610000, 1575000, 1540000, 1505000, 1468000];
-const savedPerMonth = [7420000, 8150000, 9030000, 8640000, 10310000, 11470000, 12480000];
+const last = (series: number[]) => series[series.length - 1] ?? 0;
 
-const last = (series: number[]) => series[series.length - 1];
-
-
-/** Relative to today so the list never goes stale while this is placeholder data. */
-const inDays = (days: number) => {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return date;
-};
-
-const upcoming: Commitment[] = [
-    { id: "netflix", name: "Netflix", due: inDays(0), amount: 18000, pressure: "ok" },
-    { id: "rent", name: "Rent", due: inDays(1), amount: 450000, pressure: "over" },
-    { id: "data", name: "Phone bundle", due: inDays(8), amount: 25000, pressure: "ok" },
-    { id: "school", name: "School fees", due: inDays(11), amount: 180000, pressure: "tight" },
-    { id: "gym", name: "Gym", due: inDays(13), amount: 30000, pressure: "ok" },
-    { id: "insurance", name: "Insurance", due: inDays(20), amount: 64000, pressure: "ok" },
-];
-
-/** Six months back, so the labels stay correct whenever this is viewed. */
-const monthsAgo = (count: number) => {
-    const date = new Date();
-    date.setDate(1);
-    date.setMonth(date.getMonth() - count);
-    return date;
-};
-
-const goals: Goal[] = [
-    { id: "laptop", name: "Laptop", saved: 168000, target: 420000, startedAt: monthsAgo(4) },
-    { id: "emergency", name: "Emergency fund", saved: 744000, target: 1200000, startedAt: monthsAgo(14) },
-    { id: "trip", name: "Trip home", saved: 62000, target: 400000, startedAt: monthsAgo(1) },
-];
-
-const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000);
-
-const activity: Activity[] = [
-    { id: "a1", kind: "balance", name: "Balance updated", account: "MTN MoMo", note: "Checked after lunch", at: hoursAgo(2), amount: 684000, balanceAfter: 684000 },
-    { id: "a2", kind: "expense", name: "Groceries", account: "Cash", note: "Weekly shop", at: hoursAgo(20), amount: 12400, balanceAfter: 4000 },
-    { id: "a3", kind: "expense", name: "Airtime", account: "MTN MoMo", at: hoursAgo(26), amount: 2000, balanceAfter: 696400 },
-    { id: "a4", kind: "income", name: "Client payment", account: "Equity Bank", note: "Invoice #114", at: hoursAgo(50), amount: 320000, balanceAfter: 612000 },
-    { id: "a5", kind: "expense", name: "Transport", account: "MTN MoMo", at: hoursAgo(74), amount: 4500, balanceAfter: 698400 },
-    { id: "a6", kind: "balance", name: "Balance updated", account: "Equity Bank", at: hoursAgo(96), amount: 612000, balanceAfter: 612000 },
-    { id: "a7", kind: "expense", name: "Rent", account: "Equity Bank", note: "October", at: hoursAgo(120), amount: 450000, balanceAfter: 292000 },
-    { id: "a8", kind: "income", name: "Refund", account: "Cash", note: "Returned headphones", at: hoursAgo(144), amount: 18000, balanceAfter: 16400 },
-];
-
-const flows: MonthFlow[] = [
-    { month: monthsAgo(5), in: 980000, out: 812000 },
-    { month: monthsAgo(4), in: 1040000, out: 1105000 },
-    { month: monthsAgo(3), in: 960000, out: 744000 },
-    { month: monthsAgo(2), in: 1180000, out: 905000 },
-    { month: monthsAgo(1), in: 1020000, out: 1240000 },
-    { month: monthsAgo(0), in: 1310000, out: 868000 },
-];
+/** Nothing is recorded yet, so every series is flat and every list is empty. */
+const emptySeries = { safeToSpend: [], spentThisWeek: [], totalBalance: [], savedPerMonth: [] };
 
 export const DashboardPage = () => {
+    const { accounts } = useAccounts();
+    const { preferences } = usePreferences();
     const { formatWithCode } = useCurrency();
     const { mask } = usePrivacy();
     const formatBarAmount = (amount: number) => mask(formatWithCode(amount));
+
+    const demo = preferences.demoData;
+    const { safeToSpend, spentThisWeek, totalBalance, savedPerMonth } = demo ? demoSeries : emptySeries;
+    const upcoming = demo ? demoUpcoming : [];
+    const goals = demo ? demoGoals : [];
+    const activity = demo ? demoActivity : [];
+    const flows = demo ? demoFlows : [];
 
     const statTiles = useMemo<StatTileProps[]>(
         () => [
             {
                 label: "Safe to spend",
-                value: <Amount value={last(safeToSpend)} compactSymbol />,
-                delta: 12,
+                value: <Amount value={last(safeToSpend)} compactSymbol compact />,
+                delta: safeToSpend.length ? 12 : undefined,
                 deltaSuffix: "%",
                 tone: "aqua",
                 period: "days",
@@ -95,8 +39,8 @@ export const DashboardPage = () => {
             },
             {
                 label: "Spent this week",
-                value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} compactSymbol />,
-                delta: -8,
+                value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} compactSymbol compact />,
+                delta: spentThisWeek.length ? -8 : undefined,
                 deltaSuffix: "%",
                 tone: "blue",
                 period: "days",
@@ -105,8 +49,8 @@ export const DashboardPage = () => {
             },
             {
                 label: "Total balance",
-                value: <Amount value={last(totalBalance)} compactSymbol />,
-                delta: -4,
+                value: <Amount value={last(totalBalance)} compactSymbol compact />,
+                delta: totalBalance.length ? -4 : undefined,
                 deltaSuffix: "%",
                 tone: "yellow",
                 period: "days",
@@ -115,8 +59,8 @@ export const DashboardPage = () => {
             },
             {
                 label: "Saved this month",
-                value: <Amount value={last(savedPerMonth)} compactSymbol />,
-                delta: 6,
+                value: <Amount value={last(savedPerMonth)} compactSymbol compact />,
+                delta: savedPerMonth.length ? 6 : undefined,
                 deltaSuffix: "%",
                 tone: "magenta",
                 period: "months",
@@ -124,7 +68,7 @@ export const DashboardPage = () => {
                 formatBar: formatBarAmount,
             },
         ],
-        [formatBarAmount],
+        [formatBarAmount, safeToSpend, spentThisWeek, totalBalance, savedPerMonth],
     );
 
     return (
@@ -134,27 +78,33 @@ export const DashboardPage = () => {
             className="grid gap-1.5 md:grid-cols-2 md:gap-2 lg:min-h-[27rem] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1.1fr)_minmax(0,0.8fr)]"
         >
             {/* Left — four stat tiles in a 2x2 */}
-            <div className="grid grid-cols-2 gap-1.5 md:gap-2">
-                {statTiles.map((tile) => (
-                    <StatTile key={tile.label} {...tile} className="min-h-36 md:min-h-40" />
-                ))}
-            </div>
+            {preferences.showStatTiles && (
+                <div className="grid min-w-0 grid-cols-2 gap-1.5 md:gap-2">
+                    {statTiles.map((tile) => (
+                        <StatTile key={tile.label} {...tile} className="min-h-36 md:min-h-40" />
+                    ))}
+                </div>
+            )}
 
             {/* Middle — the hero, stretches to the full height of the section */}
-            <AccountHero accounts={accounts} className="min-h-80 lg:min-h-0" />
+            {preferences.showAccountHero && <AccountHero accounts={accounts} className="min-w-0 min-h-80 lg:min-h-0" />}
 
             {/* Right — same width as the left column, full height */}
-            <UpcomingList items={upcoming} className="min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />
+            {preferences.showUpcoming && <UpcomingList items={upcoming} className="min-w-0 min-h-80 md:col-span-2 lg:col-span-1 lg:min-h-0" />}
             </section>
 
-            <section aria-label="Outlook" className="grid gap-1.5 md:gap-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-                <InVsOut months={flows} className="min-h-72" />
-                <SavingsGoals goals={goals} />
-            </section>
+            {(preferences.showInVsOut || preferences.showGoals) && (
+                <section aria-label="Outlook" className="grid gap-1.5 md:gap-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+                    {preferences.showInVsOut && <InVsOut months={flows} className="min-w-0 min-h-72" />}
+                    {preferences.showGoals && <SavingsGoals goals={goals} className="min-w-0" />}
+                </section>
+            )}
 
-            <section aria-label="Activity">
-                <RecentActivity items={activity} />
-            </section>
+            {preferences.showActivity && (
+                <section aria-label="Activity">
+                    <RecentActivity items={activity} />
+                </section>
+            )}
         </div>
     );
 };

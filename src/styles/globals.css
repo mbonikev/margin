@@ -190,11 +190,9 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 @layer base {
-    /* Browser-default scrollbars, just the compact variant. No colours or
-       ::-webkit overrides — the OS keeps its own look and behaviour. */
     /* Declared here rather than from JS: the browser then paints native UI —
-       scrollbars, form controls, the canvas — in the right mode on first paint,
-       and it cannot fall out of sync with the .dark-mode class. */
+       form controls, the canvas — in the right mode on first paint, and it
+       cannot fall out of sync with the .dark-mode class. */
     :root {
         color-scheme: light;
     }
@@ -204,7 +202,16 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 
     html {
+        /* Painted from our own tokens rather than left to `color-scheme`: a
+           browser or extension overriding the preferred scheme was giving the
+           page a bright scrollbar against the dark theme. Both values follow
+           the theme, so this stays correct in either. */
         scrollbar-width: thin;
+        scrollbar-color: var(--color-border-secondary) transparent;
+
+        /* The gutter sits outside the app's own background, so without this it
+           paints as the browser's default white strip down the dark page. */
+        background-color: var(--color-bg-secondary);
 
         /* React-aria locks body scroll while a popover is open, which removes
            the scrollbar and shifts the whole page sideways. Reserving the gutter
