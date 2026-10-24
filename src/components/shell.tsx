@@ -372,40 +372,26 @@ const recordSetup = [
     { id: "goal", label: "New savings goal", icon: HiOutlineFlag },
 ];
 
-/**
- * The top bar and the mobile bottom bar both render this, so each needs its own
- * `layoutId` — a shared one would make Motion try to tween between a visible
- * element and a `display:none` one, which reads as a jump.
- */
-const NavLinks = ({ layoutId }: { layoutId: string }) => {
-    const reduceMotion = useReducedMotion();
-
-    return (
-        <>
-            {navItems.map((item) => (
-                <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.to === "/"}
-                    className="relative flex h-11 items-center rounded-full px-5 text-base font-medium whitespace-nowrap md:h-9 md:px-4 md:text-sm"
-                >
-                    {({ isActive }) => (
-                        <>
-                            {isActive && (
-                                <motion.span
-                                    layoutId={layoutId}
-                                    className="absolute inset-0 rounded-full bg-brand-primary"
-                                    transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 32 }}
-                                />
-                            )}
-                            <span className={cx("relative z-10", isActive ? "text-brand-secondary" : "text-tertiary")}>{item.label}</span>
-                        </>
-                    )}
-                </NavLink>
-            ))}
-        </>
-    );
-};
+/** The same links in the top bar and the mobile bottom bar. */
+const NavLinks = () => (
+    <>
+        {navItems.map((item) => (
+            <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                className={({ isActive }) =>
+                    cx(
+                        "flex h-11 items-center rounded-full px-5 text-base font-medium whitespace-nowrap transition duration-100 ease-linear md:h-9 md:px-4 md:text-sm",
+                        isActive ? "bg-brand-primary text-brand-secondary" : "text-tertiary hover:text-secondary",
+                    )
+                }
+            >
+                {item.label}
+            </NavLink>
+        ))}
+    </>
+);
 
 export const AppLayout = () => {
     const { accounts, add } = useAccounts();
@@ -473,7 +459,7 @@ export const AppLayout = () => {
 
                     <div className="flex h-13 items-center gap-1 rounded-full bg-primary p-1 shadow-xs md:h-11">
                         <div className="hidden items-center gap-1 md:flex">
-                            <NavLinks layoutId="nav-pill-top" />
+                            <NavLinks />
                             <Separator className="mx-1.5" />
                         </div>
 
@@ -499,7 +485,7 @@ export const AppLayout = () => {
                 className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden"
             >
                 <div className="pointer-events-auto flex h-13 items-center gap-1 rounded-full bg-popover p-1 shadow-[0_4px_12px_rgba(0,0,0,0.10),0_16px_32px_-12px_rgba(0,0,0,0.22)] ring-1 ring-popover">
-                    <NavLinks layoutId="nav-pill-bottom" />
+                    <NavLinks />
                 </div>
             </nav>
 
