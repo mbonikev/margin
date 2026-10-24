@@ -4,24 +4,33 @@ import { Avatar } from "@/components/base/avatar";
 import { ActionButton } from "@/components/ui";
 import { Amount } from "@/components/ui";
 import { Card } from "@/components/ui";
-import { useAccounts } from "@/providers";
+import { demoProfile } from "@/demo-data";
+import { useAccounts, usePreferences } from "@/providers";
 
-const joined = new Date(Date.now() - 214 * 86_400_000);
 const joinedFormat = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 
 export const ProfilePage = () => {
     const navigate = useNavigate();
     const { accounts } = useAccounts();
+    const { preferences } = usePreferences();
     const total = accounts.reduce((sum, account) => sum + account.balance, 0);
+
+    // Before anyone has signed up properly there is no name to show, so the page
+    // addresses them directly rather than inventing one.
+    const demo = preferences.demoData;
+    const name = demo ? demoProfile.name : "You";
+    const email = demo ? demoProfile.email : "No email yet";
+    const joined = demo ? new Date(Date.now() - demoProfile.joinedDaysAgo * 86_400_000) : new Date();
+    const streak = demo ? demoProfile.emailStreak : 0;
 
     return (
         <div className="flex flex-col gap-1.5 md:gap-2">
             <Card className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                <Avatar size="2xl" initials="K" alt="Kevin" className="size-20 shrink-0" />
+                <Avatar size="2xl" initials={name.slice(0, 1)} alt={name} className="size-20 shrink-0" />
 
                 <div className="min-w-0 flex-1">
-                    <h1 className="truncate text-3xl font-semibold tracking-tight text-primary md:text-4xl">Kevin</h1>
-                    <p className="mt-1 truncate text-md text-tertiary">kevin@example.com</p>
+                    <h1 className="truncate text-3xl font-semibold tracking-tight text-primary md:text-4xl">{name}</h1>
+                    <p className="mt-1 truncate text-md text-tertiary">{email}</p>
                     <p className="mt-1 text-sm text-quaternary">Keeping a margin since {joinedFormat.format(joined)}</p>
                 </div>
 
@@ -51,7 +60,7 @@ export const ProfilePage = () => {
                         <HiOutlineFire className="size-4" />
                         Morning streak
                     </p>
-                    <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums text-primary md:text-3xl">14 days</p>
+                    <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums text-primary md:text-3xl">{streak} days</p>
                 </Card>
             </section>
 
@@ -62,7 +71,7 @@ export const ProfilePage = () => {
                     </span>
                     <div>
                         <p className="text-sm font-medium text-primary">Morning email is on</p>
-                        <p className="text-xs text-tertiary">Arriving at 07:00 in your timezone.</p>
+                        <p className="text-xs text-tertiary">{demo ? "Arriving at 07:00 in your timezone." : "Starts once you add an account."}</p>
                     </div>
                 </div>
 

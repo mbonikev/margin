@@ -22,7 +22,7 @@ const isStale = (account: Account, afterDays: number) => {
 };
 
 export const AccountsPage = () => {
-    const { accounts, trashed, remove } = useAccounts();
+    const { accounts, trashed, add, remove } = useAccounts();
     const { preferences } = usePreferences();
     const [target, setTarget] = useState<{ account: Account; modal: "balance" | "settings" } | null>(null);
     const [adding, setAdding] = useState(false);
@@ -87,6 +87,16 @@ export const AccountsPage = () => {
 
                 <Card>
                     <TabPanel id="accounts" className="outline-hidden">
+                        {accounts.length === 0 && (
+                            <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+                                <p className="text-sm font-medium text-primary">No accounts yet</p>
+                                <p className="max-w-64 text-sm text-tertiary">Margin never connects to your bank — you tell it what you have.</p>
+                                <ActionButton icon={HiOutlinePlus} onClick={() => setAdding(true)} className="bg-brand-primary text-brand-secondary">
+                                    Add your first account
+                                </ActionButton>
+                            </div>
+                        )}
+
                         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                             {accounts.map((account) => (
                                 <li key={account.id} className="flex min-w-0 flex-col gap-2.5">
@@ -117,7 +127,7 @@ export const AccountsPage = () => {
                 </Card>
             </Tabs>
 
-            <AddAccountModal isOpen={adding} onOpenChange={setAdding} />
+            <AddAccountModal isOpen={adding} onOpenChange={setAdding} onSave={add} />
 
             {target?.modal === "balance" && (
                 <UpdateBalanceModal isOpen onOpenChange={(open) => !open && setTarget(null)} account={target.account} />

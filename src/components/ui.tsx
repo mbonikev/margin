@@ -200,7 +200,10 @@ export const Amount = ({ value, withCode, hideSymbol, compactSymbol, compact, cl
         );
     }
 
-    const text = showCode ? formatWithCode(rounded) : formatAmount(rounded, compact ? 100_000 : undefined);
+    // The code costs four more characters, so a tight spot abbreviates sooner
+    // when it is shown than when it isn't.
+    const compactFrom = compact ? (showCode ? 10_000 : 100_000) : undefined;
+    const text = showCode ? formatWithCode(rounded, compactFrom) : formatAmount(rounded, compactFrom);
 
     // Abbreviated figures keep the exact value one hover away — unless hidden.
     return (

@@ -5,8 +5,9 @@ import { useState } from "react";
 import type { FC } from "react";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import type { Selection } from "react-aria-components";
-import { HiOutlineArrowPath, HiOutlineArrowRight, HiOutlineArrowRightOnRectangle, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineBanknotes, HiOutlineBell, HiOutlineCheck, HiOutlineCog6Tooth, HiOutlineEnvelope, HiOutlineEye, HiOutlineEyeSlash, HiOutlineFlag, HiOutlinePlus, HiOutlineScale, HiOutlineTrash, HiOutlineUser, HiOutlineXMark } from "react-icons/hi2";
+import { HiOutlineArrowPath, HiOutlineArrowRight, HiOutlineArrowRightOnRectangle, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineBell, HiOutlineCheck, HiOutlineCog6Tooth, HiOutlineEye, HiOutlineEyeSlash, HiOutlineFlag, HiOutlinePlus, HiOutlineScale, HiOutlineTrash, HiOutlineUser, HiOutlineXMark } from "react-icons/hi2";
 import { NavLink, Outlet, useNavigate } from "react-router";
+import { demoNotifications } from "@/demo-data";
 import { RecordModal } from "@/components/accounts";
 import type { RecordKind } from "@/components/accounts";
 import { ThemeControls } from "@/components/settings";
@@ -80,9 +81,9 @@ export const CurrencySelect = () => {
 
 /* ── notifications-popover.tsx ── */
 
-type BadgeTone = "brand" | "caution" | "info";
+export type BadgeTone = "brand" | "caution" | "info";
 
-interface NotificationItem {
+export interface NotificationItem {
     id: string;
     title: string;
     body?: string;
@@ -99,44 +100,6 @@ const toneStyles: Record<BadgeTone, string> = {
     caution: "bg-warning-solid text-white",
     info: "bg-info text-white",
 };
-
-/** Placeholder data — replace with a real feed once the backend exists. */
-const sampleNotifications: NotificationItem[] = [
-    {
-        id: "1",
-        title: "Your balance is 3 days stale",
-        body: "MTN MoMo, last seen Friday.",
-        time: "2h ago",
-        unread: true,
-        icon: HiOutlineBanknotes,
-        tone: "caution",
-    },
-    {
-        id: "2",
-        title: "Rent is due in 2 days",
-        body: "450,000 leaves you 184,000.",
-        time: "5h ago",
-        unread: true,
-        icon: HiOutlineBell,
-        tone: "brand",
-    },
-    {
-        id: "3",
-        title: "Laptop fund passed 40%",
-        body: "168,000 of 420,000.",
-        time: "1d ago",
-        icon: HiOutlineFlag,
-        tone: "info",
-    },
-    {
-        id: "4",
-        title: "Your morning email went out",
-        body: "14 mornings in a row.",
-        time: "1d ago",
-        icon: HiOutlineEnvelope,
-        tone: "info",
-    },
-];
 
 const NotificationRow = ({ item }: { item: NotificationItem }) => {
     const Icon = item.icon;
@@ -176,8 +139,9 @@ export const NotificationsPopover = () => {
     const reduceMotion = useReducedMotion();
     const [filter, setFilter] = useState<Filter>("all");
     const { preferences } = usePreferences();
-    const items = filter === "unread" ? sampleNotifications.filter((n) => n.unread) : sampleNotifications;
-    const unreadCount = sampleNotifications.filter((n) => n.unread).length;
+    const feed = preferences.demoData ? demoNotifications : [];
+    const items = filter === "unread" ? feed.filter((item) => item.unread) : feed;
+    const unreadCount = feed.filter((item) => item.unread).length;
     const showBadge = preferences.showUnreadBadge && unreadCount > 0;
 
     return (

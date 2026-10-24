@@ -9,6 +9,7 @@ import { Toggle } from "@/components/base/toggle";
 import { ActionButton } from "@/components/ui";
 import { Field, ModalActions, TextField } from "@/components/ui";
 import { Flag } from "@/components/ui";
+import { demoProfile } from "@/demo-data";
 import { BASE_CURRENCY, accentColors, currencies, useAccounts, useCurrency, usePreferences, usePrivacy, useTheme } from "@/providers";
 import type { Preferences, ThemeMode } from "@/providers";
 import { cx } from "@/utils";
@@ -208,7 +209,11 @@ const zones = [
     { id: "America/New_York", label: "New York", supportingText: "GMT−5" },
 ];
 
-export const ProfileSettings = () => (
+export const ProfileSettings = () => {
+    const { preferences } = usePreferences();
+    const person = preferences.demoData ? demoProfile : { name: "", email: "" };
+
+    return (
     <div className="flex max-w-md flex-col gap-4">
         <div>
             <h2 className="text-md font-semibold text-primary">Profile</h2>
@@ -216,11 +221,11 @@ export const ProfileSettings = () => (
         </div>
 
         <Field label="Name">
-            <TextField defaultValue="Kevin" placeholder="Your name" />
+            <TextField key={person.name} defaultValue={person.name} placeholder="Your name" />
         </Field>
 
         <Field label="Email" hint="Where the morning email arrives.">
-            <TextField type="email" defaultValue="kevin@example.com" placeholder="you@example.com" />
+            <TextField key={person.email} type="email" defaultValue={person.email} placeholder="you@example.com" />
         </Field>
 
         <Select
@@ -234,7 +239,8 @@ export const ProfileSettings = () => (
 
         <ModalActions onCancel={() => {}} onConfirm={() => {}} confirmLabel="Save profile" />
     </div>
-);
+    );
+};
 
 /* ── appearance-settings.tsx ── */
 
@@ -512,6 +518,7 @@ const previews: Record<string, string> = {
 };
 
 export const EmailSettings = () => {
+    const { preferences } = usePreferences();
     const [enabled, setEnabled] = useState(true);
     const [tone, setTone] = useState("gentle");
     const [quiet, setQuiet] = useState(true);
@@ -526,7 +533,9 @@ export const EmailSettings = () => {
             <div className="flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3">
                 <span>
                     <span className="block text-sm font-medium text-primary">Send the morning email</span>
-                    <span className="block text-xs text-tertiary">14 mornings in a row so far.</span>
+                    <span className="block text-xs text-tertiary">
+                        {preferences.demoData ? `${demoProfile.emailStreak} mornings in a row so far.` : "Starts the morning after your first balance."}
+                    </span>
                 </span>
                 <Toggle isSelected={enabled} onChange={setEnabled} aria-label="Send the morning email" />
             </div>
@@ -617,7 +626,7 @@ export const PrivacySettings = () => {
 /* ── data-settings.tsx ── */
 
 export const DataSettings = () => {
-    const { preferences, reset } = usePreferences();
+    const { preferences, set, reset } = usePreferences();
     const { accounts, trashed, purge } = useAccounts();
     const [confirming, setConfirming] = useState<"reset" | "trash" | null>(null);
 
@@ -637,6 +646,15 @@ export const DataSettings = () => {
                 <h2 className="text-md font-semibold text-primary">Your data</h2>
                 <p className="mt-0.5 text-sm text-tertiary">It lives in this browser. Nothing here leaves your device.</p>
             </div>
+
+            <SettingGroup title="Demo">
+                <ToggleRow
+                    label="Demo data"
+                    hint="Fills the app with sample accounts, bills and history. Your own accounts stay untouched either way."
+                    value={preferences.demoData}
+                    onChange={(value) => set("demoData", value)}
+                />
+            </SettingGroup>
 
             <SettingGroup title="Export">
                 <div className={row}>

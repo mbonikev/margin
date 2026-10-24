@@ -64,6 +64,11 @@ export interface StatTileProps {
     className?: string;
 }
 
+/** What a widget shows before anything has been recorded. */
+export const Blank = ({ children }: { children: ReactNode }) => (
+    <p className="flex flex-1 items-center justify-center px-4 py-6 text-center text-sm text-quaternary">{children}</p>
+);
+
 export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, activeIndex, period, formatBar, className }: StatTileProps) => {
     const palette = tones[tone];
     const active = activeIndex ?? bars.length - 1;
@@ -115,6 +120,7 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
                     </AnimatePresence>
 
                     <div className="flex h-10 items-end gap-1 md:h-12" onMouseLeave={() => setHovered(null)}>
+                        {bars.length === 0 && <span className="mb-1 h-px w-full self-end bg-border-secondary" />}
                         {bars.map((bar, index) => (
                             /* The whole column is the hit target, not just the bar. */
                             <div
@@ -182,6 +188,8 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
 
 <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
             </div>
+
+            {items.length === 0 && <Blank>Nothing due yet. Add a recurring bill and it shows up here.</Blank>}
 
             <ul className="-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
                 {items.map((item) => (
@@ -292,8 +300,10 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                 </p>
             </div>
 
+            {months.length === 0 && <Blank>No months to compare yet. Record income and expenses and the lines appear.</Blank>}
+
             {/* Two series, so a legend is always present — identity is never colour alone. */}
-            <div className="flex items-center gap-4 text-xs text-tertiary">
+            <div className={cx("flex items-center gap-4 text-xs text-tertiary", months.length === 0 && "hidden")}>
                 <span className="flex items-center gap-1.5">
                     <span className="h-0.5 w-4 rounded-full bg-brand" />
                     Money in
@@ -304,7 +314,7 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                 </span>
             </div>
 
-            <div className="relative min-h-0 flex-1">
+            <div className={cx("relative min-h-0 flex-1", months.length === 0 && "hidden")}>
                 <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" className="h-full max-h-44 w-full overflow-visible" role="img" aria-label="Money in versus money out">
                     <defs>
                         {/* Kept low — two overlapping washes muddy fast. */}
@@ -422,6 +432,8 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
 <ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>New goal</ActionButton>
         </div>
 
+        {goals.length === 0 && <Blank>No goals yet. Name one thing you're saving for.</Blank>}
+
         <ul className="flex flex-col gap-4">
             {goals.map((goal) => {
                 const percent = Math.min(100, Math.round((goal.saved / goal.target) * 100));
@@ -513,7 +525,9 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
                 <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
             </div>
 
-            <div className="-mx-2 overflow-x-auto">
+            {items.length === 0 && <Blank>Nothing recorded yet. Your first expense or balance update lands here.</Blank>}
+
+            <div className={cx("-mx-2 overflow-x-auto", items.length === 0 && "hidden")}>
                 <table className="w-full border-separate border-spacing-0 text-left">
                     <thead>
                         <tr className="text-xs font-medium text-quaternary">

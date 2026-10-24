@@ -6,6 +6,7 @@
 
 import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { demoAccounts } from "@/demo-data";
 import type { Account } from "@/components/accounts";
 
 /* ── theme-provider.tsx ── */
@@ -165,6 +166,9 @@ export interface Preferences {
     hideOnBlur: boolean;
     confirmDelete: boolean;
 
+    /** Fills the app with the sample accounts and history from `demo-data.ts`. */
+    demoData: boolean;
+
     // Notifications
     notifyStale: boolean;
     notifyBills: boolean;
@@ -196,6 +200,8 @@ export const defaultPreferences: Preferences = {
     privateByDefault: false,
     hideOnBlur: false,
     confirmDelete: true,
+
+    demoData: false,
 
     notifyStale: true,
     notifyBills: true,
@@ -412,7 +418,7 @@ interface CurrencyContextValue {
     /** Converted and grouped. Switches to 1.2M / 3.4B past 7 digits. */
     formatAmount: (baseAmount: number, compactFrom?: number) => string;
     /** Converted, with the currency code appended. */
-    formatWithCode: (baseAmount: number) => string;
+    formatWithCode: (baseAmount: number, compactFrom?: number) => string;
     /** Always the full figure, never abbreviated — for tooltips and inputs. */
     formatExact: (baseAmount: number) => string;
 }
@@ -504,7 +510,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
             refresh,
             convert,
             formatAmount: (baseAmount, compactFrom) => display(convert(baseAmount), compactFrom),
-            formatWithCode: (baseAmount) => `${display(convert(baseAmount))} ${currency.code}`,
+            formatWithCode: (baseAmount, compactFrom) => `${display(convert(baseAmount), compactFrom)} ${currency.code}`,
             formatExact: (baseAmount) => `${plain.format(convert(baseAmount))} ${currency.code}`,
         };
     }, [cache, currency, setCurrency, status, refresh]);
@@ -532,6 +538,7 @@ export interface TrashedAccount extends Account {
 interface AccountsContextValue {
     /** Everything not in the trash — what totals and the card grid are built from. */
     accounts: Account[];
+    add: (account: Omit<Account, "id" | "updated">) => void;
     /** Most recently deleted first, so the thing you just removed is at the top. */
     trashed: TrashedAccount[];
     remove: (id: string) => void;
@@ -559,9 +566,37 @@ const writeTrash = (trash: Trash) => {
     }
 };
 
+const ACCOUNTS_KEY = "margin:accounts";
+
+const readAccounts = (): Account[] => {
+    try {
+        const raw = localStorage.getItem(ACCOUNTS_KEY);
+        return raw ? (JSON.parse(raw) as Account[]) : [];
+    } catch {
+        return [];
+    }
+};
+
 export const AccountsProvider = ({ children }: { children: ReactNode }) => {
-    const [all, setAll] = useState<Account[]>(seedAccounts);
+    const { preferences } = usePreferences();
+    // Accounts the person actually created. The demo set is layered on top when
+    // the setting is on, so turning it off never destroys their own.
+    const [own, setOwn] = useState<Account[]>(readAccounts);
     const [trash, setTrash] = useState<Trash>(readTrash);
+
+    const all = useMemo(() => (preferences.demoData ? [...demoAccounts, ...own] : own), [preferences.demoData, own]);
+
+    const add = useCallback((account: Omit<Account, "id" | "updated">) => {
+        setOwn((previous) => {
+            const next = [...previous, { ...account, id: `acct-${Date.now().toString(36)}`, updated: "Updated today" }];
+            try {
+                localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(next));
+            } catch {
+                /* blocked storage — the account just won't survive a reload */
+            }
+            return next;
+        });
+    }, []);
 
     const update = useCallback((next: (previous: Trash) => Trash) => {
         setTrash((previous) => {
@@ -585,7 +620,15 @@ export const AccountsProvider = ({ children }: { children: ReactNode }) => {
 
     const purge = useCallback(
         (id: string) => {
-            setAll((previous) => previous.filter((account) => account.id !== id));
+            setOwn((previous) => {
+                const next = previous.filter((account) => account.id !== id);
+                try {
+                    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(next));
+                } catch {
+                    /* nothing to write */
+                }
+                return next;
+            });
             restore(id); // drop the tombstone too, or it would outlive the account
         },
         [restore],
@@ -598,11 +641,12 @@ export const AccountsProvider = ({ children }: { children: ReactNode }) => {
                 .filter((account) => account.id in trash)
                 .map((account) => ({ ...account, deletedAt: trash[account.id] }))
                 .sort((a, b) => b.deletedAt - a.deletedAt),
+            add,
             remove,
             restore,
             purge,
         }),
-        [all, trash, remove, restore, purge],
+        [all, trash, add, remove, restore, purge],
     );
 
     return <AccountsContext value={value}>{children}</AccountsContext>;
@@ -613,13 +657,3 @@ export const useAccounts = () => {
     if (!ctx) throw new Error("useAccounts must be used inside <AccountsProvider>");
     return ctx;
 };
-
-/* ── accounts.ts ── */
-
-/** Placeholder accounts — the starting point the accounts provider loads. */
-export const seedAccounts: Account[] = [
-    { id: "momo", name: "MTN MoMo", kind: "Mobile money", balance: 684000, updated: "Updated today", theme: "blue" },
-    { id: "equity", name: "Equity Bank", kind: "Current", balance: 612000, updated: "Updated 2d ago", theme: "graphite" },
-    { id: "savings", name: "Laptop fund", kind: "Savings", balance: 168000, updated: "Updated 5d ago", theme: "emerald" },
-    { id: "cash", name: "Cash", kind: "Wallet", balance: 4000, updated: "Updated today", theme: "plum" },
-];

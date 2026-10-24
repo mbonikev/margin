@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { Button as AriaButton } from "react-aria-components";
 import type { DateValue } from "react-aria-components";
-import { HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineArrowUturnLeft, HiOutlineChevronDown, HiOutlineClock, HiOutlineCog6Tooth, HiOutlineScale, HiOutlineTrash } from "react-icons/hi2";
+import { HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineArrowUturnLeft, HiOutlineChevronDown, HiOutlineClock, HiOutlineCog6Tooth, HiOutlinePlus, HiOutlineScale, HiOutlineTrash } from "react-icons/hi2";
 import { DatePicker } from "@/components/base/date-picker";
 import { Dropdown } from "@/components/base/dropdown";
 import { Select } from "@/components/base/select";
@@ -656,8 +656,10 @@ const actions = [
 ];
 
 export const AccountHero = ({ accounts, className }: { accounts: Account[]; className?: string }) => {
-    const [activeId, setActiveId] = useState(accounts[0].id);
+    const { add } = useAccounts();
+    const [activeId, setActiveId] = useState(accounts[0]?.id ?? "");
     const [openModal, setOpenModal] = useState<"balance" | "history" | "settings" | null>(null);
+    const [adding, setAdding] = useState(false);
     const scroller = useRef<HTMLDivElement>(null);
     const active = accounts.find((item) => item.id === activeId) ?? accounts[0];
 
@@ -739,6 +741,20 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
 
         setActiveId(nearest);
     }, [accounts]);
+
+    if (!active) {
+        return (
+            <Card className={cx("flex flex-col items-center justify-center gap-3 text-center", className)}>
+                <h2 className="text-lg font-semibold tracking-tight text-primary md:text-xl">No accounts yet</h2>
+                <p className="max-w-56 text-sm text-tertiary">Add the first one — a wallet, a bank account, or the cash in your pocket.</p>
+                <ActionButton icon={HiOutlinePlus} onClick={() => setAdding(true)} className="bg-brand-primary text-brand-secondary">
+                    Add account
+                </ActionButton>
+
+                <AddAccountModal isOpen={adding} onOpenChange={setAdding} onSave={add} />
+            </Card>
+        );
+    }
 
     return (
         <Card className={cx("flex flex-col gap-4", className)}>
