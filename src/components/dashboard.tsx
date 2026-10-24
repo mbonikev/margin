@@ -5,6 +5,7 @@ import { useId, useMemo, useState } from "react";
 import type { FC, ReactNode } from "react";
 import { HiArrowDown, HiArrowUp, HiOutlineArrowRight, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
 import { RecordModal } from "@/components/accounts";
+import { NoActivityArt, NoFlowArt, NoGoalsArt, NoUpcomingArt } from "@/components/illustrations";
 import { ActionButton } from "@/components/ui";
 import { Amount } from "@/components/ui";
 import { Card } from "@/components/ui";
@@ -64,9 +65,13 @@ export interface StatTileProps {
     className?: string;
 }
 
-/** What a widget shows before anything has been recorded. */
-export const Blank = ({ children }: { children: ReactNode }) => (
-    <p className="flex flex-1 items-center justify-center px-4 py-6 text-center text-sm text-quaternary">{children}</p>
+/** What a widget shows before anything has been recorded: a drawing of the
+ *  thing that's missing, then one line saying how to get it. */
+export const Blank = ({ art, children }: { art?: ReactNode; children: ReactNode }) => (
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-6 text-center">
+        {art}
+        <p className="max-w-64 text-sm text-quaternary">{children}</p>
+    </div>
 );
 
 export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, activeIndex, period, formatBar, className }: StatTileProps) => {
@@ -189,7 +194,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
 <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
             </div>
 
-            {items.length === 0 && <Blank>Nothing due yet. Add a recurring bill and it shows up here.</Blank>}
+            {items.length === 0 && <Blank art={<NoUpcomingArt />}>Nothing due yet. Add a recurring bill and it shows up here.</Blank>}
 
             <ul className="-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
                 {items.map((item) => (
@@ -292,7 +297,7 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
         return (
             <Card className={cx("flex flex-col gap-4", className)}>
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">In vs out</h2>
-                <Blank>No months to compare yet. Record income and expenses and the lines appear.</Blank>
+                <Blank art={<NoFlowArt />}>No months to compare yet. Record income and expenses and the lines appear.</Blank>
             </Card>
         );
     }
@@ -441,7 +446,7 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
 <ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>New goal</ActionButton>
         </div>
 
-        {goals.length === 0 && <Blank>No goals yet. Name one thing you're saving for.</Blank>}
+        {goals.length === 0 && <Blank art={<NoGoalsArt />}>No goals yet. Name one thing you're saving for.</Blank>}
 
         <ul className="flex flex-col gap-4">
             {goals.map((goal) => {
@@ -534,7 +539,7 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
                 <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
             </div>
 
-            {items.length === 0 && <Blank>Nothing recorded yet. Your first expense or balance update lands here.</Blank>}
+            {items.length === 0 && <Blank art={<NoActivityArt />}>Nothing recorded yet. Your first expense or balance update lands here.</Blank>}
 
             <div className={cx("-mx-2 overflow-x-auto", items.length === 0 && "hidden")}>
                 <table className="w-full border-separate border-spacing-0 text-left">

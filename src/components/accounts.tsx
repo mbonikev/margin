@@ -11,6 +11,7 @@ import { DatePicker } from "@/components/base/date-picker";
 import { Dropdown } from "@/components/base/dropdown";
 import { Select } from "@/components/base/select";
 import { ActionButton } from "@/components/ui";
+import { NoAccountsArt } from "@/components/illustrations";
 import { Amount } from "@/components/ui";
 import { Card } from "@/components/ui";
 import { AmountField, Field, ModalActions, TextField } from "@/components/ui";
@@ -814,6 +815,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
     if (!active) {
         return (
             <Card className={cx("flex flex-col items-center justify-center gap-3 text-center", className)}>
+                <NoAccountsArt />
                 <h2 className="text-lg font-semibold tracking-tight text-primary md:text-xl">No accounts yet</h2>
                 <p className="max-w-56 text-sm text-tertiary">Add the first one — a wallet, a bank account, or the cash in your pocket.</p>
                 <ActionButton icon={HiOutlinePlus} onClick={() => setAdding(true)} className="bg-brand-primary text-brand-secondary">

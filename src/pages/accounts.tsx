@@ -5,6 +5,7 @@ import type { Account } from "@/components/accounts";
 import { AccountCard } from "@/components/accounts";
 import { AccountSettingsModal } from "@/components/accounts";
 import { AccountTrash } from "@/components/accounts";
+import { NoAccountsArt } from "@/components/illustrations";
 import { AddAccountModal } from "@/components/accounts";
 import { UpdateBalanceModal } from "@/components/accounts";
 import { ActionButton } from "@/components/ui";
@@ -89,6 +90,7 @@ export const AccountsPage = () => {
                     <TabPanel id="accounts" className="outline-hidden">
                         {accounts.length === 0 && (
                             <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+                                <NoAccountsArt />
                                 <p className="text-sm font-medium text-primary">No accounts yet</p>
                                 <p className="max-w-64 text-sm text-tertiary">Margin never connects to your bank — you tell it what you have.</p>
                                 <ActionButton icon={HiOutlinePlus} onClick={() => setAdding(true)} className="bg-brand-primary text-brand-secondary">
