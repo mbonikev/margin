@@ -65,6 +65,10 @@ export interface StatTileProps {
     className?: string;
 }
 
+/** A chart's silhouette at rest. Deliberately flat-ish and very faint: it should
+ *  read as the shape a chart will take, never as seven real readings. */
+const ghostBars = [38, 52, 44, 60, 48, 66, 54];
+
 /** What a widget shows before anything has been recorded: a drawing of the
  *  thing that's missing, then one line saying how to get it. */
 export const Blank = ({ art, children }: { art?: ReactNode; children: ReactNode }) => (
@@ -125,7 +129,11 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
                     </AnimatePresence>
 
                     <div className="flex h-10 items-end gap-1 md:h-12" onMouseLeave={() => setHovered(null)}>
-                        {bars.length === 0 && <span className="mb-1 h-px w-full self-end bg-border-secondary" />}
+                        {bars.length === 0 &&
+                            ghostBars.map((height, index) => (
+                                <span key={index} style={{ height: `${height}%` }} className="w-full flex-1 rounded-t-full bg-tertiary opacity-25" />
+                            ))}
+
                         {bars.map((bar, index) => (
                             /* The whole column is the hit target, not just the bar. */
                             <div
@@ -145,7 +153,7 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
                     </div>
                 </div>
 
-                {ticks && (
+                {ticks && bars.length > 0 && (
                     <div className="mt-1.5 flex gap-1">
                         {ticks.map((tick, index) => (
                             <span
@@ -196,7 +204,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
 
             {items.length === 0 && <Blank art={<NoUpcomingArt />}>Nothing due yet. Add a recurring bill and it shows up here.</Blank>}
 
-            <ul className="-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
+            <ul className={cx("-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto", items.length === 0 && "hidden")}>
                 {items.map((item) => (
                     <li key={item.id}>
                         <button
