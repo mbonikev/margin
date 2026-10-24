@@ -166,7 +166,7 @@ export const SignInPage = () => {
                         >
                             {/* A code rather than a password: one less thing to lose,
                                 and nothing to chase into a second tab the way a link is. */}
-                            <Field label="Email" hint="We'll send a 6-digit code — no password to remember.">
+                            <Field label="Email" hint="We'll send a 6-digit code.">
                                 <TextField
                                     type="email"
                                     required
