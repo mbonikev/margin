@@ -725,7 +725,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
         const viewport = node.getBoundingClientRect();
         const middle = viewport.left + viewport.width / 2;
 
-        let nearest = accounts[0].id;
+        let nearest = accounts[0]?.id ?? "";
         let best = Infinity;
 
         for (const child of node.children) {

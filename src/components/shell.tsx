@@ -8,7 +8,7 @@ import type { Selection } from "react-aria-components";
 import { HiOutlineArrowPath, HiOutlineArrowRight, HiOutlineArrowRightOnRectangle, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineBell, HiOutlineCheck, HiOutlineCog6Tooth, HiOutlineEye, HiOutlineEyeSlash, HiOutlineFlag, HiOutlinePlus, HiOutlineScale, HiOutlineTrash, HiOutlineUser, HiOutlineXMark } from "react-icons/hi2";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { demoNotifications } from "@/demo-data";
-import { RecordModal } from "@/components/accounts";
+import { AddAccountModal, RecordModal } from "@/components/accounts";
 import type { RecordKind } from "@/components/accounts";
 import { ThemeControls } from "@/components/settings";
 import { UpdateBalanceModal } from "@/components/accounts";
@@ -395,7 +395,7 @@ const NavLinks = ({ layoutId }: { layoutId: string }) => {
 };
 
 export const AppLayout = () => {
-    const { accounts } = useAccounts();
+    const { accounts, add } = useAccounts();
     const [recording, setRecording] = useState<RecordKind | null>(null);
     const [updatingBalance, setUpdatingBalance] = useState(false);
 
@@ -476,7 +476,11 @@ export const AppLayout = () => {
                 </div>
             </nav>
 
-            <UpdateBalanceModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} account={accounts[0]} />
+            {accounts[0] ? (
+                <UpdateBalanceModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} account={accounts[0]} />
+            ) : (
+                <AddAccountModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} onSave={add} />
+            )}
             <RecordModal
                 kind={recording ?? "expense"}
                 isOpen={recording !== null}

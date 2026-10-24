@@ -286,6 +286,17 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
     const net = months.reduce((total, entry) => total + entry.in - entry.out, 0);
     const active = hovered === null ? null : months[hovered];
 
+    // Before the geometry: a path built from no points is invalid SVG, which the
+    // browser rejects outright rather than drawing nothing.
+    if (months.length === 0) {
+        return (
+            <Card className={cx("flex flex-col gap-4", className)}>
+                <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">In vs out</h2>
+                <Blank>No months to compare yet. Record income and expenses and the lines appear.</Blank>
+            </Card>
+        );
+    }
+
     return (
         <Card className={cx("flex flex-col gap-4", className)}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -300,10 +311,8 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                 </p>
             </div>
 
-            {months.length === 0 && <Blank>No months to compare yet. Record income and expenses and the lines appear.</Blank>}
-
             {/* Two series, so a legend is always present — identity is never colour alone. */}
-            <div className={cx("flex items-center gap-4 text-xs text-tertiary", months.length === 0 && "hidden")}>
+            <div className="flex items-center gap-4 text-xs text-tertiary">
                 <span className="flex items-center gap-1.5">
                     <span className="h-0.5 w-4 rounded-full bg-brand" />
                     Money in
@@ -314,7 +323,7 @@ export const InVsOut = ({ months, className }: { months: MonthFlow[]; className?
                 </span>
             </div>
 
-            <div className={cx("relative min-h-0 flex-1", months.length === 0 && "hidden")}>
+            <div className="relative min-h-0 flex-1">
                 <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" className="h-full max-h-44 w-full overflow-visible" role="img" aria-label="Money in versus money out">
                     <defs>
                         {/* Kept low — two overlapping washes muddy fast. */}
