@@ -166,7 +166,9 @@ export const SignInPage = () => {
                         >
                             {/* A code rather than a password: one less thing to lose,
                                 and nothing to chase into a second tab the way a link is. */}
-                            <Field label="Email">
+                            {/* Says what the address is for, rather than narrating the
+                                button underneath it. */}
+                            <Field label="Email" hint="Where your morning email will arrive.">
                                 <TextField
                                     type="email"
                                     required
