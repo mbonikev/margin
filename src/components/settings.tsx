@@ -1,6 +1,6 @@
 /** Every settings panel, and the three row shapes they are built from. */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { HiArrowPath, HiCheck, HiOutlineArrowDownTray, HiOutlineArrowPath, HiOutlineComputerDesktop, HiOutlineExclamationTriangle, HiOutlineMoon, HiOutlineSun, HiOutlineTrash } from "react-icons/hi2";
 import { Button } from "@/components/base/button";
@@ -79,6 +79,11 @@ export const ChoiceRow = <T extends string | number>({
 );
 
 /** A number with −/+ ends. Beats a text input for the handful of small counts here. */
+/**
+ * A number you can type, with −/+ ends for small nudges and press-and-hold for
+ * big ones. Typing matters here: reaching the 28th of the month a click at a
+ * time is twenty-seven clicks.
+ */
 export const StepperRow = ({
     label,
     hint,
@@ -99,6 +104,41 @@ export const StepperRow = ({
     onChange: (next: number) => void;
 }) => {
     const clamp = (next: number) => Math.min(max, Math.max(min, next));
+    // Held while the field has focus, so a half-typed "2" on its way to "28"
+    // isn't clamped up to the minimum under the cursor.
+    const [draft, setDraft] = useState<string | null>(null);
+    const delay = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const repeat = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+
+    const commit = () => {
+        if (draft === null) return;
+        const parsed = Number(draft);
+        if (draft !== "" && !Number.isNaN(parsed)) onChange(clamp(parsed));
+        setDraft(null);
+    };
+
+    // Press and hold to run: a slow first beat, then steady, like a key repeat.
+    const hold = (direction: number) => {
+        let current = value;
+        const tick = () => {
+            current = clamp(current + direction * step);
+            onChange(current);
+        };
+
+        tick();
+        delay.current = setTimeout(() => {
+            repeat.current = setInterval(tick, 60);
+        }, 400);
+    };
+
+    const release = () => {
+        clearTimeout(delay.current);
+        clearInterval(repeat.current);
+    };
+
+    // Written out twice rather than as a nested component: one defined in the
+    // render body is a new type every pass, which remounts it mid-press.
+    const stepButton = "size-8 shrink-0 rounded-full text-sm font-semibold text-tertiary transition duration-100 ease-linear hover:text-secondary disabled:opacity-40";
 
     return (
         <div className={row}>
@@ -110,20 +150,53 @@ export const StepperRow = ({
             <div className="flex shrink-0 items-center gap-0.5 rounded-full bg-primary p-0.5">
                 <button
                     type="button"
-                    onClick={() => onChange(clamp(value - step))}
+                    onPointerDown={() => hold(-1)}
+                    onPointerUp={release}
+                    onPointerLeave={release}
+                    onPointerCancel={release}
                     disabled={value <= min}
                     aria-label={`Decrease ${label}`}
-                    className="size-8 rounded-full text-sm font-semibold text-tertiary transition duration-100 ease-linear hover:text-secondary disabled:opacity-40"
+                    className={stepButton}
                 >
                     −
                 </button>
-                <span className="min-w-16 text-center text-xs font-medium tabular-nums text-primary">{format ? format(value) : value}</span>
+
+                <input
+                    inputMode="numeric"
+                    aria-label={label}
+                    value={draft ?? (format ? format(value) : String(value))}
+                    onFocus={(event) => {
+                        setDraft(String(value));
+                        // Select-all, so typing replaces rather than appends.
+                        requestAnimationFrame(() => event.target.select());
+                    }}
+                    onChange={(event) => setDraft(event.target.value.replace(/[^\d]/g, ""))}
+                    onBlur={commit}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") event.currentTarget.blur();
+                        if (event.key === "Escape") {
+                            setDraft(null);
+                            event.currentTarget.blur();
+                        }
+                        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                            event.preventDefault();
+                            const next = clamp((draft === null ? value : Number(draft) || 0) + (event.key === "ArrowUp" ? step : -step));
+                            setDraft(String(next));
+                            onChange(next);
+                        }
+                    }}
+                    className="w-16 rounded-full bg-transparent text-center text-xs font-medium tabular-nums text-primary outline-focus-ring focus-visible:outline-2"
+                />
+
                 <button
                     type="button"
-                    onClick={() => onChange(clamp(value + step))}
+                    onPointerDown={() => hold(1)}
+                    onPointerUp={release}
+                    onPointerLeave={release}
+                    onPointerCancel={release}
                     disabled={value >= max}
                     aria-label={`Increase ${label}`}
-                    className="size-8 rounded-full text-sm font-semibold text-tertiary transition duration-100 ease-linear hover:text-secondary disabled:opacity-40"
+                    className={stepButton}
                 >
                     +
                 </button>
