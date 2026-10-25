@@ -199,7 +199,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
             <div className="flex items-center justify-between gap-3">
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Upcoming</h2>
 
-<ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
+                <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
             </div>
 
             {items.length === 0 && <Blank art={<NoUpcomingArt />}>Nothing due yet. Add a recurring bill and it shows up here.</Blank>}
@@ -227,7 +227,7 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
 
             <div className="flex items-baseline justify-between gap-2 pt-1">
                 <p className="text-xs text-tertiary">Next 30 days</p>
-<Amount value={total} className="text-base font-semibold text-primary" />
+                <Amount value={total} className="text-base font-semibold text-primary" />
             </div>
         </Card>
     );
@@ -447,54 +447,54 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
     const [creating, setCreating] = useState(false);
 
     return (
-    <Card className={cx("flex flex-col gap-4", className)}>
-        <div className="flex items-center justify-between gap-3">
-            <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Goals</h2>
+        <Card className={cx("flex flex-col gap-4", className)}>
+            <div className="flex items-center justify-between gap-3">
+                <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Goals</h2>
 
-<ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>New goal</ActionButton>
-        </div>
+                <ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>New goal</ActionButton>
+            </div>
 
-        {goals.length === 0 && <Blank art={<NoGoalsArt />}>No goals yet. Name one thing you're saving for.</Blank>}
+            {goals.length === 0 && <Blank art={<NoGoalsArt />}>No goals yet. Name one thing you're saving for.</Blank>}
 
-        <ul className="flex flex-col gap-4">
-            {goals.map((goal) => {
-                const percent = Math.min(100, Math.round((goal.saved / goal.target) * 100));
+            <ul className="flex flex-col gap-4">
+                {goals.map((goal) => {
+                    const percent = Math.min(100, Math.round((goal.saved / goal.target) * 100));
 
-                return (
-                    <li key={goal.id}>
-                        <div className="flex items-baseline justify-between gap-3">
-                            <p className="truncate text-sm font-medium text-primary">{goal.name}</p>
+                    return (
+                        <li key={goal.id}>
+                            <div className="flex items-baseline justify-between gap-3">
+                                <p className="truncate text-sm font-medium text-primary">{goal.name}</p>
 
-                            {/* Saved leads, target recedes — they are not equal facts. */}
-                            <p className="shrink-0 text-xs text-quaternary">
-                                <Amount value={goal.saved} className="font-semibold text-secondary" />
-                                <span className="mx-1">of</span>
-                                <Amount value={goal.target} hideSymbol />
-                            </p>
-                        </div>
+                                {/* Saved leads, target recedes — they are not equal facts. */}
+                                <p className="shrink-0 text-xs text-quaternary">
+                                    <Amount value={goal.saved} className="font-semibold text-secondary" />
+                                    <span className="mx-1">of</span>
+                                    <Amount value={goal.target} hideSymbol />
+                                </p>
+                            </div>
 
-                        {/* The percentage sits outside the bar: inside, it lands on the
+                            {/* The percentage sits outside the bar: inside, it lands on the
                             fill or the track depending on the value, which reads as a bug. */}
-                        <div className="mt-2 flex items-center gap-3">
-                            <Progress value={percent} className="min-w-0 flex-1" />
-                            <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums text-primary">{percent}%</span>
-                        </div>
+                            <div className="mt-2 flex items-center gap-3">
+                                <Progress value={percent} className="min-w-0 flex-1" />
+                                <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums text-primary">{percent}%</span>
+                            </div>
 
-                        <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-xs text-tertiary">
-                            <span>
-                                <Amount value={Math.max(0, goal.target - goal.saved)} /> to go
-                            </span>
-                            <span className="text-quaternary">·</span>
-                            <span className="text-quaternary" title={`Started ${sinceFormat.format(goal.startedAt)}`}>
-                                {elapsed(goal.startedAt)}
-                            </span>
-                        </p>
-                    </li>
-                );
-            })}
-        </ul>
-        <RecordModal kind="goal" isOpen={creating} onOpenChange={setCreating} accounts={accounts} />
-    </Card>
+                            <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-xs text-tertiary">
+                                <span>
+                                    <Amount value={Math.max(0, goal.target - goal.saved)} /> to go
+                                </span>
+                                <span className="text-quaternary">·</span>
+                                <span className="text-quaternary" title={`Started ${sinceFormat.format(goal.startedAt)}`}>
+                                    {elapsed(goal.startedAt)}
+                                </span>
+                            </p>
+                        </li>
+                    );
+                })}
+            </ul>
+            <RecordModal kind="goal" isOpen={creating} onOpenChange={setCreating} accounts={accounts} />
+        </Card>
     );
 };
 
