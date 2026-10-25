@@ -1,0 +1,5 @@
+1. in settings let toggle work even when you click on the whole card
+2. dropdown separator not visible in dark mode
+3. add separator in profile dropdown and then add "Feedback" link and the separator the rest in that dropdown aswell
+4. on create the modal kinda renders some other inputs
+5. add account recovery pages, and settings tab for information providing
