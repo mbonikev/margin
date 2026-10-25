@@ -1,5 +1,13 @@
 1. in settings let toggle work even when you click on the whole card
 2. dropdown separator not visible in dark mode
-3. add separator in profile dropdown and then add "Feedback" link and the separator the rest in that dropdown aswell
-4. on create the modal kinda renders some other inputs
-5. add account recovery pages, and settings tab for information providing
+3. add separator in profile dropdown and then add "Feedback" link and the separator the rest in that dropdown aswell. 
+4. on submit action the modal kinda renders some other inputs
+5. add account recovery pages, and settings tab for information 
+6. navigate back to home with esc
+7. modal input dropdown is not visible, it has same bg as the card which makes it invisible
+8. mobile view follows native mobile application entirely, with ease element access
+9. animation on login form button to get user's attention from the go
+10. Missing pages with view all buttons (Recent activities, upcoming, notifications)
+11. decide if we keep "safe to spend" and where to set it from
+12. morning mail, the idea of tone is very good now we need to add a feeling of Duolingo reminders
+13. exporting data should be in excel not json
