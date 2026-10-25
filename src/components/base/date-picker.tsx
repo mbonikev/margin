@@ -165,6 +165,7 @@ export const Calendar = ({ highlightedDates, className, children, ...props }: Ca
                                     slot={null}
                                     size="sm"
                                     color="secondary"
+                                    className="rounded-full"
                                     onClick={() => {
                                         state.setValue(today(getLocalTimeZone()));
                                         state.setFocusedDate(today(getLocalTimeZone()));
@@ -248,10 +249,11 @@ export const DatePicker = ({ value: valueProp, defaultValue, onChange, onApply, 
                             <div className="flex px-6 py-5">
                                 <Calendar highlightedDates={highlightedDates} />
                             </div>
-                            <div className="grid grid-cols-2 gap-3 border-t border-secondary p-4">
+                            <div className="grid grid-cols-2 gap-2 border-t border-secondary p-3">
                                 <Button
                                     size="md"
                                     color="secondary"
+                                    className="rounded-full"
                                     onClick={() => {
                                         onCancel?.();
                                         close();
@@ -262,6 +264,7 @@ export const DatePicker = ({ value: valueProp, defaultValue, onChange, onApply, 
                                 <Button
                                     size="md"
                                     color="primary"
+                                    className="rounded-full"
                                     onClick={() => {
                                         onApply?.();
                                         close();

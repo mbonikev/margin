@@ -1,7 +1,7 @@
 /** The frame around every page: header, nav, footer and the header's popovers. */
 
 import { motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FC } from "react";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import type { Selection } from "react-aria-components";
@@ -9,6 +9,8 @@ import { HiOutlineArrowPath, HiOutlineArrowRight, HiOutlineArrowRightOnRectangle
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { demoNotifications } from "@/demo-data";
 import { AddAccountModal, RecordModal } from "@/components/accounts";
+import { PageBackdrop } from "@/components/backdrops";
+import { NoNotificationsArt } from "@/components/illustrations";
 import type { RecordKind } from "@/components/accounts";
 import { ThemeControls } from "@/components/settings";
 import { UpdateBalanceModal } from "@/components/accounts";
@@ -213,7 +215,10 @@ export const NotificationsPopover = () => {
                                         </motion.div>
                                     ))
                                 ) : (
-                                    <p className="px-4 py-10 text-center text-sm text-tertiary">You're all caught up.</p>
+                                    <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+                                        <NoNotificationsArt />
+                                        <p className="text-sm text-tertiary">You're all caught up.</p>
+                                    </div>
                                 )}
                             </div>
 
@@ -257,9 +262,17 @@ const PanelItem = ({ icon: Icon, label, onPress }: { icon: FC<{ className?: stri
 
 export const ProfileMenu = () => {
     const navigate = useNavigate();
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Navigating from inside the menu leaves it hanging over the new page, so
+    // the trigger is controlled and every item that routes closes it first.
+    const go = (to: string) => {
+        setIsOpen(false);
+        void navigate(to);
+    };
 
     return (
-    <DialogTrigger>
+    <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
         <AriaButton
             aria-label="Account menu"
             className="group ml-1.5 rounded-full outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -280,8 +293,8 @@ export const ProfileMenu = () => {
         >
             <Dialog aria-label="Account" className="outline-hidden">
                 <div className="flex flex-col gap-0.5 p-1">
-                    <PanelItem icon={HiOutlineUser} label="View profile" onPress={() => void navigate("/profile")} />
-                    <PanelItem icon={HiOutlineCog6Tooth} label="Settings" onPress={() => void navigate("/settings")} />
+                    <PanelItem icon={HiOutlineUser} label="View profile" onPress={() => go("/profile")} />
+                    <PanelItem icon={HiOutlineCog6Tooth} label="Settings" onPress={() => go("/settings")} />
                 </div>
 
                 <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
@@ -291,7 +304,7 @@ export const ProfileMenu = () => {
                 <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
 
                 <div className="p-1">
-                    <PanelItem icon={HiOutlineArrowRightOnRectangle} label="Sign out" onPress={() => void navigate("/signin")} />
+                    <PanelItem icon={HiOutlineArrowRightOnRectangle} label="Sign out" onPress={() => go("/signin")} />
                 </div>
             </Dialog>
         </Popover>
@@ -306,7 +319,7 @@ const PORTFOLIO_URL = "https://mbonikev.site";
 
 /** One line about who made this, and the only place to say thanks. */
 export const AppFooter = () => (
-    <footer className="mx-auto w-full max-w-[88rem] px-4 pb-24 md:px-8 md:pb-4">
+    <footer className="relative mx-auto w-full max-w-[88rem] px-4 pb-24 md:px-8 md:pb-4">
         {/* Stacked and centred on a phone: side by side, the line has to truncate
             to fit the coffee button, and a half-sentence is worse than two rows. */}
         <div className="flex flex-col items-center gap-2 border-t border-secondary py-3 text-center sm:flex-row sm:justify-between sm:gap-4 sm:text-left">
@@ -359,51 +372,49 @@ const recordSetup = [
     { id: "goal", label: "New savings goal", icon: HiOutlineFlag },
 ];
 
-/**
- * The top bar and the mobile bottom bar both render this, so each needs its own
- * `layoutId` — a shared one would make Motion try to tween between a visible
- * element and a `display:none` one, which reads as a jump.
- */
-const NavLinks = ({ layoutId }: { layoutId: string }) => {
-    const reduceMotion = useReducedMotion();
-
-    return (
-        <>
-            {navItems.map((item) => (
-                <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.to === "/"}
-                    className="relative flex h-11 items-center rounded-full px-5 text-base font-medium whitespace-nowrap md:h-9 md:px-4 md:text-sm"
-                >
-                    {({ isActive }) => (
-                        <>
-                            {isActive && (
-                                <motion.span
-                                    layoutId={layoutId}
-                                    className="absolute inset-0 rounded-full bg-brand-primary"
-                                    transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 32 }}
-                                />
-                            )}
-                            <span className={cx("relative z-10", isActive ? "text-brand-secondary" : "text-tertiary")}>{item.label}</span>
-                        </>
-                    )}
-                </NavLink>
-            ))}
-        </>
-    );
-};
+/** The same links in the top bar and the mobile bottom bar. */
+const NavLinks = () => (
+    <>
+        {navItems.map((item) => (
+            <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                className={({ isActive }) =>
+                    cx(
+                        "flex h-11 items-center rounded-full px-5 text-base font-medium whitespace-nowrap transition duration-100 ease-linear md:h-9 md:px-4 md:text-sm",
+                        isActive ? "bg-brand-primary text-brand-secondary" : "text-tertiary hover:text-secondary",
+                    )
+                }
+            >
+                {item.label}
+            </NavLink>
+        ))}
+    </>
+);
 
 export const AppLayout = () => {
     const { accounts, add } = useAccounts();
+    // The bar only earns its background once there is content behind it.
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 4);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
     const [recording, setRecording] = useState<RecordKind | null>(null);
+    const [adding, setAdding] = useState(false);
     const [updatingBalance, setUpdatingBalance] = useState(false);
 
     return (
-        <div className="min-h-screen overflow-x-clip bg-secondary">
+        <div className="relative min-h-screen overflow-x-clip bg-secondary">
+            <PageBackdrop />
+
             {/* Full-width wrapper so the blur spans the viewport, with the inner
                 row still constrained to the page width. */}
-            <header className="sticky top-0 z-50 bg-header backdrop-blur-xl">
+            <header className={cx("sticky top-0 z-50 transition-colors duration-200 ease-linear", scrolled && "bg-header backdrop-blur-xl")}>
                 <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-4 py-4 md:px-8 md:py-5">
                 <NavLink to="/" aria-label="Margin — home" className="rounded-md outline-brand focus-visible:outline-2 focus-visible:outline-offset-4">
                     {/* The wordmark is ~117px wide at this height — too much of a
@@ -448,7 +459,7 @@ export const AppLayout = () => {
 
                     <div className="flex h-13 items-center gap-1 rounded-full bg-primary p-1 shadow-xs md:h-11">
                         <div className="hidden items-center gap-1 md:flex">
-                            <NavLinks layoutId="nav-pill-top" />
+                            <NavLinks />
                             <Separator className="mx-1.5" />
                         </div>
 
@@ -461,7 +472,9 @@ export const AppLayout = () => {
                 </div>
             </header>
 
-            <main className="mx-auto w-full max-w-[88rem] px-4 pb-4 md:px-8 md:pb-6">
+            {/* `relative` on the content: the backdrop is positioned, so static
+                siblings would paint underneath it. */}
+            <main className="relative mx-auto w-full max-w-[88rem] px-4 pb-4 md:px-8 md:pb-6">
                 <Outlet />
             </main>
 
@@ -472,20 +485,31 @@ export const AppLayout = () => {
                 className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden"
             >
                 <div className="pointer-events-auto flex h-13 items-center gap-1 rounded-full bg-popover p-1 shadow-[0_4px_12px_rgba(0,0,0,0.10),0_16px_32px_-12px_rgba(0,0,0,0.22)] ring-1 ring-popover">
-                    <NavLinks layoutId="nav-pill-bottom" />
+                    <NavLinks />
                 </div>
             </nav>
 
-            {accounts[0] ? (
-                <UpdateBalanceModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} account={accounts[0]} />
-            ) : (
-                <AddAccountModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} onSave={add} />
-            )}
+            {accounts[0] && <UpdateBalanceModal isOpen={updatingBalance} onOpenChange={setUpdatingBalance} account={accounts[0]} />}
+
+            {/* One add-account modal for the whole shell: the header's Record and
+                Update balance actions both land here when there is no account yet. */}
+            <AddAccountModal
+                isOpen={adding || (updatingBalance && !accounts[0])}
+                onOpenChange={(open) => {
+                    setAdding(open);
+                    if (!open) setUpdatingBalance(false);
+                }}
+                onSave={add}
+            />
             <RecordModal
                 kind={recording ?? "expense"}
                 isOpen={recording !== null}
                 onOpenChange={(open) => !open && setRecording(null)}
                 accounts={accounts}
+                onAddAccount={() => {
+                    setRecording(null);
+                    setAdding(true);
+                }}
             />
         </div>
     );

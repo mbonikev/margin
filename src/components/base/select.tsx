@@ -76,7 +76,7 @@ export const Popover = (props: PopoverProps) => {
             {...props}
             className={(state) =>
                 cx(
-                    "w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto rounded-lg bg-primary py-1 shadow-lg ring-1 ring-secondary_alt outline-hidden will-change-transform",
+                    "w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto rounded-2xl bg-popover p-1 shadow-xl ring-1 ring-popover outline-hidden will-change-transform",
 
                     state.isEntering &&
                         "duration-150 ease-out animate-in fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
@@ -171,7 +171,7 @@ export const SelectItem = ({
             {(state) => (
                 <div
                     className={cx(
-                        "flex cursor-pointer items-center rounded-md outline-hidden select-none",
+                        "flex cursor-pointer items-center rounded-xl outline-hidden select-none",
                         (state.isFocused || state.isHovered || (state.isSelected && selectionIndicator !== "checkbox")) && "bg-primary_hover",
                         state.isDisabled && "cursor-not-allowed opacity-50",
                         state.isFocusVisible && "ring-2 ring-focus-ring ring-inset",
@@ -270,7 +270,7 @@ const ComboBoxValue = ({ size, shortcut, placeholder, shortcutClassName, icon: I
             {...otherProps}
             className={({ isFocusWithin, isDisabled }) =>
                 cx(
-                    "relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition-shadow duration-100 ease-linear ring-inset",
+                    "relative flex w-full items-center gap-2 rounded-2xl bg-secondary outline-hidden transition duration-100 ease-linear",
                     isDisabled && "cursor-not-allowed opacity-50",
                     isFocusWithin && "ring-2 ring-brand",
 
@@ -328,7 +328,7 @@ const ComboBoxValue = ({ size, shortcut, placeholder, shortcutClassName, icon: I
 
 export const ComboBox = ({
     placeholder = "Search",
-    shortcut = true,
+    shortcut = false,
     size = "md",
     children,
     items,
