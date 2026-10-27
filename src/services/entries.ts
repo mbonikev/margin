@@ -23,9 +23,14 @@ const toActivity = (row: EntryRow): Activity => ({
 });
 
 export const listActivity = async (limit = 50): Promise<Activity[]> => {
+    // `!inner` on accounts, filtered to live ones: an entry whose account is in
+    // the trash is hidden with it, and reappears when the account is restored.
+    // Filtering rather than flagging means there is no second piece of state to
+    // keep in step with `deleted_at`.
     const { data, error } = await supabase
         .from("entries")
-        .select("*")
+        .select("*, accounts!inner(deleted_at)")
+        .is("accounts.deleted_at", null)
         .order("occurred_at", { ascending: false })
         .limit(limit);
 

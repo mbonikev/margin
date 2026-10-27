@@ -118,3 +118,23 @@ export const purgeAccount = async (id: string): Promise<void> => {
     const { error } = await supabase.from("accounts").delete().eq("id", id);
     if (error) throw error;
 };
+
+/**
+ * How many entries would go with each trashed account.
+ *
+ * The trash row says what restoring brings back, and what purging destroys —
+ * "4 records" is the difference between an empty shell and a month of history.
+ */
+export const countTrashedEntries = async (): Promise<Record<string, number>> => {
+    const { data, error } = await supabase
+        .from("entries")
+        .select("account_id, accounts!inner(deleted_at)")
+        .not("accounts.deleted_at", "is", null);
+
+    if (error) throw error;
+
+    return data.reduce<Record<string, number>>((counts, row) => {
+        if (row.account_id) counts[row.account_id] = (counts[row.account_id] ?? 0) + 1;
+        return counts;
+    }, {});
+};

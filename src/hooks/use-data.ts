@@ -8,6 +8,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { keys } from "@/lib/query";
 import { useAuth } from "@/auth-provider";
+import { countTrashedEntries } from "@/services/accounts";
 import type { SpendPeriod } from "@/providers";
 import { createEntry, deleteEntry, getDashboardSeries, getSafeToSpend, listAccountHistory, listActivity, listMonthFlows } from "@/services/entries";
 import { createGoal, listGoals, trashGoal, updateGoal } from "@/services/goals";
@@ -150,4 +151,10 @@ export const useAccountHistory = (accountId: string | null) => {
         queryFn: () => listAccountHistory(accountId!),
         enabled: enabled && Boolean(accountId),
     });
+};
+
+/** Entry counts for trashed accounts, keyed by account id. */
+export const useTrashedEntryCounts = () => {
+    const enabled = useEnabled();
+    return useQuery({ queryKey: [...keys.trashedAccounts, "entry-counts"], queryFn: countTrashedEntries, enabled });
 };

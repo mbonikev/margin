@@ -18,7 +18,7 @@ import { AmountField, Field, ModalActions, TextField } from "@/components/ui";
 import { Logo } from "@/components/ui";
 import { Modal } from "@/components/ui";
 import { Spinner } from "@/components/ui";
-import { useAccountHistory, useCommitmentMutations, useGoalMutations, useRecordEntry } from "@/hooks/use-data";
+import { useAccountHistory, useCommitmentMutations, useGoalMutations, useRecordEntry, useTrashedEntryCounts } from "@/hooks/use-data";
 import { useAccounts, useCurrency, usePreferences } from "@/providers";
 import { cx } from "@/utils";
 
@@ -1085,56 +1085,86 @@ const sinceDeleted = (at: number) => {
 /** The list only — the Accounts page frames it in a tab panel. */
 export const AccountTrash = () => {
     const { trashed, restore, purge } = useAccounts();
+    const { data: entryCounts } = useTrashedEntryCounts();
     // Delete forever is the one thing here that can't be taken back, so it asks
     // in place rather than opening a dialog over a list of four rows.
     const [confirming, setConfirming] = useState<string | null>(null);
 
     if (trashed.length === 0) {
-        return <p className="py-8 text-center text-sm text-tertiary">Nothing deleted. Accounts you remove wait here.</p>;
+        return (
+            <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+                <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-quaternary">
+                    <HiOutlineTrash className="size-6" />
+                </span>
+                <p className="text-sm font-medium text-primary">Trash is empty</p>
+                <p className="max-w-72 text-sm text-tertiary">Accounts you delete wait here, with everything recorded against them.</p>
+            </div>
+        );
     }
 
     return (
         <div className="flex flex-col gap-4">
-            <p className="text-sm text-tertiary">Left out of your totals. Restore any time.</p>
+            <p className="text-sm text-tertiary">Left out of your totals, along with everything recorded against them. Restore any time.</p>
 
-            <ul className="flex flex-col gap-1.5">
-                {trashed.map((account) => (
-                    <li key={account.id} className="flex flex-wrap items-center gap-3 rounded-2xl bg-secondary px-3 py-2.5">
-                        <span aria-hidden="true" className={`h-7 w-11 shrink-0 rounded-md opacity-60 ${cardThemeClass(account.theme)}`} />
+            <ul className="flex flex-col gap-2">
+                {trashed.map((account) => {
+                    const records = entryCounts?.[account.id] ?? 0;
+                    const label = records === 1 ? "record" : "records";
 
-                        <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-primary">{account.name}</p>
-                            <p className="truncate text-xs text-quaternary">
-                                {account.kind} · deleted {sinceDeleted(account.deletedAt)}
-                            </p>
-                        </div>
+                    return (
+                        <li key={account.id} className="flex flex-wrap items-center gap-4 rounded-3xl bg-secondary p-3">
+                            {/* The real card, dimmed. It is what the person
+                                recognises the account by; a swatch is not. */}
+                            <div className="w-40 shrink-0 opacity-50 grayscale-[0.35]">
+                                <div className="aspect-[1.55/1] w-full">
+                                    <AccountCard account={account} />
+                                </div>
+                            </div>
 
-                        <div className="flex shrink-0 items-center gap-1.5">
-                            <ActionButton icon={HiOutlineArrowUturnLeft} onClick={() => restore(account.id)} className="bg-primary">
-                                Restore
-                            </ActionButton>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium text-primary">{account.name}</p>
+                                <p className="truncate text-xs text-tertiary">
+                                    {account.kind} · deleted {sinceDeleted(account.deletedAt)}
+                                </p>
+                                <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-quaternary">
+                                    <span className="flex items-center gap-1">
+                                        Balance <Amount value={account.balance} className="font-medium text-tertiary" />
+                                    </span>
+                                    <span>
+                                        {records} {label} held with it
+                                    </span>
+                                </p>
+                            </div>
 
-                            {confirming === account.id ? (
-                                <ActionButton
-                                    icon={HiOutlineTrash}
-                                    onClick={() => purge(account.id)}
-                                    onBlur={() => setConfirming(null)}
-                                    autoFocus
-                                    className="bg-negative-tint text-negative-ink hover:bg-negative-tint hover:text-negative-ink"
-                                >
-                                    Sure? This is forever
+                            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                                <ActionButton icon={HiOutlineArrowUturnLeft} onClick={() => restore(account.id)} className="bg-primary">
+                                    Restore
                                 </ActionButton>
-                            ) : (
-                                <ActionButton
-                                    icon={HiOutlineTrash}
-                                    onClick={() => setConfirming(account.id)}
-                                    aria-label={`Delete ${account.name} forever`}
-                                    className="bg-primary hover:bg-negative-tint hover:text-negative-ink"
-                                />
-                            )}
-                        </div>
-                    </li>
-                ))}
+
+                                {confirming === account.id ? (
+                                    <ActionButton
+                                        icon={HiOutlineTrash}
+                                        onClick={() => purge(account.id)}
+                                        onBlur={() => setConfirming(null)}
+                                        autoFocus
+                                        className="bg-negative-tint text-negative-ink hover:bg-negative-tint hover:text-negative-ink"
+                                    >
+                                        {/* Names what is lost: purging takes the
+                                            entries with it now, not just the card. */}
+                                        {records > 0 ? `Delete with ${records} ${label}?` : "Sure? This is forever"}
+                                    </ActionButton>
+                                ) : (
+                                    <ActionButton
+                                        icon={HiOutlineTrash}
+                                        onClick={() => setConfirming(account.id)}
+                                        aria-label={`Delete ${account.name} forever`}
+                                        className="bg-primary hover:bg-negative-tint hover:text-negative-ink"
+                                    />
+                                )}
+                            </div>
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );

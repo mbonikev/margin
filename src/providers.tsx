@@ -646,6 +646,11 @@ export const AccountsProvider = ({ children }: { children: ReactNode }) => {
         void queryClient.invalidateQueries({ queryKey: keys.trashedAccounts });
         // Totals and the safe-to-spend figure are derived from balances.
         void queryClient.invalidateQueries({ queryKey: keys.safeToSpend });
+        // Trashing an account hides its entries too, so everything built from
+        // them has to be re-read — not just the account lists.
+        void queryClient.invalidateQueries({ queryKey: keys.activity });
+        void queryClient.invalidateQueries({ queryKey: keys.monthFlows });
+        void queryClient.invalidateQueries({ queryKey: ["entries", "series"] });
     }, [queryClient]);
 
     // Each write reports its own progress. Wrapped here rather than at the call
