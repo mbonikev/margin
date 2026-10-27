@@ -1,8 +1,9 @@
 /** The small shared primitives every screen is built from. */
 
 import { AU, CA, EU, GB, GH, IN, JP, KE, NG, RW, SN, TZ, UG, US, ZA } from "country-flag-icons/react/1x1";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ButtonHTMLAttributes, FC, HTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import { HiOutlineEye, HiOutlineEyeSlash } from "react-icons/hi2";
 import { Dialog, Modal as RacModal, ModalOverlay } from "react-aria-components";
 import { useCurrency, usePreferences, usePrivacy } from "@/providers";
 import { cx } from "@/utils";
@@ -309,6 +310,24 @@ export const Progress = ({ value, label, className }: ProgressProps) => {
     );
 };
 
+/* ── spinner.tsx ── */
+
+/**
+ * The one busy indicator in the app.
+ *
+ * `currentColor` throughout, so it inherits whatever it sits inside — a brand
+ * button, a muted row, a full-page guard — without a variant per context.
+ * `motion-reduce:animate-none` leaves a static ring rather than a spinning one
+ * for anyone who asked the OS for less movement.
+ */
+export const Spinner = ({ className }: { className?: string }) => (
+    <svg className={cx("size-4 shrink-0 animate-spin motion-reduce:animate-none", className)} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        {/* The faint full ring, so the gap reads as motion rather than a defect. */}
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={2.5} className="opacity-25" />
+        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
+    </svg>
+);
+
 /* ── field.tsx ── */
 
 export const Field = ({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) => (
@@ -319,7 +338,14 @@ export const Field = ({ label, hint, children }: { label: string; hint?: string;
     </label>
 );
 
-const shell = "mt-1.5 flex w-full items-center gap-2 rounded-2xl bg-secondary px-4 py-3";
+// Height and radius are the primary button's, so a field and the button under
+// it read as one control stack rather than two unrelated shapes. Any change
+// here has to move `h-11`/`rounded-full` on SubmitButton too.
+const shell = "mt-1.5 flex h-11 w-full items-center gap-2 rounded-full bg-secondary px-4";
+
+// The money input is the exception: it carries display-sized digits, which a
+// 44px box crops. Taller, same radius.
+const amountShell = "mt-1.5 flex h-14 w-full items-center gap-2 rounded-full bg-secondary px-5";
 const control = "w-full min-w-0 bg-transparent text-sm font-medium text-primary outline-hidden placeholder:text-quaternary";
 
 export const TextField = ({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) => (
@@ -328,9 +354,35 @@ export const TextField = ({ className, ...props }: InputHTMLAttributes<HTMLInput
     </span>
 );
 
+/**
+ * A password box with a reveal toggle.
+ *
+ * Worth the extra control: these are typed blind on phones, and a typo in a
+ * password is invisible by definition. The toggle is a real button so it is
+ * reachable by keyboard, and it never submits the form around it.
+ */
+export const PasswordField = ({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) => {
+    const [shown, setShown] = useState(false);
+    const Icon = shown ? HiOutlineEyeSlash : HiOutlineEye;
+
+    return (
+        <span className={shell}>
+            <input {...props} type={shown ? "text" : "password"} className={cx(control, className)} />
+            <button
+                type="button"
+                onClick={() => setShown((previous) => !previous)}
+                aria-label={shown ? "Hide password" : "Show password"}
+                className="-mr-1 shrink-0 rounded-full p-1 text-quaternary transition duration-100 ease-linear hover:text-tertiary"
+            >
+                <Icon className="size-4" />
+            </button>
+        </span>
+    );
+};
+
 /** Digits-only with live grouping — money is never typed with a keyboard spinner. */
 export const AmountField = ({ symbol, value, onValueChange }: { symbol: string; value: string; onValueChange: (next: string) => void }) => (
-    <span className={shell}>
+    <span className={amountShell}>
         <span className="shrink-0 text-lg font-medium text-tertiary">{symbol}</span>
         <input
             inputMode="numeric"

@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local env
+.env
+.env.local
+.env.*.local
+
+# Deno lockfile from edge-function typechecks
+deno.lock

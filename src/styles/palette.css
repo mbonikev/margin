@@ -214,10 +214,23 @@
        painted with it comes out darker than the panel it sits on. */
     --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 10%, var(--color-bg-popover));
 
-    /* A fainter version of the standard hairline, for popover edges. Mixed with
-       transparent rather than using a `/opacity` modifier, which Tailwind bakes
-       into a static hex and so would stop following the theme. */
-    --ring-color-popover: color-mix(in oklab, var(--color-border-secondary_alt) 45%, transparent);
+    /* The edge of a floating panel.
+       It used to be a 45%-transparent hairline, which reads fine over the grey
+       canvas but not over a card: in light mode --color-bg-popover and
+       --color-bg-primary are both --color-surface, so a dropdown opened inside
+       a modal was white-on-white held apart by almost nothing (Issues.txt #7).
+       A full-strength hairline costs nothing over the canvas and is the only
+       thing separating the two surfaces when they match. */
+    --ring-color-popover: var(--color-border-popover);
+
+    /* Hairlines *inside* a popover. The standard border token is neutral-200 in
+       light and neutral-800 in dark — and in dark a popover is itself
+       neutral-800, so a separator painted with it is the same colour as the
+       panel and simply vanishes (Issues.txt #2). This one is defined against
+       the popover surface instead, so it stays visible in both themes. */
+    --color-border-popover: color-mix(in oklab, var(--color-border-secondary) 70%, var(--color-bg-popover));
+    --border-color-popover: var(--color-border-popover);
+    --background-color-border-popover: var(--color-border-popover);
 
     /* Tailwind builds `bg-*` from the --background-color-* namespace, which is
        how Untitled UI's own bg-primary/bg-secondary utilities exist. */
@@ -245,6 +258,8 @@
         --color-bg-popover: var(--color-neutral-800);
         --color-bg-popover-hover: var(--color-neutral-700);
         --color-bg-brand-popover: color-mix(in oklab, var(--color-brand) 26%, var(--color-bg-popover));
+        /* A step lighter than the panel, rather than a step darker than nothing. */
+        --color-border-popover: var(--color-neutral-700);
         --color-chart-compare: #c98500;
         --color-chart-third: #9c74c4;
     }

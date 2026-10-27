@@ -191,7 +191,7 @@ export interface Commitment {
 const dayFormat = new Intl.DateTimeFormat(undefined, { day: "numeric" });
 const monthFormat = new Intl.DateTimeFormat(undefined, { month: "short" });
 
-export const UpcomingList = ({ items, className }: { items: Commitment[]; className?: string }) => {
+export const UpcomingList = ({ items, className, onViewAll }: { items: Commitment[]; className?: string; onViewAll?: () => void }) => {
     const total = items.reduce((sum, item) => sum + item.amount, 0);
 
     return (
@@ -199,7 +199,11 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
             <div className="flex items-center justify-between gap-3">
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Upcoming</h2>
 
-                <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
+                {onViewAll && (
+                    <ActionButton icon={HiOutlineArrowRight} onClick={onViewAll}>
+                        View all
+                    </ActionButton>
+                )}
             </div>
 
             {items.length === 0 && <Blank art={<NoUpcomingArt />}>Nothing due yet. Add a recurring bill and it shows up here.</Blank>}
@@ -442,7 +446,7 @@ const elapsed = (from: Date) => {
     return `${Math.floor(months / 12)}y ${months % 12}m in`;
 };
 
-export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: string }) => {
+export const SavingsGoals = ({ goals, className, onViewAll }: { goals: Goal[]; className?: string; onViewAll?: () => void }) => {
     const { accounts } = useAccounts();
     const [creating, setCreating] = useState(false);
 
@@ -451,7 +455,15 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
             <div className="flex items-center justify-between gap-3">
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Goals</h2>
 
-                <ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>New goal</ActionButton>
+                {onViewAll ? (
+                    <ActionButton icon={HiOutlineArrowRight} onClick={onViewAll}>
+                        View all
+                    </ActionButton>
+                ) : (
+                    <ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>
+                        New goal
+                    </ActionButton>
+                )}
             </div>
 
             {goals.length === 0 && <Blank art={<NoGoalsArt />}>No goals yet. Name one thing you're saving for.</Blank>}
@@ -537,14 +549,18 @@ const whenLabel = (date: Date) => {
     return dateFormat.format(date);
 };
 
-export const RecentActivity = ({ items, className }: { items: Activity[]; className?: string }) => {
+export const RecentActivity = ({ items, className, onViewAll }: { items: Activity[]; className?: string; onViewAll?: () => void }) => {
     const rows = [...items].sort((a, b) => b.at.getTime() - a.at.getTime());
 
     return (
         <Card className={cx("flex flex-col gap-3", className)}>
             <div className="flex items-center justify-between gap-3">
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Recent</h2>
-                <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
+                {onViewAll && (
+                    <ActionButton icon={HiOutlineArrowRight} onClick={onViewAll}>
+                        View all
+                    </ActionButton>
+                )}
             </div>
 
             {items.length === 0 && <Blank art={<NoActivityArt />}>Nothing recorded yet. Your first expense or balance update lands here.</Blank>}

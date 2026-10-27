@@ -10,7 +10,9 @@ import { ActionButton } from "@/components/ui";
 import { Field, ModalActions, TextField } from "@/components/ui";
 import { Flag } from "@/components/ui";
 import { BackdropPreview, backdrops } from "@/components/backdrops";
-import { demoProfile } from "@/demo-data";
+import { useProfile, useProfileMutation } from "@/hooks/use-data";
+import { downloadWorkbook } from "@/services/export";
+import { notify } from "@/lib/toast";
 import { BASE_CURRENCY, accentColors, currencies, useAccounts, useCurrency, usePreferences, usePrivacy, useTheme } from "@/providers";
 import type { Preferences, ThemeMode } from "@/providers";
 import { cx } from "@/utils";
@@ -30,13 +32,24 @@ export const SettingGroup = ({ title, hint, children }: { title: string; hint?: 
 
 const row = "flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl bg-secondary px-4 py-3";
 
+/**
+ * A labelled switch where the whole row is the hit area (Issues.txt #1).
+ *
+ * Not a `<label>`: React Aria's Switch already renders its own label around a
+ * hidden input, and nesting labels makes a click on the switch itself toggle
+ * twice — once through each. So the row handles clicks, and the switch stops
+ * its own from reaching the row. The switch stays the only focusable thing, so
+ * keyboard and screen-reader behaviour are unchanged.
+ */
 export const ToggleRow = ({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (next: boolean) => void }) => (
-    <div className={row}>
+    <div className={cx(row, "cursor-pointer select-none")} onClick={() => onChange(!value)}>
         <span className="min-w-0 flex-1 flex flex-col gap-1">
             <span className="block text-sm font-medium text-primary">{label}</span>
             {hint && <span className="block text-xs text-tertiary">{hint}</span>}
         </span>
-        <Toggle isSelected={value} onChange={onChange} aria-label={label} />
+        <span onClick={(event) => event.stopPropagation()}>
+            <Toggle isSelected={value} onChange={onChange} aria-label={label} />
+        </span>
     </div>
 );
 
@@ -312,8 +325,17 @@ const localZone = (() => {
 })();
 
 export const ProfileSettings = () => {
-    const { preferences } = usePreferences();
-    const person = preferences.demoData ? demoProfile : { name: "", email: "" };
+    const { data: profile } = useProfile();
+    const saveProfile = useProfileMutation();
+    const person = { name: profile?.name ?? "", email: profile?.email ?? "" };
+
+    // Drafts, not copies: null means "untouched, show whatever the server says",
+    // so a fetch landing mid-edit cannot overwrite what is being typed and there
+    // is no effect to keep the two in step.
+    const [nameDraft, setNameDraft] = useState<string | null>(null);
+    const [zoneDraft, setZoneDraft] = useState<string | null>(null);
+    const name = nameDraft ?? person.name;
+    const zone = zoneDraft ?? profile?.timezone ?? localZone;
 
     return (
         <div className="flex max-w-md flex-col gap-4">
@@ -323,11 +345,13 @@ export const ProfileSettings = () => {
             </div>
 
             <Field label="Name">
-                <TextField key={person.name} defaultValue={person.name} placeholder="Your name" />
+                <TextField value={name} onChange={(event) => setNameDraft(event.target.value)} placeholder="Your name" />
             </Field>
 
+            {/* Read-only: changing the address is an auth operation that mails a
+                confirmation to the new inbox, so it gets its own control below. */}
             <Field label="Email" hint="Where the morning email arrives.">
-                <TextField key={person.email} type="email" defaultValue={person.email} placeholder="you@example.com" />
+                <TextField key={person.email} type="email" defaultValue={person.email} placeholder="you@example.com" disabled />
             </Field>
 
             {/* A combobox, not a select: 400-odd zones is a scroll, but one word of
@@ -336,7 +360,8 @@ export const ProfileSettings = () => {
                 label="Timezone"
                 hint="The email is sent at your local time, not the server's."
                 placeholder="Search zones"
-                defaultSelectedKey={localZone}
+                selectedKey={zone}
+                onSelectionChange={(key) => setZoneDraft(String(key))}
                 items={zones}
             >
                 {(item) => (
@@ -346,7 +371,14 @@ export const ProfileSettings = () => {
                 )}
             </Select.ComboBox>
 
-            <ModalActions onCancel={() => { }} onConfirm={() => { }} confirmLabel="Save profile" />
+            <ModalActions
+                onCancel={() => {
+                    setNameDraft(null);
+                    setZoneDraft(null);
+                }}
+                onConfirm={() => saveProfile.mutate({ name: name.trim(), timezone: zone })}
+                confirmLabel={saveProfile.isPending ? "Saving…" : "Save profile"}
+            />
         </div>
     );
 };
@@ -717,10 +749,16 @@ const previews: Record<string, string> = {
 };
 
 export const EmailSettings = () => {
-    const { preferences } = usePreferences();
-    const [enabled, setEnabled] = useState(true);
+    const { data: profile } = useProfile();
+    const saveProfile = useProfileMutation();
+    const [enabledDraft, setEnabledDraft] = useState<boolean | null>(null);
+    const [hourDraft, setHourDraft] = useState<string | null>(null);
     const [tone, setTone] = useState("gentle");
     const [quiet, setQuiet] = useState(true);
+
+    // Same draft-overlay shape as the profile panel above.
+    const enabled = enabledDraft ?? profile?.morningMailEnabled ?? true;
+    const hour = hourDraft ?? String(profile?.morningMailHour ?? 7);
 
     return (
         <div className="flex max-w-md flex-col gap-4">
@@ -733,14 +771,14 @@ export const EmailSettings = () => {
                 <span>
                     <span className="block text-sm font-medium text-primary">Send the morning email</span>
                     <span className="block text-xs text-tertiary">
-                        {preferences.demoData ? `${demoProfile.emailStreak} mornings in a row so far.` : "Starts the morning after your first balance."}
+                        {profile?.emailStreak ? `${profile.emailStreak} mornings in a row so far.` : "Starts the morning after your first balance."}
                     </span>
                 </span>
-                <Toggle isSelected={enabled} onChange={setEnabled} aria-label="Send the morning email" />
+                <Toggle isSelected={enabled} onChange={setEnabledDraft} aria-label="Send the morning email" />
             </div>
 
             <div className={cx("flex flex-col gap-4 transition-opacity", !enabled && "pointer-events-none opacity-40")}>
-                <Select label="Send at" defaultSelectedKey="7" items={hours}>
+                <Select label="Send at" selectedKey={hour} onSelectionChange={(key) => setHourDraft(String(key))} items={hours}>
                     {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
                 </Select>
 
@@ -761,7 +799,14 @@ export const EmailSettings = () => {
                 </div>
             </div>
 
-            <ModalActions onCancel={() => { }} onConfirm={() => { }} confirmLabel="Save email settings" />
+            <ModalActions
+                onCancel={() => {
+                    setEnabledDraft(null);
+                    setHourDraft(null);
+                }}
+                onConfirm={() => saveProfile.mutate({ morningMailEnabled: enabled, morningMailHour: Number(hour) })}
+                confirmLabel={saveProfile.isPending ? "Saving…" : "Save email settings"}
+            />
         </div>
     );
 };
@@ -825,44 +870,42 @@ export const PrivacySettings = () => {
 /* ── data-settings.tsx ── */
 
 export const DataSettings = () => {
-    const { preferences, set, reset } = usePreferences();
-    const { accounts, trashed, purge } = useAccounts();
+    const { reset } = usePreferences();
+    const { trashed, purge } = useAccounts();
     const [confirming, setConfirming] = useState<"reset" | "trash" | null>(null);
 
-    const download = () => {
-        const payload = JSON.stringify({ exportedAt: new Date().toISOString(), preferences, accounts }, null, 2);
-        const url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `margin-${new Date().toISOString().slice(0, 10)}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
+    const [exporting, setExporting] = useState(false);
+
+    const download = async () => {
+        setExporting(true);
+        try {
+            // Building the workbook reads four tables and can take a moment on
+            // a long history, so this one reports progress rather than result.
+            await notify.promise(downloadWorkbook(), {
+                loading: "Building your workbook…",
+                success: "Downloaded.",
+                error: "Couldn't build the export.",
+            });
+        } finally {
+            setExporting(false);
+        }
     };
 
     return (
         <div className="flex max-w-5xl flex-col gap-6">
             <div>
                 <h2 className="text-md font-semibold text-primary">Your data</h2>
-                <p className="mt-0.5 text-sm text-tertiary">It lives in this browser. Nothing here leaves your device.</p>
+                <p className="mt-0.5 text-sm text-tertiary">Synced to your account, and yours to take with you at any time.</p>
             </div>
-
-            <SettingGroup title="Demo">
-                <ToggleRow
-                    label="Demo data"
-                    hint="Fills the app with sample accounts, bills and history. Your own accounts stay untouched either way."
-                    value={preferences.demoData}
-                    onChange={(value) => set("demoData", value)}
-                />
-            </SettingGroup>
 
             <SettingGroup title="Export">
                 <div className={row}>
                     <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium text-primary">Download everything</span>
-                        <span className="block text-xs text-tertiary">Your accounts and settings, as one JSON file.</span>
+                        <span className="block text-xs text-tertiary">Accounts, activity, goals and bills — one Excel workbook, a sheet each.</span>
                     </span>
-                    <ActionButton icon={HiOutlineArrowDownTray} onClick={download} className="bg-primary">
-                        Export
+                    <ActionButton icon={HiOutlineArrowDownTray} onClick={() => void download()} disabled={exporting} className="bg-primary">
+                        {exporting ? "Preparing…" : "Export"}
                     </ActionButton>
                 </div>
             </SettingGroup>
@@ -880,6 +923,7 @@ export const DataSettings = () => {
                             onBlur={() => setConfirming(null)}
                             onClick={() => {
                                 reset();
+                                notify.success("Settings reset.");
                                 setConfirming(null);
                             }}
                             className="bg-negative-tint text-negative-ink hover:bg-negative-tint hover:text-negative-ink"

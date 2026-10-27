@@ -17,6 +17,8 @@ import { Card } from "@/components/ui";
 import { AmountField, Field, ModalActions, TextField } from "@/components/ui";
 import { Logo } from "@/components/ui";
 import { Modal } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { useAccountHistory } from "@/hooks/use-data";
 import { useAccounts, useCurrency, usePreferences } from "@/providers";
 import { cx } from "@/utils";
 
@@ -284,12 +286,9 @@ export const CardThemePicker = ({ value, onChange }: { value: CardTheme; onChang
 
 /** The last few balance readings for one account. */
 export const AccountHistoryModal = ({ isOpen, onOpenChange, account }: { isOpen: boolean; onOpenChange: (open: boolean) => void; account: Account }) => {
-    const readings = [
-        { at: "Today", amount: account.balance },
-        { at: "3 days ago", amount: Math.round(account.balance * 1.08) },
-        { at: "Last week", amount: Math.round(account.balance * 0.94) },
-        { at: "2 weeks ago", amount: Math.round(account.balance * 1.15) },
-    ];
+    // Only fetched while the modal is open: this is a per-account query and
+    // there is no reason to run one for every card on the page.
+    const { data: readings, isPending } = useAccountHistory(isOpen ? account.id : null);
 
     return (
         <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} history`}>
@@ -299,27 +298,41 @@ export const AccountHistoryModal = ({ isOpen, onOpenChange, account }: { isOpen:
                     <p className="mt-0.5 text-sm text-tertiary">Balance readings for {account.name}.</p>
                 </div>
 
-                <ul className="flex flex-col">
-                    {readings.map((reading, index) => {
-                        const previous = readings[index + 1];
-                        const delta = previous ? reading.amount - previous.amount : 0;
+                {isPending && (
+                    <div className="flex justify-center py-8">
+                        <Spinner className="size-5 text-quaternary" />
+                    </div>
+                )}
 
-                        return (
-                            <li key={reading.at} className="flex items-center justify-between gap-3 rounded-xl px-2 py-2.5 hover:bg-secondary">
-                                <span className="text-sm text-tertiary">{reading.at}</span>
-                                <span className="flex items-baseline gap-2">
-                                    <Amount value={reading.amount} className="text-sm font-semibold text-primary" />
-                                    {previous && (
-                                        <span className={delta < 0 ? "text-xs text-negative-ink" : "text-xs text-positive-ink"}>
-                                            {delta < 0 ? "−" : "+"}
-                                            {Math.abs(delta).toLocaleString()}
-                                        </span>
-                                    )}
-                                </span>
-                            </li>
-                        );
-                    })}
-                </ul>
+                {!isPending && (readings?.length ?? 0) === 0 && (
+                    <p className="py-8 text-center text-sm text-tertiary">No readings yet. Update this balance and the first one lands here.</p>
+                )}
+
+                {!isPending && (readings?.length ?? 0) > 0 && (
+                    <ul className="flex flex-col">
+                        {readings!.map((reading, index) => {
+                            // The row below is the previous reading, so the delta
+                            // is what changed between the two.
+                            const previous = readings![index + 1];
+                            const delta = previous ? reading.amount - previous.amount : 0;
+
+                            return (
+                                <li key={reading.id} className="flex items-center justify-between gap-3 px-2 py-2.5">
+                                    <span className="text-sm text-tertiary">{reading.label}</span>
+                                    <span className="flex items-baseline gap-2">
+                                        <Amount value={reading.amount} className="text-sm font-semibold text-primary" />
+                                        {previous && delta !== 0 && (
+                                            <span className={delta < 0 ? "text-xs text-negative-ink" : "text-xs text-positive-ink"}>
+                                                {delta < 0 ? "−" : "+"}
+                                                {Math.abs(delta).toLocaleString()}
+                                            </span>
+                                        )}
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
 
                 <ModalActions onCancel={() => onOpenChange(false)} onConfirm={() => onOpenChange(false)} confirmLabel="Done" />
             </div>

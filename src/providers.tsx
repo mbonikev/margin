@@ -1,14 +1,18 @@
 /**
  * Every piece of app-wide state, in one file: theme, preferences, privacy,
- * currency and accounts. They are small, they all follow the same
- * context-plus-localStorage shape, and several read each other.
+ * currency and accounts.
+ *
+ * Theme, privacy and display currency stay in localStorage — they describe this
+ * device, not the person, and must be right on the first paint. Preferences and
+ * accounts are backed by Postgres so they follow the person between devices.
  */
 
 import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { BackdropKind } from "@/components/backdrops";
-import { demoAccounts } from "@/demo-data";
 import type { Account } from "@/components/accounts";
+import { useAuth } from "@/auth-provider";
+import { getPreferences, savePreferences } from "@/services/preferences";
 
 /* ── theme-provider.tsx ── */
 
@@ -173,9 +177,6 @@ export interface Preferences {
     hideOnBlur: boolean;
     confirmDelete: boolean;
 
-    /** Fills the app with the sample accounts and history from `demo-data.ts`. */
-    demoData: boolean;
-
     // Notifications
     notifyStale: boolean;
     notifyBills: boolean;
@@ -210,8 +211,6 @@ export const defaultPreferences: Preferences = {
     hideOnBlur: false,
     confirmDelete: true,
 
-    demoData: false,
-
     notifyStale: true,
     notifyBills: true,
     notifyGoals: true,
@@ -244,7 +243,19 @@ const rootFontSize: Record<TextSize, string> = {
     large: "17.5px",
 };
 
+/**
+ * Settings are stored twice on purpose.
+ *
+ * localStorage is the immediate layer: theme and text size have to be right on
+ * the very first paint, before any network call, and they must keep working
+ * when nobody is signed in. Postgres is the durable layer, so the same settings
+ * follow the person to another device.
+ *
+ * On sign-in the server copy wins, merged over the defaults exactly as the
+ * stored blob always was — a build that adds a setting needs no migration.
+ */
 export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
+    const { user } = useAuth();
     const [preferences, setPreferences] = useState<Preferences>(readPreferences);
 
     // Scaling the root size scales the whole layout with it — every size in the
@@ -253,26 +264,52 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
         document.documentElement.style.fontSize = rootFontSize[preferences.textSize];
     }, [preferences.textSize]);
 
-    const set = useCallback<PreferencesContextValue["set"]>((key, value) => {
-        setPreferences((previous) => {
-            const next = { ...previous, [key]: value };
-            try {
-                localStorage.setItem(PREFERENCES_KEY, JSON.stringify(next));
-            } catch {
-                /* blocked storage — the choice just won't persist */
-            }
-            return next;
-        });
-    }, []);
+    // Adopt the server's copy once there is a session to read it with.
+    useEffect(() => {
+        if (!user) return;
+        let active = true;
+
+        void getPreferences()
+            .then((stored) => {
+                if (!active || Object.keys(stored).length === 0) return;
+                const merged = { ...defaultPreferences, ...(stored as Partial<Preferences>) };
+                setPreferences(merged);
+                writeSetting(PREFERENCES_KEY, JSON.stringify(merged));
+            })
+            .catch(() => {
+                /* offline or blocked — the local copy is still perfectly usable */
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [user]);
+
+    const persist = useCallback(
+        (next: Preferences) => {
+            writeSetting(PREFERENCES_KEY, JSON.stringify(next));
+            // Fire-and-forget: the local write already made the change stick for
+            // this device, so a failed sync must not block the UI or throw.
+            if (user) void savePreferences(next).catch(() => {});
+        },
+        [user],
+    );
+
+    const set = useCallback<PreferencesContextValue["set"]>(
+        (key, value) => {
+            setPreferences((previous) => {
+                const next = { ...previous, [key]: value };
+                persist(next);
+                return next;
+            });
+        },
+        [persist],
+    );
 
     const reset = useCallback(() => {
         setPreferences(defaultPreferences);
-        try {
-            localStorage.removeItem(PREFERENCES_KEY);
-        } catch {
-            /* nothing to clear */
-        }
-    }, []);
+        persist(defaultPreferences);
+    }, [persist]);
 
     const value = useMemo(() => ({ preferences, set, reset }), [preferences, set, reset]);
 
@@ -535,20 +572,36 @@ export const useCurrency = () => {
 
 /* ── accounts-provider.tsx ── */
 
-const TRASH_KEY = "margin:trash";
+/**
+ * Accounts now live in Postgres. The context keeps the exact shape every screen
+ * was already written against — `accounts`, `add`, `update`, `trashed`,
+ * `remove`, `restore`, `purge` — so nothing downstream changed.
+ *
+ * The old overrides-and-tombstones machinery is gone: rows are editable where
+ * they live, so there is no immutable list to layer edits over, and the trash
+ * is a `deleted_at` column rather than a map.
+ */
 
-/** Account id → when it went to the trash, as epoch ms. */
-type Trash = Record<string, number>;
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keys } from "@/lib/query";
+import { tracked } from "@/lib/toast";
+import {
+    createAccount,
+    listAccounts,
+    listTrashedAccounts,
+    purgeAccount,
+    restoreAccount,
+    trashAccount,
+    updateAccount,
+} from "@/services/accounts";
+import type { TrashedAccount } from "@/services/accounts";
 
-export interface TrashedAccount extends Account {
-    deletedAt: number;
-}
+export type { TrashedAccount };
 
 interface AccountsContextValue {
     /** Everything not in the trash — what totals and the card grid are built from. */
     accounts: Account[];
     add: (account: Omit<Account, "id" | "updated">) => void;
-    /** Edits any account, demo set included — the change is stored as an overlay. */
     update: (id: string, patch: Partial<Account>) => void;
     /** Most recently deleted first, so the thing you just removed is at the top. */
     trashed: TrashedAccount[];
@@ -556,140 +609,55 @@ interface AccountsContextValue {
     restore: (id: string) => void;
     /** Permanent. Only reachable from the trash, behind a confirm. */
     purge: (id: string) => void;
+    /** True while the first load is in flight — drives the card skeletons. */
+    isLoading: boolean;
+    error: Error | null;
 }
 
 const AccountsContext = createContext<AccountsContextValue | null>(null);
 
-const readTrash = (): Trash => {
-    try {
-        const raw = localStorage.getItem(TRASH_KEY);
-        return raw ? (JSON.parse(raw) as Trash) : {};
-    } catch {
-        return {};
-    }
-};
-
-const writeTrash = (trash: Trash) => {
-    try {
-        localStorage.setItem(TRASH_KEY, JSON.stringify(trash));
-    } catch {
-        /* blocked storage — the trash just won't survive a reload */
-    }
-};
-
-const ACCOUNTS_KEY = "margin:accounts";
-const OVERRIDES_KEY = "margin:account-edits";
-
-/** Account id → the fields the user has changed on it. */
-type Overrides = Record<string, Partial<Account>>;
-
-const readOverrides = (): Overrides => {
-    try {
-        const raw = localStorage.getItem(OVERRIDES_KEY);
-        return raw ? (JSON.parse(raw) as Overrides) : {};
-    } catch {
-        return {};
-    }
-};
-
-const readAccounts = (): Account[] => {
-    try {
-        const raw = localStorage.getItem(ACCOUNTS_KEY);
-        return raw ? (JSON.parse(raw) as Account[]) : [];
-    } catch {
-        return [];
-    }
-};
-
 export const AccountsProvider = ({ children }: { children: ReactNode }) => {
-    const { preferences } = usePreferences();
-    // Accounts the person actually created. The demo set is layered on top when
-    // the setting is on, so turning it off never destroys their own.
-    const [own, setOwn] = useState<Account[]>(readAccounts);
-    const [overrides, setOverrides] = useState<Overrides>(readOverrides);
-    const [trash, setTrash] = useState<Trash>(readTrash);
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
+    // Nothing to fetch until there is somebody to fetch it for.
+    const enabled = Boolean(user);
 
-    // Edits are an overlay rather than a rewrite, so a demo account can be
-    // renamed without the demo list itself being mutable.
-    const all = useMemo(() => {
-        const base = preferences.demoData ? [...demoAccounts, ...own] : own;
-        return base.map((account) => (overrides[account.id] ? { ...account, ...overrides[account.id] } : account));
-    }, [preferences.demoData, own, overrides]);
+    const accountsQuery = useQuery({ queryKey: keys.accounts, queryFn: listAccounts, enabled });
+    const trashQuery = useQuery({ queryKey: keys.trashedAccounts, queryFn: listTrashedAccounts, enabled });
 
-    const update = useCallback((id: string, patch: Partial<Account>) => {
-        setOverrides((previous) => {
-            const next = { ...previous, [id]: { ...previous[id], ...patch } };
-            try {
-                localStorage.setItem(OVERRIDES_KEY, JSON.stringify(next));
-            } catch {
-                /* blocked storage — the edit just won't survive a reload */
-            }
-            return next;
-        });
-    }, []);
+    // Both lists come from one table, so every write refreshes both — a delete
+    // moves a row from one to the other.
+    const refresh = useCallback(() => {
+        void queryClient.invalidateQueries({ queryKey: keys.accounts });
+        void queryClient.invalidateQueries({ queryKey: keys.trashedAccounts });
+        // Totals and the safe-to-spend figure are derived from balances.
+        void queryClient.invalidateQueries({ queryKey: keys.safeToSpend });
+    }, [queryClient]);
 
-    const add = useCallback((account: Omit<Account, "id" | "updated">) => {
-        setOwn((previous) => {
-            const next = [...previous, { ...account, id: `acct-${Date.now().toString(36)}`, updated: "Updated today" }];
-            try {
-                localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(next));
-            } catch {
-                /* blocked storage — the account just won't survive a reload */
-            }
-            return next;
-        });
-    }, []);
-
-    const updateTrash = useCallback((next: (previous: Trash) => Trash) => {
-        setTrash((previous) => {
-            const value = next(previous);
-            writeTrash(value);
-            return value;
-        });
-    }, []);
-
-    const remove = useCallback((id: string) => updateTrash((previous) => ({ ...previous, [id]: Date.now() })), [updateTrash]);
-
-    const restore = useCallback(
-        (id: string) =>
-            updateTrash((previous) => {
-                const rest = { ...previous };
-                delete rest[id];
-                return rest;
-            }),
-        [updateTrash],
-    );
-
-    const purge = useCallback(
-        (id: string) => {
-            setOwn((previous) => {
-                const next = previous.filter((account) => account.id !== id);
-                try {
-                    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(next));
-                } catch {
-                    /* nothing to write */
-                }
-                return next;
-            });
-            restore(id); // drop the tombstone too, or it would outlive the account
-        },
-        [restore],
-    );
+    // Each write reports its own progress. Wrapped here rather than at the call
+    // sites, so a screen reusing `add` or `remove` cannot forget to.
+    const addMutation = useMutation({ mutationFn: tracked(createAccount, { loading: "Adding account…", success: "Account added." }), onSuccess: refresh });
+    const updateMutation = useMutation({
+        mutationFn: tracked(({ id, patch }: { id: string; patch: Partial<Account> }) => updateAccount(id, patch), { loading: "Saving…", success: "Account updated." }),
+        onSuccess: refresh,
+    });
+    const removeMutation = useMutation({ mutationFn: tracked(trashAccount, { loading: "Moving to trash…", success: "Moved to trash." }), onSuccess: refresh });
+    const restoreMutation = useMutation({ mutationFn: tracked(restoreAccount, { loading: "Restoring…", success: "Account restored." }), onSuccess: refresh });
+    const purgeMutation = useMutation({ mutationFn: tracked(purgeAccount, { loading: "Deleting…", success: "Account deleted for good." }), onSuccess: refresh });
 
     const value = useMemo<AccountsContextValue>(
         () => ({
-            accounts: all.filter((account) => !(account.id in trash)),
-            trashed: all
-                .filter((account) => account.id in trash)
-                .map((account) => ({ ...account, deletedAt: trash[account.id] }))
-                .sort((a, b) => b.deletedAt - a.deletedAt),
-            add,
-            update,
-            remove,
-            restore,
-            purge,
+            accounts: accountsQuery.data ?? [],
+            trashed: trashQuery.data ?? [],
+            add: (account) => addMutation.mutate(account),
+            update: (id, patch) => updateMutation.mutate({ id, patch }),
+            remove: (id) => removeMutation.mutate(id),
+            restore: (id) => restoreMutation.mutate(id),
+            purge: (id) => purgeMutation.mutate(id),
+            isLoading: enabled && (accountsQuery.isLoading || trashQuery.isLoading),
+            error: (accountsQuery.error as Error | null) ?? null,
         }),
-        [all, trash, add, update, remove, restore, purge],
+        [accountsQuery.data, accountsQuery.isLoading, accountsQuery.error, trashQuery.data, trashQuery.isLoading, enabled, addMutation, updateMutation, removeMutation, restoreMutation, purgeMutation],
     );
 
     return <AccountsContext value={value}>{children}</AccountsContext>;
