@@ -399,18 +399,19 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
     const previewAccount: Account = { ...account, name: name.trim() || account.name, kind, theme };
 
     return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} settings`} className="max-w-3xl">
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} settings`} className="max-w-4xl">
         <div className="flex max-h-[85vh] flex-col gap-5 overflow-y-auto p-5 sm:flex-row sm:gap-6">
             {/* Above the form on a phone, beside it from `sm` up — so the card
                 is the first thing seen on mobile rather than scrolled past. */}
-            <div className="shrink-0 sm:w-72">
+            <div className="shrink-0 sm:w-96">
                 <span className="mb-1.5 block text-xs font-medium text-tertiary">Preview</span>
                 {/* Scaled, not resized. The card's type and padding are fixed
                     sizes, so a smaller box clips them — the name and balance
-                    fell off the bottom. Rendering it at 125% and scaling to
-                    0.8 keeps every proportion and just makes it smaller. */}
+                    fell off the bottom. Rendering it slightly oversized and
+                    scaling back keeps every proportion while guaranteeing the
+                    content still fits, which a bare resize does not. */}
                 <div className="relative aspect-[1.6/1] w-full sm:sticky sm:top-0">
-                    <div className="absolute top-0 left-0 h-[125%] w-[125%] origin-top-left scale-[0.8]">
+                    <div className="absolute top-0 left-0 h-[110%] w-[110%] origin-top-left scale-[0.909]">
                         <AccountCard account={previewAccount} />
                     </div>
                 </div>
