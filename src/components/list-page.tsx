@@ -16,7 +16,7 @@ export const ListPage = ({ title, subtitle, loading, children }: { title: string
     const navigate = useNavigate();
 
     return (
-        <div className="flex flex-col gap-1.5 md:gap-2">
+        <div className="flex flex-1 flex-col gap-1.5 md:gap-2">
             <div className="flex items-center gap-3">
                 <button
                     type="button"
@@ -34,7 +34,7 @@ export const ListPage = ({ title, subtitle, loading, children }: { title: string
             </div>
 
             {loading ? (
-                <div className="flex justify-center py-16">
+                <div className="flex flex-1 items-center justify-center">
                     <Spinner className="size-6 text-quaternary" />
                 </div>
             ) : (

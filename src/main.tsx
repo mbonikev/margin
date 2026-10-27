@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import { Spinner } from "@/components/ui";
 import App from "@/App";
 import { queryClient } from "@/lib/query";
 import { AuthProvider } from "@/auth-provider";
@@ -36,7 +37,14 @@ createRoot(document.getElementById("root")!).render(
                                             toastOptions={{
                                                 duration: 3500,
                                                 className: "!rounded-full !bg-primary !text-primary !shadow-lg !text-sm !font-medium !px-4 !py-3",
-                                                success: { iconTheme: { primary: "var(--color-brand-solid)", secondary: "var(--color-bg-primary)" } },
+                                                // These must be real custom properties: an unknown
+                                                // name resolves to nothing, and the tick is drawn as
+                                                // a filled circle in `primary`, so a bad token makes
+                                                // it invisible rather than merely off-colour. The
+                                                // token is --color-bg-brand-solid; --color-brand-solid
+                                                // does not exist.
+                                                loading: { icon: <Spinner className="size-4 text-quaternary" /> },
+                                                success: { iconTheme: { primary: "var(--color-bg-brand-solid)", secondary: "var(--color-bg-primary)" } },
                                                 error: { duration: 5000, iconTheme: { primary: "var(--color-fg-error-primary)", secondary: "var(--color-bg-primary)" } },
                                             }}
                                         />

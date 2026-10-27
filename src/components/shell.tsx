@@ -480,7 +480,7 @@ export const AppLayout = () => {
     const [updatingBalance, setUpdatingBalance] = useState(false);
 
     return (
-        <div className="relative min-h-screen overflow-x-clip bg-secondary">
+        <div className="relative flex min-h-screen flex-col overflow-x-clip bg-secondary">
             <PageBackdrop />
 
             {/* Full-width wrapper so the blur spans the viewport, with the inner
@@ -545,7 +545,7 @@ export const AppLayout = () => {
 
             {/* `relative` on the content: the backdrop is positioned, so static
                 siblings would paint underneath it. */}
-            <main className="relative mx-auto w-full max-w-[88rem] px-4 pb-4 md:px-8 md:pb-6">
+            <main className="relative mx-auto flex w-full max-w-[88rem] flex-1 flex-col px-4 pb-4 md:px-8 md:pb-6">
                 <Outlet />
             </main>
 
