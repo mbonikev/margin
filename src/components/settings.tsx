@@ -9,7 +9,7 @@ import { Toggle } from "@/components/base/toggle";
 import { ActionButton } from "@/components/ui";
 import { Field, ModalActions, TextField } from "@/components/ui";
 import { Flag } from "@/components/ui";
-import { BackdropPreview, backdrops } from "@/components/backdrops";
+import { BackdropPreview, backdrops, resolveBackdrop } from "@/components/backdrops";
 import { useProfile, useProfileMutation } from "@/hooks/use-data";
 import { downloadWorkbook } from "@/services/export";
 import { notify } from "@/lib/toast";
@@ -404,7 +404,10 @@ export const AppearanceSettings = () => {
             <SettingGroup title="Background" hint="The texture behind the cards. Each one follows your accent colour.">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                     {backdrops.map((option) => {
-                        const isActive = preferences.backdrop === option.id;
+                        // Through resolveBackdrop, so a stored "dots" or "grid" from
+                        // before those were removed highlights the fallback rather
+                        // than leaving the picker with nothing selected.
+                        const isActive = resolveBackdrop(preferences.backdrop) === option.id;
 
                         return (
                             <button

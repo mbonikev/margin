@@ -141,7 +141,7 @@ Deno.serve(async (request) => {
             continue;
         }
 
-        const [{ data: accounts }, { data: commitments }] = await Promise.all([
+        const [{ data: accounts }, { data: commitments }, { data: safeToSpendValue }] = await Promise.all([
             supabase.from("accounts").select("balance").eq("user_id", profile.id).is("deleted_at", null),
             supabase
                 .from("commitments")
@@ -151,11 +151,13 @@ Deno.serve(async (request) => {
                 .gte("due_on", today)
                 .order("due_on", { ascending: true })
                 .limit(5),
+            // The same definition the dashboard reads. Computing it here from
+            // the five commitments fetched above gave a different number from
+            // the one on screen, which is worse than no number at all.
+            supabase.rpc("safe_to_spend_for", { uid: profile.id }),
         ]);
 
-        const balance = (accounts ?? []).reduce((total, row) => total + Number(row.balance), 0);
-        const committed = (commitments ?? []).reduce((total, row) => total + Number(row.amount), 0);
-        const safeToSpend = Math.max(balance - committed, 0);
+        const safeToSpend = Number(safeToSpendValue ?? 0);
 
         // Nothing recorded at all — mailing a row of zeroes would be noise.
         if ((accounts ?? []).length === 0) {

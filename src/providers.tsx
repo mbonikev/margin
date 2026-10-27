@@ -461,6 +461,9 @@ interface CurrencyContextValue {
     refresh: () => Promise<void>;
     /** Base-currency amount -> display currency. */
     convert: (baseAmount: number) => number;
+    /** Display currency -> base. What a typed-in figure has to go through
+     *  before it is stored, or a balance entered in KES lands as RWF. */
+    toBase: (displayAmount: number) => number;
     /** Converted and grouped. Switches to 1.2M / 3.4B past 7 digits. */
     formatAmount: (baseAmount: number, compactFrom?: number) => string;
     /** Converted, with the currency code appended. */
@@ -536,6 +539,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
         const isLoading = currency.code !== BASE_CURRENCY && rate === undefined;
 
         const convert = (baseAmount: number) => baseAmount * (rate ?? 1);
+        const toBase = (displayAmount: number) => (rate ? displayAmount / rate : displayAmount);
         // Sub-unit currencies get 2 decimals; RWF/UGX and friends get none.
         const fraction = ["USD", "EUR", "GBP", "CAD", "AUD", "GHS", "ZAR"].includes(currency.code) ? 2 : 0;
         const plain = new Intl.NumberFormat(undefined, { maximumFractionDigits: fraction });
@@ -555,6 +559,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
             lastUpdated: cache ? new Date(cache.fetchedAt) : null,
             refresh,
             convert,
+            toBase,
             formatAmount: (baseAmount, compactFrom) => display(convert(baseAmount), compactFrom),
             formatWithCode: (baseAmount, compactFrom) => `${display(convert(baseAmount), compactFrom)} ${currency.code}`,
             formatExact: (baseAmount) => `${plain.format(convert(baseAmount))} ${currency.code}`,
@@ -611,6 +616,9 @@ interface AccountsContextValue {
     purge: (id: string) => void;
     /** True while the first load is in flight — drives the card skeletons. */
     isLoading: boolean;
+    /** The account currently being written, so its card can show it. Null when
+     *  nothing is in flight. */
+    pendingId: string | null;
     error: Error | null;
 }
 
@@ -655,6 +663,9 @@ export const AccountsProvider = ({ children }: { children: ReactNode }) => {
             restore: (id) => restoreMutation.mutate(id),
             purge: (id) => purgeMutation.mutate(id),
             isLoading: enabled && (accountsQuery.isLoading || trashQuery.isLoading),
+            // Only edits are worth showing on a card — an add has no card yet,
+            // and a delete removes the one it would mark.
+            pendingId: updateMutation.isPending ? (updateMutation.variables?.id ?? null) : null,
             error: (accountsQuery.error as Error | null) ?? null,
         }),
         [accountsQuery.data, accountsQuery.isLoading, accountsQuery.error, trashQuery.data, trashQuery.isLoading, enabled, addMutation, updateMutation, removeMutation, restoreMutation, purgeMutation],

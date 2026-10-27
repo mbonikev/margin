@@ -18,7 +18,7 @@ import { AmountField, Field, ModalActions, TextField } from "@/components/ui";
 import { Logo } from "@/components/ui";
 import { Modal } from "@/components/ui";
 import { Spinner } from "@/components/ui";
-import { useAccountHistory } from "@/hooks/use-data";
+import { useAccountHistory, useCommitmentMutations, useGoalMutations, useRecordEntry } from "@/hooks/use-data";
 import { useAccounts, useCurrency, usePreferences } from "@/providers";
 import { cx } from "@/utils";
 
@@ -137,6 +137,11 @@ const Blobs = () => (
 
 export const AccountCard = ({ account, className }: { account: Account; className?: string }) => {
     const reference = account.ref ?? accountRef(account.id);
+    // A colour change is applied optimistically nowhere — the card only
+    // repaints once the write lands, so without this the card sits in the old
+    // colour and the modal closes, and the change looks like it was ignored.
+    const { pendingId } = useAccounts();
+    const isSaving = pendingId === account.id;
     const { formatExact } = useCurrency();
     const { preferences } = usePreferences();
     const [copied, setCopied] = useState<string | null>(null);
@@ -155,8 +160,16 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
     }, []);
 
     return (
-    <div className={cx([
+    <div
+        aria-busy={isSaving || undefined}
+        className={cx([
                 "relative flex size-full flex-col justify-between overflow-hidden rounded-[1.35rem] p-[1.125rem] text-white",
+                // Settling rather than fading: the card dips slightly and loses
+                // a little colour while the write is in flight, then springs
+                // back as the new theme paints. Reads as the change landing,
+                // where a plain opacity drop reads as the card being disabled.
+                "transition-[opacity,transform,filter] duration-300 ease-out",
+                isSaving && "scale-[0.985] opacity-70 saturate-[0.85] motion-reduce:transform-none",
                 // Depth, in three parts: a tight contact shadow, two wide soft ones
                 // for the cast, and inset edges so the top catches light and the
                 // bottom falls into shadow — what makes it read as a solid object.
@@ -165,6 +178,12 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
             ], themes[account.theme], className)}>
         <Blobs />
         <Sheen />
+
+        {isSaving && (
+            <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                <Spinner className="size-6 text-white/90" />
+            </span>
+        )}
 
         {/* Light falling from above, so the surface isn't uniformly flat. */}
         <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/14 via-transparent to-black/18" />
@@ -291,11 +310,14 @@ export const AccountHistoryModal = ({ isOpen, onOpenChange, account }: { isOpen:
     const { data: readings, isPending } = useAccountHistory(isOpen ? account.id : null);
 
     return (
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} history`}>
-            <div className="flex flex-col gap-4 p-5">
-                <div>
+        <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} history`} className="max-w-2xl">
+            <div className="flex max-h-[85vh] flex-col gap-4 p-5">
+                <div className="shrink-0">
                     <h2 className="text-lg font-semibold tracking-tight text-primary">History</h2>
-                    <p className="mt-0.5 text-sm text-tertiary">Balance readings for {account.name}.</p>
+                    <p className="mt-0.5 text-sm text-tertiary">
+                        Balance readings for {account.name}
+                        {readings && readings.length > 0 && ` · ${readings.length} recorded`}.
+                    </p>
                 </div>
 
                 {isPending && (
@@ -309,7 +331,9 @@ export const AccountHistoryModal = ({ isOpen, onOpenChange, account }: { isOpen:
                 )}
 
                 {!isPending && (readings?.length ?? 0) > 0 && (
-                    <ul className="flex flex-col">
+                    // `-mx-2 px-2` so the scrollbar sits outside the rows rather
+                    // than clipping their padding.
+                    <ul className="-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto px-2">
                         {readings!.map((reading, index) => {
                             // The row below is the previous reading, so the delta
                             // is what changed between the two.
@@ -334,7 +358,9 @@ export const AccountHistoryModal = ({ isOpen, onOpenChange, account }: { isOpen:
                     </ul>
                 )}
 
-                <ModalActions onCancel={() => onOpenChange(false)} onConfirm={() => onOpenChange(false)} confirmLabel="Done" />
+                <div className="shrink-0">
+                    <ModalActions onCancel={() => onOpenChange(false)} onConfirm={() => onOpenChange(false)} confirmLabel="Done" />
+                </div>
             </div>
         </Modal>
     );
@@ -496,7 +522,7 @@ interface AddAccountModalProps {
 }
 
 export const AddAccountModal = ({ isOpen, onOpenChange, onSave }: AddAccountModalProps) => {
-    const { currency } = useCurrency();
+    const { currency, toBase } = useCurrency();
     const { preferences } = usePreferences();
     const [name, setName] = useState("");
     const [kind, setKind] = useState(preferences.accountKinds[0] ?? "");
@@ -537,7 +563,10 @@ export const AddAccountModal = ({ isOpen, onOpenChange, onSave }: AddAccountModa
                     onCancel={() => onOpenChange(false)}
                     confirmLabel="Add account"
                     onConfirm={() => {
-                        onSave?.({ name, kind, balance: Number(balance || 0), theme });
+                        // The field is labelled with the display currency's
+                        // symbol, so the number typed into it is in that
+                        // currency. Balances are stored in the base one.
+                        onSave?.({ name, kind, balance: Math.round(toBase(Number(balance || 0))), theme });
                         onOpenChange(false);
                     }}
                 />
@@ -552,13 +581,24 @@ interface UpdateBalanceModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     account: Account;
-    onSave?: (balance: number) => void;
 }
 
 const digitsOnly = (value: string) => value.replace(/[^\d]/g, "");
 
-export const UpdateBalanceModal = ({ isOpen, onOpenChange, account, onSave }: UpdateBalanceModalProps) => {
-    const { currency, convert } = useCurrency();
+/**
+ * Saving records a `balance` entry rather than writing the account directly.
+ *
+ * The entry is the fact — "on this date it read this much" — and the trigger
+ * derives the account's balance from the newest one. Writing the account would
+ * leave the history and the card able to disagree.
+ *
+ * The mutation lives here rather than behind a prop: it used to take an
+ * optional `onSave`, and all three call sites omitted it, so the button closed
+ * the modal and saved nothing.
+ */
+export const UpdateBalanceModal = ({ isOpen, onOpenChange, account }: UpdateBalanceModalProps) => {
+    const { currency, convert, toBase } = useCurrency();
+    const record = useRecordEntry();
     const [raw, setRaw] = useState("");
 
     // Start from the current figure each time it opens, so the common case —
@@ -633,13 +673,27 @@ export const UpdateBalanceModal = ({ isOpen, onOpenChange, account, onSave }: Up
 
                     <button
                         type="button"
+                        disabled={unchanged || record.isPending}
                         onClick={() => {
-                            onSave?.(entered);
-                            onOpenChange(false);
+                            // `entered` is in the display currency; balances are
+                            // stored in the base one, so it converts back before
+                            // it is written.
+                            const balance = Math.round(toBase(entered));
+                            record.mutate(
+                                {
+                                    accountId: account.id,
+                                    accountName: account.name,
+                                    kind: "balance",
+                                    name: "Balance updated",
+                                    amount: balance,
+                                    balanceAfter: balance,
+                                },
+                                { onSuccess: () => onOpenChange(false) },
+                            );
                         }}
-                        className="h-10 rounded-full bg-brand-solid px-5 text-sm font-semibold text-white transition duration-100 ease-linear hover:bg-brand-solid_hover"
+                        className="h-10 rounded-full bg-brand-solid px-5 text-sm font-semibold text-white transition duration-100 ease-linear hover:bg-brand-solid_hover disabled:pointer-events-none disabled:opacity-40"
                     >
-                        Save balance
+                        {record.isPending ? "Saving…" : "Save balance"}
                     </button>
                 </div>
             </div>
@@ -663,13 +717,15 @@ interface RecordModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     accounts: Account[];
-    onSave?: (entry: { kind: RecordKind; name: string; amount: number; accountId: string; date: string }) => void;
     /** Offered when there are no accounts to record against. */
     onAddAccount?: () => void;
 }
 
-export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave, onAddAccount }: RecordModalProps) => {
-    const { currency } = useCurrency();
+export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onAddAccount }: RecordModalProps) => {
+    const { currency, toBase } = useCurrency();
+    const record = useRecordEntry();
+    const goals = useGoalMutations();
+    const commitments = useCommitmentMutations();
     const text = copy[kind];
 
     const [name, setName] = useState("");
@@ -736,10 +792,42 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave, onAd
                 <ModalActions
                     onCancel={() => onOpenChange(false)}
                     confirmLabel={text.confirm}
-                    confirmDisabled={kind !== "goal" && accounts.length === 0}
+                    confirmDisabled={(kind !== "goal" && accounts.length === 0) || record.isPending}
                     onConfirm={() => {
-                        onSave?.({ kind, name, amount: Number(amount || 0), accountId, date: date?.toString() ?? "" });
-                        onOpenChange(false);
+                        // Typed in the display currency, stored in the base one.
+                        const value = Math.round(toBase(Number(amount || 0)));
+                        const when = date ? date.toDate(getLocalTimeZone()) : new Date();
+                        const close = { onSuccess: () => onOpenChange(false) };
+
+                        if (kind === "goal") {
+                            goals.create.mutate({ name, target: value }, close);
+                            return;
+                        }
+
+                        if (kind === "commitment") {
+                            commitments.create.mutate({ name, amount: value, due: when }, close);
+                            return;
+                        }
+
+                        const account = accounts.find((item) => item.id === accountId);
+                        if (!account) return;
+
+                        // The account's balance after this entry, which is what
+                        // the sync trigger reads to move the card.
+                        const after = kind === "expense" ? account.balance - value : account.balance + value;
+
+                        record.mutate(
+                            {
+                                accountId,
+                                accountName: account.name,
+                                kind,
+                                name,
+                                amount: value,
+                                balanceAfter: Math.max(after, 0),
+                                at: when,
+                            },
+                            close,
+                        );
                     }}
                 />
             </div>

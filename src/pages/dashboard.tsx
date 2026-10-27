@@ -8,9 +8,7 @@ import type { StatTileProps } from "@/components/dashboard";
 import { Amount } from "@/components/ui";
 import { Spinner } from "@/components/ui";
 import { useAccounts, useCurrency, usePreferences, usePrivacy } from "@/providers";
-import { useActivity, useCommitments, useDashboardSeries, useGoals, useMonthFlows } from "@/hooks/use-data";
-
-const last = (series: number[]) => series[series.length - 1] ?? 0;
+import { useActivity, useCommitments, useDashboardSeries, useGoals, useMonthFlows, useSafeToSpend } from "@/hooks/use-data";
 
 /**
  * Percentage change across the series, first reading to last.
@@ -59,10 +57,19 @@ export const DashboardPage = () => {
     const flowsQuery = useMonthFlows();
 
     const { safeToSpend, spentThisWeek, totalBalance, savedPerMonth } = series.data ?? emptySeries;
+
+    // The headline figures are read live, not from the series. Snapshots are
+    // taken once a day, so the newest one is up to 24h old — and on a fresh
+    // account there are none at all, which showed as a confident zero next to
+    // an account holding money. The series is only ever the sparkline.
+    const liveSafeToSpend = useSafeToSpend().data ?? 0;
     const upcoming = commitments.data ?? [];
     const goals = goalsQuery.data ?? [];
     const activity = activityQuery.data ?? [];
     const flows = flowsQuery.data ?? [];
+
+    const liveTotalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+    const liveTotalSaved = goals.reduce((sum, goal) => sum + goal.saved, 0);
 
     // One flag for the whole page. These six resolve within a few ms of each
     // other, so showing them as they land means six separate reflows — and the
@@ -77,7 +84,7 @@ export const DashboardPage = () => {
         () => [
             {
                 label: "Safe to spend",
-                value: <Amount value={last(safeToSpend)} compactSymbol compact />,
+                value: <Amount value={liveSafeToSpend} compactSymbol compact />,
                 delta: change(safeToSpend),
                 deltaSuffix: "%",
                 tone: "aqua",
@@ -97,7 +104,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Total balance",
-                value: <Amount value={last(totalBalance)} compactSymbol compact />,
+                value: <Amount value={liveTotalBalance} compactSymbol compact />,
                 delta: change(totalBalance),
                 deltaSuffix: "%",
                 tone: "yellow",
@@ -107,7 +114,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Saved this month",
-                value: <Amount value={last(savedPerMonth)} compactSymbol compact />,
+                value: <Amount value={liveTotalSaved} compactSymbol compact />,
                 delta: change(savedPerMonth),
                 deltaSuffix: "%",
                 tone: "magenta",
@@ -116,7 +123,7 @@ export const DashboardPage = () => {
                 formatBar: formatBarAmount,
             },
         ],
-        [formatBarAmount, safeToSpend, spentThisWeek, totalBalance, savedPerMonth],
+        [formatBarAmount, liveSafeToSpend, liveTotalBalance, liveTotalSaved, safeToSpend, spentThisWeek, totalBalance, savedPerMonth],
     );
 
     // Held back deliberately: a half-built dashboard of empty states says "you

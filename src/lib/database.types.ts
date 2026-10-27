@@ -174,6 +174,11 @@ export type Database = {
                 Args: { horizon_days?: number };
                 Returns: number;
             };
+            /** Service-role only: execute is revoked from anon/authenticated. */
+            safe_to_spend_for: {
+                Args: { uid: string; horizon_days?: number };
+                Returns: number;
+            };
             dashboard_series: {
                 Args: { days?: number };
                 Returns: { day: string; total_balance: number; safe_to_spend: number; total_saved: number; spent: number }[];

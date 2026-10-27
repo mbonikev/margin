@@ -147,7 +147,7 @@ const age = (at: Date): string => {
  * Only entries that recorded a balance count: an expense that never stated what
  * was left afterwards says nothing about what the account held.
  */
-export const listAccountHistory = async (accountId: string, limit = 10): Promise<BalanceReading[]> => {
+export const listAccountHistory = async (accountId: string, limit = 200): Promise<BalanceReading[]> => {
     const { data, error } = await supabase
         .from("entries")
         .select("id, occurred_at, balance_after")
