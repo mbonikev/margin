@@ -17,6 +17,8 @@ import { Card } from "@/components/ui";
 import { AmountField, Field, ModalActions, TextField } from "@/components/ui";
 import { Logo } from "@/components/ui";
 import { Modal } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { useAccountHistory, useCommitmentMutations, useGoalMutations, useRecordEntry, useTrashedEntryCounts } from "@/hooks/use-data";
 import { useAccounts, useCurrency, usePreferences } from "@/providers";
 import { cx } from "@/utils";
 
@@ -135,6 +137,11 @@ const Blobs = () => (
 
 export const AccountCard = ({ account, className }: { account: Account; className?: string }) => {
     const reference = account.ref ?? accountRef(account.id);
+    // A colour change is applied optimistically nowhere — the card only
+    // repaints once the write lands, so without this the card sits in the old
+    // colour and the modal closes, and the change looks like it was ignored.
+    const { pendingId } = useAccounts();
+    const isSaving = pendingId === account.id;
     const { formatExact } = useCurrency();
     const { preferences } = usePreferences();
     const [copied, setCopied] = useState<string | null>(null);
@@ -153,8 +160,16 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
     }, []);
 
     return (
-    <div className={cx([
+    <div
+        aria-busy={isSaving || undefined}
+        className={cx([
                 "relative flex size-full flex-col justify-between overflow-hidden rounded-[1.35rem] p-[1.125rem] text-white",
+                // Settling rather than fading: the card dips slightly and loses
+                // a little colour while the write is in flight, then springs
+                // back as the new theme paints. Reads as the change landing,
+                // where a plain opacity drop reads as the card being disabled.
+                "transition-[opacity,transform,filter] duration-300 ease-out",
+                isSaving && "scale-[0.985] opacity-70 saturate-[0.85] motion-reduce:transform-none",
                 // Depth, in three parts: a tight contact shadow, two wide soft ones
                 // for the cast, and inset edges so the top catches light and the
                 // bottom falls into shadow — what makes it read as a solid object.
@@ -163,6 +178,12 @@ export const AccountCard = ({ account, className }: { account: Account; classNam
             ], themes[account.theme], className)}>
         <Blobs />
         <Sheen />
+
+        {isSaving && (
+            <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                <Spinner className="size-6 text-white/90" />
+            </span>
+        )}
 
         {/* Light falling from above, so the surface isn't uniformly flat. */}
         <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/14 via-transparent to-black/18" />
@@ -284,44 +305,62 @@ export const CardThemePicker = ({ value, onChange }: { value: CardTheme; onChang
 
 /** The last few balance readings for one account. */
 export const AccountHistoryModal = ({ isOpen, onOpenChange, account }: { isOpen: boolean; onOpenChange: (open: boolean) => void; account: Account }) => {
-    const readings = [
-        { at: "Today", amount: account.balance },
-        { at: "3 days ago", amount: Math.round(account.balance * 1.08) },
-        { at: "Last week", amount: Math.round(account.balance * 0.94) },
-        { at: "2 weeks ago", amount: Math.round(account.balance * 1.15) },
-    ];
+    // Only fetched while the modal is open: this is a per-account query and
+    // there is no reason to run one for every card on the page.
+    const { data: readings, isPending } = useAccountHistory(isOpen ? account.id : null);
 
     return (
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} history`}>
-            <div className="flex flex-col gap-4 p-5">
-                <div>
+        <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} history`} className="max-w-2xl">
+            <div className="flex max-h-[85vh] flex-col gap-4 p-5">
+                <div className="shrink-0">
                     <h2 className="text-lg font-semibold tracking-tight text-primary">History</h2>
-                    <p className="mt-0.5 text-sm text-tertiary">Balance readings for {account.name}.</p>
+                    <p className="mt-0.5 text-sm text-tertiary">
+                        Balance readings for {account.name}
+                        {readings && readings.length > 0 && ` · ${readings.length} recorded`}.
+                    </p>
                 </div>
 
-                <ul className="flex flex-col">
-                    {readings.map((reading, index) => {
-                        const previous = readings[index + 1];
-                        const delta = previous ? reading.amount - previous.amount : 0;
+                {isPending && (
+                    <div className="flex justify-center py-8">
+                        <Spinner className="size-5 text-quaternary" />
+                    </div>
+                )}
 
-                        return (
-                            <li key={reading.at} className="flex items-center justify-between gap-3 rounded-xl px-2 py-2.5 hover:bg-secondary">
-                                <span className="text-sm text-tertiary">{reading.at}</span>
-                                <span className="flex items-baseline gap-2">
-                                    <Amount value={reading.amount} className="text-sm font-semibold text-primary" />
-                                    {previous && (
-                                        <span className={delta < 0 ? "text-xs text-negative-ink" : "text-xs text-positive-ink"}>
-                                            {delta < 0 ? "−" : "+"}
-                                            {Math.abs(delta).toLocaleString()}
-                                        </span>
-                                    )}
-                                </span>
-                            </li>
-                        );
-                    })}
-                </ul>
+                {!isPending && (readings?.length ?? 0) === 0 && (
+                    <p className="py-8 text-center text-sm text-tertiary">No readings yet. Update this balance and the first one lands here.</p>
+                )}
 
-                <ModalActions onCancel={() => onOpenChange(false)} onConfirm={() => onOpenChange(false)} confirmLabel="Done" />
+                {!isPending && (readings?.length ?? 0) > 0 && (
+                    // `-mx-2 px-2` so the scrollbar sits outside the rows rather
+                    // than clipping their padding.
+                    <ul className="-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto px-2">
+                        {readings!.map((reading, index) => {
+                            // The row below is the previous reading, so the delta
+                            // is what changed between the two.
+                            const previous = readings![index + 1];
+                            const delta = previous ? reading.amount - previous.amount : 0;
+
+                            return (
+                                <li key={reading.id} className="flex items-center justify-between gap-3 px-2 py-2.5">
+                                    <span className="text-sm text-tertiary">{reading.label}</span>
+                                    <span className="flex items-baseline gap-2">
+                                        <Amount value={reading.amount} className="text-sm font-semibold text-primary" />
+                                        {previous && delta !== 0 && (
+                                            <span className={delta < 0 ? "text-xs text-negative-ink" : "text-xs text-positive-ink"}>
+                                                {delta < 0 ? "−" : "+"}
+                                                {Math.abs(delta).toLocaleString()}
+                                            </span>
+                                        )}
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
+
+                <div className="shrink-0">
+                    <ModalActions onCancel={() => onOpenChange(false)} onConfirm={() => onOpenChange(false)} confirmLabel="Done" />
+                </div>
             </div>
         </Modal>
     );
@@ -354,9 +393,30 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
     // the button itself rather than stacking a dialog on top of this one.
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
+    // The card as it would look if saved. Rendering the real AccountCard rather
+    // than a swatch means the colour is shown where it actually matters — the
+    // themes differ far more as a full card than as a 28px circle.
+    const previewAccount: Account = { ...account, name: name.trim() || account.name, kind, theme };
+
     return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} settings`}>
-        <div className="flex flex-col gap-4 p-5">
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} settings`} className="max-w-4xl">
+        <div className="flex max-h-[85vh] flex-col gap-5 overflow-y-auto p-5 lg:flex-row lg:gap-6">
+            {/* Above the form on a phone, beside it from `sm` up — so the card
+                is the first thing seen on mobile rather than scrolled past. */}
+            <div className="shrink-0 lg:w-96">
+                <span className="mb-1.5 block text-xs font-medium text-tertiary">Preview</span>
+                {/* No scaling: the column is now as wide as the card is on the
+                    dashboard, so it renders at its natural size. Scaling was
+                    only ever a way to fit fixed-size type into a smaller box,
+                    and it shrank that type along with everything else.
+                    1.55 rather than 1.6 gives the content the same height it
+                    has on the dashboard, where nothing clips. */}
+                <div className="aspect-[1.55/1] w-full max-w-sm lg:max-w-none lg:sticky lg:top-0">
+                    <AccountCard account={previewAccount} />
+                </div>
+            </div>
+
+            <div className="flex min-w-0 flex-1 flex-col gap-4">
             <div>
                 <h2 className="text-lg font-semibold tracking-tight text-primary">Account settings</h2>
                 <p className="mt-0.5 text-sm text-tertiary">How {account.name} appears in Margin.</p>
@@ -372,7 +432,13 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
                 <CardThemePicker value={theme} onChange={setTheme} />
             </Field>
 
+            {/* `mt-auto` rather than a fixed margin: the two columns stretch to
+                the same height, so this pins the actions to the bottom of the
+                form and lets whatever is left over become the gap. The minimum
+                keeps them off the colour swatches when the form is the taller
+                of the two. */}
             <ModalActions
+                className="mt-auto pt-8"
                 onCancel={() => onOpenChange(false)}
                 onConfirm={() => {
                     onSave?.({ name: name.trim() || account.name, kind, theme });
@@ -405,6 +471,7 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
                     )
                 }
             />
+            </div>
         </div>
     </Modal>
 );
@@ -483,7 +550,7 @@ interface AddAccountModalProps {
 }
 
 export const AddAccountModal = ({ isOpen, onOpenChange, onSave }: AddAccountModalProps) => {
-    const { currency } = useCurrency();
+    const { currency, toBase } = useCurrency();
     const { preferences } = usePreferences();
     const [name, setName] = useState("");
     const [kind, setKind] = useState(preferences.accountKinds[0] ?? "");
@@ -524,7 +591,10 @@ export const AddAccountModal = ({ isOpen, onOpenChange, onSave }: AddAccountModa
                     onCancel={() => onOpenChange(false)}
                     confirmLabel="Add account"
                     onConfirm={() => {
-                        onSave?.({ name, kind, balance: Number(balance || 0), theme });
+                        // The field is labelled with the display currency's
+                        // symbol, so the number typed into it is in that
+                        // currency. Balances are stored in the base one.
+                        onSave?.({ name, kind, balance: Math.round(toBase(Number(balance || 0))), theme });
                         onOpenChange(false);
                     }}
                 />
@@ -539,13 +609,24 @@ interface UpdateBalanceModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     account: Account;
-    onSave?: (balance: number) => void;
 }
 
 const digitsOnly = (value: string) => value.replace(/[^\d]/g, "");
 
-export const UpdateBalanceModal = ({ isOpen, onOpenChange, account, onSave }: UpdateBalanceModalProps) => {
-    const { currency, convert } = useCurrency();
+/**
+ * Saving records a `balance` entry rather than writing the account directly.
+ *
+ * The entry is the fact — "on this date it read this much" — and the trigger
+ * derives the account's balance from the newest one. Writing the account would
+ * leave the history and the card able to disagree.
+ *
+ * The mutation lives here rather than behind a prop: it used to take an
+ * optional `onSave`, and all three call sites omitted it, so the button closed
+ * the modal and saved nothing.
+ */
+export const UpdateBalanceModal = ({ isOpen, onOpenChange, account }: UpdateBalanceModalProps) => {
+    const { currency, convert, toBase } = useCurrency();
+    const record = useRecordEntry();
     const [raw, setRaw] = useState("");
 
     // Start from the current figure each time it opens, so the common case —
@@ -620,13 +701,27 @@ export const UpdateBalanceModal = ({ isOpen, onOpenChange, account, onSave }: Up
 
                     <button
                         type="button"
+                        disabled={unchanged || record.isPending}
                         onClick={() => {
-                            onSave?.(entered);
-                            onOpenChange(false);
+                            // `entered` is in the display currency; balances are
+                            // stored in the base one, so it converts back before
+                            // it is written.
+                            const balance = Math.round(toBase(entered));
+                            record.mutate(
+                                {
+                                    accountId: account.id,
+                                    accountName: account.name,
+                                    kind: "balance",
+                                    name: "Balance updated",
+                                    amount: balance,
+                                    balanceAfter: balance,
+                                },
+                                { onSuccess: () => onOpenChange(false) },
+                            );
                         }}
-                        className="h-10 rounded-full bg-brand-solid px-5 text-sm font-semibold text-white transition duration-100 ease-linear hover:bg-brand-solid_hover"
+                        className="h-10 rounded-full bg-brand-solid px-5 text-sm font-semibold text-white transition duration-100 ease-linear hover:bg-brand-solid_hover disabled:pointer-events-none disabled:opacity-40"
                     >
-                        Save balance
+                        {record.isPending ? "Saving…" : "Save balance"}
                     </button>
                 </div>
             </div>
@@ -650,13 +745,15 @@ interface RecordModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     accounts: Account[];
-    onSave?: (entry: { kind: RecordKind; name: string; amount: number; accountId: string; date: string }) => void;
     /** Offered when there are no accounts to record against. */
     onAddAccount?: () => void;
 }
 
-export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave, onAddAccount }: RecordModalProps) => {
-    const { currency } = useCurrency();
+export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onAddAccount }: RecordModalProps) => {
+    const { currency, toBase } = useCurrency();
+    const record = useRecordEntry();
+    const goals = useGoalMutations();
+    const commitments = useCommitmentMutations();
     const text = copy[kind];
 
     const [name, setName] = useState("");
@@ -686,7 +783,9 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave, onAd
                 </Field>
 
                 <Field label={text.nameLabel}>
-                    <TextField value={name} onChange={(event) => setName(event.target.value)} placeholder={text.namePlaceholder} />
+                    {/* Required: without it the feed fills with nameless rows
+                        that say only that something happened. */}
+                    <TextField required value={name} onChange={(event) => setName(event.target.value)} placeholder={text.namePlaceholder} />
                 </Field>
 
                 {/* An empty dropdown reads as broken, so with no accounts the field
@@ -723,10 +822,42 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onSave, onAd
                 <ModalActions
                     onCancel={() => onOpenChange(false)}
                     confirmLabel={text.confirm}
-                    confirmDisabled={kind !== "goal" && accounts.length === 0}
+                    confirmDisabled={(kind !== "goal" && accounts.length === 0) || !name.trim() || !Number(amount) || record.isPending}
                     onConfirm={() => {
-                        onSave?.({ kind, name, amount: Number(amount || 0), accountId, date: date?.toString() ?? "" });
-                        onOpenChange(false);
+                        // Typed in the display currency, stored in the base one.
+                        const value = Math.round(toBase(Number(amount || 0)));
+                        const when = date ? date.toDate(getLocalTimeZone()) : new Date();
+                        const close = { onSuccess: () => onOpenChange(false) };
+
+                        if (kind === "goal") {
+                            goals.create.mutate({ name, target: value }, close);
+                            return;
+                        }
+
+                        if (kind === "commitment") {
+                            commitments.create.mutate({ name, amount: value, due: when }, close);
+                            return;
+                        }
+
+                        const account = accounts.find((item) => item.id === accountId);
+                        if (!account) return;
+
+                        // The account's balance after this entry, which is what
+                        // the sync trigger reads to move the card.
+                        const after = kind === "expense" ? account.balance - value : account.balance + value;
+
+                        record.mutate(
+                            {
+                                accountId,
+                                accountName: account.name,
+                                kind,
+                                name,
+                                amount: value,
+                                balanceAfter: Math.max(after, 0),
+                                at: when,
+                            },
+                            close,
+                        );
                     }}
                 />
             </div>
@@ -743,7 +874,7 @@ const actions = [
 ];
 
 export const AccountHero = ({ accounts, className }: { accounts: Account[]; className?: string }) => {
-    const { add, update } = useAccounts();
+    const { add, update, remove } = useAccounts();
     const [activeId, setActiveId] = useState(accounts[0]?.id ?? "");
     const [openModal, setOpenModal] = useState<"balance" | "history" | "settings" | null>(null);
     const [adding, setAdding] = useState(false);
@@ -936,6 +1067,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                 onOpenChange={(open) => setOpenModal(open ? "settings" : null)}
                 account={active}
                 onSave={(patch) => update(active.id, patch)}
+                onDelete={() => remove(active.id)}
             />
         </Card>
     );
@@ -955,57 +1087,102 @@ const sinceDeleted = (at: number) => {
 /** The list only — the Accounts page frames it in a tab panel. */
 export const AccountTrash = () => {
     const { trashed, restore, purge } = useAccounts();
+    const { data: entryCounts } = useTrashedEntryCounts();
     // Delete forever is the one thing here that can't be taken back, so it asks
     // in place rather than opening a dialog over a list of four rows.
     const [confirming, setConfirming] = useState<string | null>(null);
 
     if (trashed.length === 0) {
-        return <p className="py-8 text-center text-sm text-tertiary">Nothing deleted. Accounts you remove wait here.</p>;
+        return (
+            <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+                <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-quaternary">
+                    <HiOutlineTrash className="size-6" />
+                </span>
+                <p className="text-sm font-medium text-primary">Trash is empty</p>
+                <p className="max-w-72 text-sm text-tertiary">Accounts you delete wait here, with everything recorded against them.</p>
+            </div>
+        );
     }
 
     return (
         <div className="flex flex-col gap-4">
-            <p className="text-sm text-tertiary">Left out of your totals. Restore any time.</p>
+            <p className="text-sm text-tertiary">Left out of your totals, along with everything recorded against them. Restore any time.</p>
 
-            <ul className="flex flex-col gap-1.5">
-                {trashed.map((account) => (
-                    <li key={account.id} className="flex flex-wrap items-center gap-3 rounded-2xl bg-secondary px-3 py-2.5">
-                        <span aria-hidden="true" className={`h-7 w-11 shrink-0 rounded-md opacity-60 ${cardThemeClass(account.theme)}`} />
+            {/* A table, not cards. The card is drawn at fixed type sizes and
+                clips at any width narrower than the dashboard's, and a row of
+                facts is what this view is actually for — the colour survives
+                as a dot, which is all that is needed to tell two apart. */}
+            <div className="-mx-2 overflow-x-auto">
+                <table className="w-full min-w-[34rem] border-separate border-spacing-y-1">
+                    <thead>
+                        <tr className="text-left text-xs font-medium text-quaternary">
+                            <th scope="col" className="px-4 py-1 font-medium">Account</th>
+                            <th scope="col" className="px-2.5 py-1 font-medium">Deleted</th>
+                            <th scope="col" className="px-2.5 py-1 text-right font-medium">Balance</th>
+                            <th scope="col" className="px-2.5 py-1 text-right font-medium">Records</th>
+                            <th scope="col" className="px-4 py-1" />
+                        </tr>
+                    </thead>
 
-                        <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-primary">{account.name}</p>
-                            <p className="truncate text-xs text-quaternary">
-                                {account.kind} · deleted {sinceDeleted(account.deletedAt)}
-                            </p>
-                        </div>
+                    <tbody>
+                        {trashed.map((account) => {
+                            const records = entryCounts?.[account.id] ?? 0;
+                            const label = records === 1 ? "record" : "records";
 
-                        <div className="flex shrink-0 items-center gap-1.5">
-                            <ActionButton icon={HiOutlineArrowUturnLeft} onClick={() => restore(account.id)} className="bg-primary">
-                                Restore
-                            </ActionButton>
+                            return (
+                                <tr key={account.id}>
+                                    <td className="rounded-l-2xl bg-secondary px-4 py-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <span aria-hidden="true" className={cx("size-6 shrink-0 rounded-full opacity-70", cardThemeClass(account.theme))} />
+                                            <span className="min-w-0">
+                                                <span className="block truncate text-sm font-medium text-primary">{account.name}</span>
+                                                <span className="block truncate text-xs text-tertiary">{account.kind}</span>
+                                            </span>
+                                        </div>
+                                    </td>
 
-                            {confirming === account.id ? (
-                                <ActionButton
-                                    icon={HiOutlineTrash}
-                                    onClick={() => purge(account.id)}
-                                    onBlur={() => setConfirming(null)}
-                                    autoFocus
-                                    className="bg-negative-tint text-negative-ink hover:bg-negative-tint hover:text-negative-ink"
-                                >
-                                    Sure? This is forever
-                                </ActionButton>
-                            ) : (
-                                <ActionButton
-                                    icon={HiOutlineTrash}
-                                    onClick={() => setConfirming(account.id)}
-                                    aria-label={`Delete ${account.name} forever`}
-                                    className="bg-primary hover:bg-negative-tint hover:text-negative-ink"
-                                />
-                            )}
-                        </div>
-                    </li>
-                ))}
-            </ul>
+                                    <td className="bg-secondary px-2.5 py-3 text-sm whitespace-nowrap text-tertiary">{sinceDeleted(account.deletedAt)}</td>
+
+                                    <td className="bg-secondary px-2.5 py-3 text-right text-sm whitespace-nowrap text-tertiary">
+                                        <Amount value={account.balance} />
+                                    </td>
+
+                                    <td className="bg-secondary px-2.5 py-3 text-right text-sm tabular-nums whitespace-nowrap text-tertiary">{records}</td>
+
+                                    <td className="rounded-r-2xl bg-secondary px-4 py-3">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <ActionButton icon={HiOutlineArrowUturnLeft} onClick={() => restore(account.id)} className="bg-primary">
+                                                Restore
+                                            </ActionButton>
+
+                                            {confirming === account.id ? (
+                                                <ActionButton
+                                                    icon={HiOutlineTrash}
+                                                    onClick={() => purge(account.id)}
+                                                    onBlur={() => setConfirming(null)}
+                                                    autoFocus
+                                                    className="bg-negative-tint text-negative-ink hover:bg-negative-tint hover:text-negative-ink"
+                                                >
+                                                    {/* Names what is lost: purging takes the
+                                                        entries with it, not just the card. */}
+                                                    {records > 0 ? `Delete with ${records} ${label}?` : "Sure? This is forever"}
+                                                </ActionButton>
+                                            ) : (
+                                                <ActionButton
+                                                    icon={HiOutlineTrash}
+                                                    onClick={() => setConfirming(account.id)}
+                                                    aria-label={`Delete ${account.name} forever`}
+                                                    className="bg-primary hover:bg-negative-tint hover:text-negative-ink"
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

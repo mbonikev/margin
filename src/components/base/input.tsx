@@ -194,7 +194,7 @@ export const InputDateBase = ({
             ref={groupRef}
             className={({ isFocusWithin, isDisabled, isInvalid }) =>
                 cx(
-                    "group/input relative flex w-full flex-row place-content-center place-items-center rounded-2xl bg-secondary transition duration-100 ease-linear",
+                    "group/input relative flex w-full flex-row place-content-center place-items-center rounded-full bg-secondary transition duration-100 ease-linear",
 
                     isFocusWithin && !isDisabled && "ring-2 ring-brand",
 

@@ -14,16 +14,24 @@
 import { usePreferences } from "@/providers";
 import { cx } from "@/utils";
 
-export type BackdropKind = "none" | "dots" | "grid" | "arcs" | "rings" | "waves";
+export type BackdropKind = "none" | "arcs" | "rings" | "waves" | "glow" | "beams";
 
 export const backdrops: { id: BackdropKind; label: string }[] = [
     { id: "none", label: "None" },
-    { id: "dots", label: "Dots" },
-    { id: "grid", label: "Grid" },
     { id: "arcs", label: "Arcs" },
     { id: "rings", label: "Rings" },
     { id: "waves", label: "Waves" },
+    { id: "glow", label: "Glow" },
+    { id: "beams", label: "Beams" },
 ];
+
+/**
+ * Dots and Grid were removed. Anyone who had one selected still has that string
+ * in their stored preferences, and it would otherwise resolve to no layer at
+ * all — a blank page in the picker rather than a choice.
+ */
+export const resolveBackdrop = (value: string): BackdropKind =>
+    (backdrops.some((option) => option.id === value) ? value : "waves") as BackdropKind;
 
 interface LayerProps {
     preview?: boolean;
@@ -37,30 +45,10 @@ const centreMask = {
 
 const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.25 } as const;
 
-const Dots = ({ preview }: LayerProps) => (
-    <div
-        className={cx(
-            "absolute inset-0 text-quaternary [background-image:radial-gradient(currentColor_1px,transparent_1px)]",
-            preview ? "opacity-45 [background-size:9px_9px]" : "opacity-30 [background-size:22px_22px]",
-        )}
-        style={preview ? undefined : centreMask}
-    />
-);
-
-const Grid = ({ preview }: LayerProps) => (
-    <div
-        className={cx(
-            "absolute inset-0 text-quaternary [background-image:linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)]",
-            preview ? "opacity-40 [background-size:14px_14px]" : "opacity-[0.06] [background-size:64px_64px]",
-        )}
-        style={preview ? undefined : centreMask}
-    />
-);
-
 /** Concentric sweeps anchored off two corners — the mark's circle, opened up. */
 const Arcs = ({ preview }: LayerProps) => (
     <svg aria-hidden="true" className="absolute inset-0 size-full text-brand" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <g opacity={preview ? 0.4 : 0.18} {...stroke} vectorEffect="non-scaling-stroke">
+        <g opacity={preview ? 0.4 : 0.10} {...stroke} vectorEffect="non-scaling-stroke">
             <circle cx="2" cy="14" r="18" />
             <circle cx="2" cy="14" r="27" />
             <circle cx="2" cy="14" r="36" />
@@ -88,7 +76,7 @@ const previewRings = ["top-1 left-2 size-10", "bottom-1 left-10 size-6", "top-2 
 const Rings = ({ preview }: LayerProps) => (
     <>
         {(preview ? previewRings : pageRings).map((position) => (
-            <span key={position} className={cx("absolute rounded-full border border-brand", preview ? "opacity-40" : "opacity-20", position)} />
+            <span key={position} className={cx("absolute rounded-full border border-brand", preview ? "opacity-40" : "opacity-[0.12]", position)} />
         ))}
     </>
 );
@@ -102,26 +90,71 @@ const Waves = ({ preview }: LayerProps) => (
         viewBox="0 0 400 160"
     >
         <g {...stroke} vectorEffect="non-scaling-stroke">
-            <path d="M-10 108c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.5 : 0.3} />
-            <path d="M-10 128c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.35 : 0.2} />
-            <path d="M-10 148c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.2 : 0.12} />
+            <path d="M-10 108c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.5 : 0.18} />
+            <path d="M-10 128c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.35 : 0.12} />
+            <path d="M-10 148c60 0 70-28 130-28s80 34 140 34 70-26 150-26" opacity={preview ? 0.2 : 0.07} />
         </g>
     </svg>
 );
 
+/**
+ * Soft blooms in opposite corners. The only layer with no strokes at all — it
+ * reads as light on the page rather than as drawing, which is what makes it
+ * distinct from the other five rather than a variation on them.
+ */
+const Glow = ({ preview }: LayerProps) => (
+    <>
+        <span
+            className={cx(
+                "absolute rounded-full bg-brand blur-3xl",
+                preview ? "-top-6 -left-8 size-24 opacity-30" : "-top-32 -left-32 size-[32rem] opacity-[0.10]",
+            )}
+        />
+        <span
+            className={cx(
+                "absolute rounded-full bg-brand blur-3xl",
+                preview ? "-right-8 -bottom-8 size-28 opacity-25" : "-right-40 bottom-[-10rem] size-[40rem] opacity-[0.08]",
+            )}
+        />
+    </>
+);
+
+/**
+ * Long diagonals raking across the page. Skewed rather than rotated so they
+ * stay parallel at any viewport ratio, and spaced unevenly so the eye reads
+ * them as light rather than as a ruled grid — which is the thing Grid was
+ * removed for being.
+ */
+const beamOffsets = ["12%", "27%", "38%", "58%", "71%", "88%"];
+
+const Beams = ({ preview }: LayerProps) => (
+    <div className="absolute inset-0 overflow-hidden" style={preview ? undefined : centreMask}>
+        {beamOffsets.map((left, index) => (
+            <span
+                key={left}
+                style={{ left }}
+                className={cx(
+                    "absolute -top-1/4 h-[150%] w-px -skew-x-12 bg-brand",
+                    preview ? "opacity-40" : index % 2 === 0 ? "opacity-[0.14]" : "opacity-[0.07]",
+                )}
+            />
+        ))}
+    </div>
+);
+
 const layers: Record<BackdropKind, (props: LayerProps) => React.ReactNode> = {
     none: () => null,
-    dots: Dots,
-    grid: Grid,
     arcs: Arcs,
     rings: Rings,
     waves: Waves,
+    glow: Glow,
+    beams: Beams,
 };
 
 /** The real thing: fixed, so it holds still while the page scrolls. */
 export const PageBackdrop = () => {
     const { preferences } = usePreferences();
-    const Layer = layers[preferences.backdrop] ?? layers.waves;
+    const Layer = layers[resolveBackdrop(preferences.backdrop)];
 
     if (preferences.backdrop === "none") return null;
 
@@ -134,7 +167,7 @@ export const PageBackdrop = () => {
 
 /** The same pattern at tile scale, for the picker. */
 export const BackdropPreview = ({ kind, className }: { kind: BackdropKind; className?: string }) => {
-    const Layer = layers[kind];
+    const Layer = layers[resolveBackdrop(kind)];
 
     return (
         <span aria-hidden="true" className={cx("relative block overflow-hidden rounded-xl bg-secondary", className)}>

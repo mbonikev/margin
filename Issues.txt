@@ -1,15 +1,51 @@
-1. in settings let toggle work even when you click on the whole card
-2. dropdown separator not visible in dark mode
-3. add separator in profile dropdown and then add "Feedback" link and the separator the rest in that dropdown aswell. 
-4. on submit action the modal kinda renders some other inputs
-5. add account recovery pages, and settings tab for information 
-6. navigate back to home with esc
-7. modal input dropdown is not visible, it has same bg as the card which makes it invisible
-8. mobile view follows native mobile application entirely, with ease element access
-9. animation on login form button to get user's attention from the go
-10. Missing pages with view all buttons (Recent activities, upcoming, notifications)
+STATUS as of the backend + auth work.
+
+DONE
+2.  dropdown separator not visible in dark mode
+      → was bg-border-secondary (neutral-800) on a neutral-800 popover, i.e.
+        the same colour. New --color-border-popover token, defined against the
+        popover surface so it works in both themes.
+3.  profile dropdown separators + "Feedback" link
+      → Feedback added (mailto). Separators already bracketed the theme block.
+6.  navigate back home with esc
+      → ignores Escape while a dialog is open or a field is focused, so it
+        never steals the key from a modal or a half-typed input.
+7.  modal input dropdown invisible, same bg as the card
+      → in light mode --color-bg-popover and --color-bg-primary are both
+        --color-surface. The ring was 45% transparent; now a full hairline.
+10. missing pages behind "view all" (activity, upcoming, notifications)
+      → /activity /upcoming /goals /notifications, reusing the same components
+        the dashboard cards use, without a limit.
 11. decide if we keep "safe to spend" and where to set it from
-12. morning mail, the idea of tone is very good now we need to add a feeling of Duolingo reminders
-13. exporting data should be in excel not json
-14. the cards on the accounts page, they are very compact coppiable elements are cut through
-15. Goals needs to have view all button instead of new goal
+      → kept, and it is now an allowance rather than a leftover: what remains
+        after bills due before payday and after goal savings, divided across
+        the periods left until payday. The person picks daily / weekly /
+        monthly in Settings -> Money, and that choice also sets the tile's
+        x-axis. Uses the payday setting, which until now was collected and
+        never read. Defined once in safe_to_spend_for(uid, period); the
+        snapshot job and the morning mail both delegate to it.
+12. morning mail with a Duolingo feel
+      → streak in profiles, carried by the morning-mail function.
+13. export should be excel not json
+      → four-sheet xlsx, real numbers and dates, lazily loaded.
+15. goals should have "view all" instead of "new goal"
+      → dashboard links out; the goals page keeps the create action.
+1.  settings toggle should work on the whole card
+      → the row handles the click; the switch stops its own from bubbling, as
+        nesting it in a <label> made a click on the switch toggle twice.
+
+PARTIAL
+5.  account recovery pages + settings tab
+      → forgot-password and reset-password exist, and email change is the other
+        recovery lever. Nothing covers a lost inbox; that needs a decision
+        (recovery codes? support contact?) before it can be built.
+
+OPEN
+9.  animation on login form button to get attention
+      → a sheen sweep was tried and removed: a metallic glow on a finance app
+        reads as an ad. The button is clean. Needs a different idea, if any.
+4.  on submit the modal renders stray inputs
+      → not reproduced yet. Which modal, and which action?
+8.  mobile view should follow a native app, with easy element access
+      → needs a design pass, not a patch. Worth splitting into specific items.
+14. accounts page cards are too compact, copyable elements are cut through

@@ -4,24 +4,25 @@ import { Avatar } from "@/components/base/avatar";
 import { ActionButton } from "@/components/ui";
 import { Amount } from "@/components/ui";
 import { Card } from "@/components/ui";
-import { demoProfile } from "@/demo-data";
-import { useAccounts, usePreferences } from "@/providers";
+import { useAccounts } from "@/providers";
+import { useProfile } from "@/hooks/use-data";
+import { signOut } from "@/services/auth";
 
 const joinedFormat = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 
 export const ProfilePage = () => {
     const navigate = useNavigate();
     const { accounts } = useAccounts();
-    const { preferences } = usePreferences();
+    const { data: profile } = useProfile();
     const total = accounts.reduce((sum, account) => sum + account.balance, 0);
 
-    // Before anyone has signed up properly there is no name to show, so the page
-    // addresses them directly rather than inventing one.
-    const demo = preferences.demoData;
-    const name = demo ? demoProfile.name : "You";
-    const email = demo ? demoProfile.email : "No email yet";
-    const joined = demo ? new Date(Date.now() - demoProfile.joinedDaysAgo * 86_400_000) : new Date();
-    const streak = demo ? demoProfile.emailStreak : 0;
+    // The profile row is created by the signup trigger, so it is only missing
+    // for the moment the first fetch takes. "You" covers that gap rather than
+    // flashing an empty heading.
+    const name = profile?.name || "You";
+    const email = profile?.email ?? "";
+    const joined = profile ? new Date(profile.joinedAt) : null;
+    const streak = profile?.emailStreak ?? 0;
 
     return (
         <div className="flex flex-col gap-1.5 md:gap-2">
@@ -31,14 +32,14 @@ export const ProfilePage = () => {
                 <div className="min-w-0 flex-1">
                     <h1 className="truncate text-3xl font-semibold tracking-tight text-primary md:text-4xl">{name}</h1>
                     <p className="mt-1 truncate text-md text-tertiary">{email}</p>
-                    <p className="mt-1 text-sm text-quaternary">Keeping a margin since {joinedFormat.format(joined)}</p>
+                    <p className="mt-1 text-sm text-quaternary">Keeping a margin since {joined ? joinedFormat.format(joined) : "—"}</p>
                 </div>
 
                 <div className="flex shrink-0 flex-wrap gap-1.5">
                     <ActionButton icon={HiOutlineCog6Tooth} onClick={() => void navigate("/settings")}>
                         Settings
                     </ActionButton>
-                    <ActionButton icon={HiOutlineArrowRightOnRectangle} onClick={() => void navigate("/signin")}>
+                    <ActionButton icon={HiOutlineArrowRightOnRectangle} onClick={() => void signOut()}>
                         Sign out
                     </ActionButton>
                 </div>
@@ -71,7 +72,7 @@ export const ProfilePage = () => {
                     </span>
                     <div>
                         <p className="text-sm font-medium text-primary">Morning email is on</p>
-                        <p className="text-xs text-tertiary">{demo ? "Arriving at 07:00 in your timezone." : "Starts once you add an account."}</p>
+                        <p className="text-xs text-tertiary">{profile?.morningMailEnabled ? `Arriving at ${String(profile.morningMailHour).padStart(2, "0")}:00 in your timezone.` : "Starts once you add an account."}</p>
                     </div>
                 </div>
 

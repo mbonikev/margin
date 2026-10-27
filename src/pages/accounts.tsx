@@ -9,9 +9,11 @@ import { NoAccountsArt } from "@/components/illustrations";
 import { AddAccountModal } from "@/components/accounts";
 import { UpdateBalanceModal } from "@/components/accounts";
 import { ActionButton } from "@/components/ui";
+import { Spinner } from "@/components/ui";
 import { Amount } from "@/components/ui";
 import { Card } from "@/components/ui";
 import { useAccounts } from "@/providers";
+import { useReveal } from "@/hooks/use-reveal";
 import { usePreferences } from "@/providers";
 import { cx } from "@/utils";
 
@@ -23,7 +25,8 @@ const isStale = (account: Account, afterDays: number) => {
 };
 
 export const AccountsPage = () => {
-    const { accounts, trashed, add, update, remove } = useAccounts();
+    const { accounts, trashed, add, update, remove, isLoading } = useAccounts();
+    const reveal = useReveal(isLoading);
     const { preferences } = usePreferences();
     const [target, setTarget] = useState<{ account: Account; modal: "balance" | "settings" } | null>(null);
     const [adding, setAdding] = useState(false);
@@ -36,9 +39,20 @@ export const AccountsPage = () => {
         { id: "trash", label: "Trash", count: trashed.length },
     ];
 
+    // Same reasoning as the dashboard: the summary tiles would otherwise read
+    // "FRw 0" and "0 accounts" for a moment, which is a lie rather than a gap.
+    if (isLoading) {
+        return (
+            <div className="flex flex-1 flex-col items-center justify-center gap-3">
+                <Spinner className="size-6 text-quaternary" />
+                <p className="text-sm text-tertiary">Loading your accounts…</p>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col gap-1.5 md:gap-2">
-            <section aria-label="Summary" className="grid min-w-0 gap-1.5 md:grid-cols-3 md:gap-2">
+            <section aria-label="Summary" className={cx("grid min-w-0 gap-1.5 md:grid-cols-3 md:gap-2", reveal(0))}>
                 <Card>
                     <p className="text-xs font-medium text-tertiary md:text-sm">Total across accounts</p>
                     <Amount value={total} compactSymbol compact className="mt-1 block truncate text-2xl font-semibold tracking-tight text-primary md:text-3xl" />
@@ -57,7 +71,7 @@ export const AccountsPage = () => {
                 </Card>
             </section>
 
-            <Tabs defaultSelectedKey="accounts" className="flex flex-col gap-1.5 md:gap-2">
+            <Tabs defaultSelectedKey="accounts" className={cx("flex flex-col gap-1.5 md:gap-2", reveal(1))}>
                 <div className="flex items-center justify-between gap-3">
                     <TabList aria-label="Accounts" className="flex gap-1 overflow-x-auto rounded-full bg-primary p-1 shadow-xs scrollbar-hide">
                         {tabs.map((tab) => (

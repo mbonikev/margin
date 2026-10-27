@@ -226,7 +226,7 @@ export const DatePicker = ({ value: valueProp, defaultValue, onChange, onApply, 
     return (
         <AriaDatePicker aria-label="Date picker" shouldCloseOnSelect={false} {...props} value={value} onChange={setValue}>
             <AriaGroup className="w-full">
-                <Button size={size} color="secondary" iconLeading={CalendarIcon} className="w-full justify-start rounded-2xl bg-secondary px-4 py-3 shadow-none">
+                <Button size={size} color="secondary" iconLeading={CalendarIcon} className="w-full justify-start rounded-full bg-secondary px-4 py-3 shadow-none">
                     {formattedDate}
                 </Button>
             </AriaGroup>

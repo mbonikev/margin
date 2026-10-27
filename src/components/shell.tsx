@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import type { FC } from "react";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import type { Selection } from "react-aria-components";
-import { HiOutlineArrowPath, HiOutlineArrowRight, HiOutlineArrowRightOnRectangle, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineBell, HiOutlineCheck, HiOutlineCog6Tooth, HiOutlineEye, HiOutlineEyeSlash, HiOutlineFlag, HiOutlinePlus, HiOutlineScale, HiOutlineTrash, HiOutlineUser, HiOutlineXMark } from "react-icons/hi2";
-import { NavLink, Outlet, useNavigate } from "react-router";
-import { demoNotifications } from "@/demo-data";
+import { HiOutlineArrowPath, HiOutlineArrowRight, HiOutlineArrowRightOnRectangle, HiOutlineChatBubbleLeftRight, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineBell, HiOutlineCheck, HiOutlineCog6Tooth, HiOutlineEye, HiOutlineEyeSlash, HiOutlineFlag, HiOutlinePlus, HiOutlineScale, HiOutlineTrash, HiOutlineUser, HiOutlineXMark } from "react-icons/hi2";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { AddAccountModal, RecordModal } from "@/components/accounts";
+import { FeedbackModal } from "@/components/feedback-modal";
 import { PageBackdrop } from "@/components/backdrops";
 import { NoNotificationsArt } from "@/components/illustrations";
 import type { RecordKind } from "@/components/accounts";
@@ -21,7 +21,10 @@ import { Coffee } from "@/components/ui";
 import { Flag, flagIcon } from "@/components/ui";
 import { Logo } from "@/components/ui";
 import { Separator } from "@/components/ui";
+import { Spinner } from "@/components/ui";
 import { currencies, useAccounts, useCurrency, usePreferences, usePrivacy } from "@/providers";
+import { useNotificationActions, useNotifications, useProfile } from "@/hooks/use-data";
+import { signOut } from "@/services/auth";
 import { cx } from "@/utils";
 
 /* ── privacy-toggle.tsx ── */
@@ -138,10 +141,12 @@ const filters = ["all", "unread"] as const;
 type Filter = (typeof filters)[number];
 
 export const NotificationsPopover = () => {
+    const navigate = useNavigate();
     const reduceMotion = useReducedMotion();
     const [filter, setFilter] = useState<Filter>("all");
     const { preferences } = usePreferences();
-    const feed = preferences.demoData ? demoNotifications : [];
+    const feed = useNotifications().data ?? [];
+    const actions = useNotificationActions();
     const items = filter === "unread" ? feed.filter((item) => item.unread) : feed;
     const unreadCount = feed.filter((item) => item.unread).length;
     const showBadge = preferences.showUnreadBadge && unreadCount > 0;
@@ -223,15 +228,29 @@ export const NotificationsPopover = () => {
                             </div>
 
                             <footer className="flex items-center gap-1 px-3 py-2">
-                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-popover hover:text-brand-secondary">
+                                <button
+                                    type="button"
+                                    onClick={() => actions.markAllRead.mutate()}
+                                    disabled={unreadCount === 0}
+                                    className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-popover hover:text-brand-secondary disabled:pointer-events-none disabled:opacity-40"
+                                >
                                     <HiOutlineCheck className="size-4" />
                                     Mark all read
                                 </button>
-                                <button type="button" className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-popover hover:text-brand-secondary">
+                                <button
+                                    type="button"
+                                    onClick={() => feed.forEach((item) => actions.dismiss.mutate(item.id))}
+                                    disabled={feed.length === 0}
+                                    className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-tertiary transition duration-100 ease-linear hover:bg-brand-popover hover:text-brand-secondary disabled:pointer-events-none disabled:opacity-40"
+                                >
                                     <HiOutlineTrash className="size-4" />
                                     Clear all
                                 </button>
-                                <button type="button" className="ml-auto flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-brand-secondary transition hover:bg-brand-popover">
+                                <button
+                                    type="button"
+                                    onClick={() => void navigate("/notifications")}
+                                    className="ml-auto flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-brand-secondary transition hover:bg-brand-popover"
+                                >
                                     View all
                                     <HiOutlineArrowRight className="size-4" />
                                 </button>
@@ -260,9 +279,14 @@ const PanelItem = ({ icon: Icon, label, onPress }: { icon: FC<{ className?: stri
     </button>
 );
 
-export const ProfileMenu = () => {
+export const ProfileMenu = ({ onFeedback }: { onFeedback: () => void }) => {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
+    const { data: profile } = useProfile();
+    const [signingOut, setSigningOut] = useState(false);
+    // Falls back to the email's first letter, then to nothing — better a blank
+    // circle than someone else's initial while the profile loads.
+    const initials = (profile?.name || profile?.email || "").slice(0, 1).toUpperCase();
 
     // Navigating from inside the menu leaves it hanging over the new page, so
     // the trigger is controlled and every item that routes closes it first.
@@ -277,7 +301,7 @@ export const ProfileMenu = () => {
             aria-label="Account menu"
             className="group ml-1.5 rounded-full outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
         >
-            <Avatar size="sm" initials="K" alt="Your account" className="size-11 md:size-9" focusable />
+            <Avatar size="sm" initials={initials} src={profile?.avatarUrl} alt="Your account" className="size-11 md:size-9" focusable />
         </AriaButton>
 
         <Popover
@@ -295,6 +319,14 @@ export const ProfileMenu = () => {
                 <div className="flex flex-col gap-0.5 p-1">
                     <PanelItem icon={HiOutlineUser} label="View profile" onPress={() => go("/profile")} />
                     <PanelItem icon={HiOutlineCog6Tooth} label="Settings" onPress={() => go("/settings")} />
+                    <PanelItem
+                        icon={HiOutlineChatBubbleLeftRight}
+                        label="Feedback"
+                        onPress={() => {
+                            setIsOpen(false);
+                            onFeedback();
+                        }}
+                    />
                 </div>
 
                 <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
@@ -304,7 +336,17 @@ export const ProfileMenu = () => {
                 <Separator orientation="horizontal" className="mx-auto my-1 w-[86%]" />
 
                 <div className="p-1">
-                    <PanelItem icon={HiOutlineArrowRightOnRectangle} label="Sign out" onPress={() => go("/signin")} />
+                    <PanelItem
+                        icon={signingOut ? Spinner : HiOutlineArrowRightOnRectangle}
+                        label={signingOut ? "Signing out…" : "Sign out"}
+                        onPress={() => {
+                            // Clearing the session tears down every query above
+                            // this, so the label is the only feedback there is
+                            // room for before the screen changes.
+                            setSigningOut(true);
+                            void signOut().catch(() => setSigningOut(false));
+                        }}
+                    />
                 </div>
             </Dialog>
         </Popover>
@@ -395,8 +437,36 @@ const NavLinks = () => (
 
 export const AppLayout = () => {
     const { accounts, add } = useAccounts();
+    const navigate = useNavigate();
+    const location = useLocation();
     // The bar only earns its background once there is content behind it.
     const [scrolled, setScrolled] = useState(false);
+
+    /**
+     * Esc returns to the dashboard (Issues.txt #6).
+     *
+     * Bound on the document but deliberately inert whenever something else
+     * owns Escape: a modal or popover closes on it, and a text field may be
+     * mid-edit. Checking for an open dialog and for a focused input is what
+     * keeps this from yanking the page out from under those.
+     */
+    useEffect(() => {
+        if (location.pathname === "/") return;
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== "Escape" || event.defaultPrevented) return;
+            if (document.querySelector("[role='dialog']")) return;
+
+            const active = document.activeElement;
+            const typing = active instanceof HTMLElement && (active.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName));
+            if (typing) return;
+
+            void navigate("/");
+        };
+
+        document.addEventListener("keydown", onKeyDown);
+        return () => document.removeEventListener("keydown", onKeyDown);
+    }, [navigate, location.pathname]);
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 4);
@@ -406,10 +476,11 @@ export const AppLayout = () => {
     }, []);
     const [recording, setRecording] = useState<RecordKind | null>(null);
     const [adding, setAdding] = useState(false);
+    const [feedbackOpen, setFeedbackOpen] = useState(false);
     const [updatingBalance, setUpdatingBalance] = useState(false);
 
     return (
-        <div className="relative min-h-screen overflow-x-clip bg-secondary">
+        <div className="relative flex min-h-screen flex-col overflow-x-clip bg-secondary">
             <PageBackdrop />
 
             {/* Full-width wrapper so the blur spans the viewport, with the inner
@@ -466,7 +537,7 @@ export const AppLayout = () => {
                         <CurrencySelect />
 
                         <NotificationsPopover />
-                        <ProfileMenu />
+                        <ProfileMenu onFeedback={() => setFeedbackOpen(true)} />
                     </div>
                     </div>
                 </div>
@@ -474,7 +545,7 @@ export const AppLayout = () => {
 
             {/* `relative` on the content: the backdrop is positioned, so static
                 siblings would paint underneath it. */}
-            <main className="relative mx-auto w-full max-w-[88rem] px-4 pb-4 md:px-8 md:pb-6">
+            <main className="relative mx-auto flex w-full max-w-[88rem] flex-1 flex-col px-4 pb-4 md:px-8 md:pb-6">
                 <Outlet />
             </main>
 
@@ -511,6 +582,7 @@ export const AppLayout = () => {
                     setAdding(true);
                 }}
             />
+            <FeedbackModal isOpen={feedbackOpen} onOpenChange={setFeedbackOpen} />
         </div>
     );
 };

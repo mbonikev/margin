@@ -76,7 +76,7 @@ export const Popover = (props: PopoverProps) => {
             {...props}
             className={(state) =>
                 cx(
-                    "w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto rounded-2xl bg-popover p-1 shadow-xl ring-1 ring-popover outline-hidden will-change-transform",
+                    "w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto rounded-2xl bg-popover p-1 shadow-2xl ring-1 ring-popover outline-hidden will-change-transform",
 
                     state.isEntering &&
                         "duration-150 ease-out animate-in fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
@@ -270,7 +270,7 @@ const ComboBoxValue = ({ size, shortcut, placeholder, shortcutClassName, icon: I
             {...otherProps}
             className={({ isFocusWithin, isDisabled }) =>
                 cx(
-                    "relative flex w-full items-center gap-2 rounded-2xl bg-secondary outline-hidden transition duration-100 ease-linear",
+                    "relative flex w-full items-center gap-2 rounded-full bg-secondary outline-hidden transition duration-100 ease-linear",
                     isDisabled && "cursor-not-allowed opacity-50",
                     isFocusWithin && "ring-2 ring-brand",
 
@@ -433,7 +433,7 @@ const SelectValue = ({ isOpen, isFocused, isDisabled, size, placeholder, icon, r
         <AriaButton
             ref={ref}
             className={cx(
-                "relative flex w-full cursor-pointer items-center rounded-2xl bg-secondary outline-hidden transition duration-100 ease-linear",
+                "relative flex w-full cursor-pointer items-center rounded-full bg-secondary outline-hidden transition duration-100 ease-linear",
                 (isFocused || isOpen) && "ring-2 ring-brand",
                 isDisabled && "cursor-not-allowed opacity-50",
             )}

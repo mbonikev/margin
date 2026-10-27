@@ -259,3 +259,45 @@ input[type="search"]::-webkit-search-cancel-button {
         user-select: none;
     }
 }
+
+/* ── First-paint reveal ──────────────────────────────────────────────────────
+   Dashboard cards rise into place once per page load. Authored as plain CSS
+   rather than Tailwind utilities because the components involved accept a
+   `className` and nothing else, and because the stagger needs real delay
+   classes — a JIT-generated arbitrary value cannot be built from a loop index.
+
+   `both` fill keeps a card invisible during its delay; without it the whole
+   grid would paint, then jump. */
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.reveal {
+    animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.reveal-1 { animation-delay: 60ms; }
+.reveal-2 { animation-delay: 120ms; }
+.reveal-3 { animation-delay: 180ms; }
+.reveal-4 { animation-delay: 240ms; }
+.reveal-5 { animation-delay: 300ms; }
+
+/* No animation at all rather than an instant one: `both` fill would otherwise
+   leave the card sitting at the keyframe's starting opacity. */
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .reveal-1,
+    .reveal-2,
+    .reveal-3,
+    .reveal-4,
+    .reveal-5 {
+        animation: none;
+    }
+}

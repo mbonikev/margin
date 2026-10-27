@@ -3,7 +3,9 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useId, useMemo, useState } from "react";
 import type { FC, ReactNode } from "react";
-import { HiArrowDown, HiArrowUp, HiOutlineArrowRight, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
+import { HiArrowDown, HiArrowUp, HiOutlineArrowRight, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineFlag, HiOutlineMinus, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
+import { Button as AriaButton } from "react-aria-components";
+import { Tooltip } from "@/components/base/tooltip";
 import { RecordModal } from "@/components/accounts";
 import { NoActivityArt, NoFlowArt, NoGoalsArt, NoUpcomingArt } from "@/components/illustrations";
 import { ActionButton } from "@/components/ui";
@@ -11,6 +13,7 @@ import { Amount } from "@/components/ui";
 import { Card } from "@/components/ui";
 import { Progress } from "@/components/ui";
 import { useAccounts } from "@/providers";
+import { GoalMoneyModal } from "@/components/goal-money-modal";
 import { cx } from "@/utils";
 
 /* ── stat-tile.tsx ── */
@@ -24,11 +27,16 @@ const tones: Record<TileTone, { bar: string; soft: string; pill: string }> = {
     magenta: { bar: "bg-tile-magenta", soft: "bg-tile-magenta-soft", pill: "bg-tile-magenta-tint text-tile-magenta-ink" },
 };
 
-export type TilePeriod = "days" | "months";
+export type TilePeriod = "days" | "weeks" | "months";
 
 /** Short names for the last `count` periods, ending today, in the viewer's locale. */
 const recentLabels = (count: number, period: TilePeriod) => {
-    const format = new Intl.DateTimeFormat(undefined, period === "days" ? { weekday: "short" } : { month: "short" });
+    // Weeks are labelled by the day the week starts on — "6 Oct" reads as a
+    // week more clearly than a week number nobody counts in.
+    const format = new Intl.DateTimeFormat(
+        undefined,
+        period === "days" ? { weekday: "short" } : period === "weeks" ? { day: "numeric", month: "short" } : { month: "short" },
+    );
 
     return Array.from({ length: count }, (_, index) => {
         const date = new Date();
@@ -36,6 +44,8 @@ const recentLabels = (count: number, period: TilePeriod) => {
 
         if (period === "days") {
             date.setDate(date.getDate() - stepsBack);
+        } else if (period === "weeks") {
+            date.setDate(date.getDate() - stepsBack * 7);
         } else {
             // Pin to the 1st first, or stepping back from a 31st skips short months.
             date.setDate(1);
@@ -62,6 +72,8 @@ export interface StatTileProps {
     period?: TilePeriod;
     /** How a bar's value reads in the tooltip. Defaults to a grouped number. */
     formatBar?: (value: number) => string;
+    /** Plain-English sum behind the figure, shown on the fx button. */
+    formula?: string;
     className?: string;
 }
 
@@ -78,7 +90,7 @@ export const Blank = ({ art, children }: { art?: ReactNode; children: ReactNode 
     </div>
 );
 
-export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, activeIndex, period, formatBar, className }: StatTileProps) => {
+export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, activeIndex, period, formatBar, formula, className }: StatTileProps) => {
     const palette = tones[tone];
     const active = activeIndex ?? bars.length - 1;
     const peak = Math.max(...bars, 1);
@@ -95,7 +107,23 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
                     number it wraps on long values — and a masked figure is a
                     different width again — which changed the card's height. */}
                 <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-xs font-medium text-tertiary md:text-sm">{label}</p>
+                    <p className="flex min-w-0 items-center gap-1.5 truncate text-xs font-medium text-tertiary md:text-sm">
+                        <span className="truncate">{label}</span>
+
+                        {/* Borrowed from a spreadsheet: the number is derived,
+                            and this says from what without putting a sentence
+                            of explanation on every card. */}
+                        {formula && (
+                            <Tooltip title={formula} placement="top">
+                                <AriaButton
+                                    aria-label={`How ${label} is worked out`}
+                                    className="shrink-0 rounded-full px-1 font-serif text-xs italic text-quaternary outline-focus-ring transition duration-100 ease-linear hover:text-tertiary focus-visible:outline-2"
+                                >
+                                    fx
+                                </AriaButton>
+                            </Tooltip>
+                        )}
+                    </p>
 
                     {delta !== undefined && (
                         <span className={cx("flex h-5 shrink-0 items-center gap-0.5 rounded-full px-1.5 text-xs font-semibold tabular-nums", palette.pill)}>
@@ -191,26 +219,33 @@ export interface Commitment {
 const dayFormat = new Intl.DateTimeFormat(undefined, { day: "numeric" });
 const monthFormat = new Intl.DateTimeFormat(undefined, { month: "short" });
 
-export const UpcomingList = ({ items, className }: { items: Commitment[]; className?: string }) => {
+export const UpcomingList = ({ items, className, onViewAll }: { items: Commitment[]; className?: string; onViewAll?: () => void }) => {
     const total = items.reduce((sum, item) => sum + item.amount, 0);
+    // Sorted here as well as in the query: the component should not depend on
+    // its caller having ordered the list, the way RecentActivity does not.
+    const rows = useMemo(() => [...items].sort((a, b) => a.due.getTime() - b.due.getTime() || b.amount - a.amount), [items]);
 
     return (
         <Card className={cx("flex flex-col gap-3", className)}>
             <div className="flex items-center justify-between gap-3">
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Upcoming</h2>
 
-                <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
+                {onViewAll && (
+                    <ActionButton icon={HiOutlineArrowRight} onClick={onViewAll}>
+                        View all
+                    </ActionButton>
+                )}
             </div>
 
             {items.length === 0 && <Blank art={<NoUpcomingArt />}>Nothing due yet. Add a recurring bill and it shows up here.</Blank>}
 
             <ul className={cx("-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto", items.length === 0 && "hidden")}>
-                {items.map((item) => (
+                {rows.map((item) => (
                     <li key={item.id}>
-                        <button
-                            type="button"
-                            className="no-press flex w-full items-center gap-2.5 rounded-2xl px-2 py-1.5 text-left transition duration-100 ease-linear hover:bg-secondary"
-                        >
+                        {/* A div, not a button: it had no handler, so it was
+                            keyboard-focusable and announced as actionable while
+                            doing nothing. The hover went with it. */}
+                        <div className="flex w-full items-center gap-2.5 rounded-2xl px-2 py-1.5 text-left">
                             {/* A calendar tile reads faster down a column than a row of pills. */}
                             <span className="flex size-10 shrink-0 flex-col items-center justify-center rounded-xl bg-brand-primary leading-none text-brand-secondary">
                                 <span className="text-sm font-semibold">{dayFormat.format(item.due)}</span>
@@ -220,13 +255,13 @@ export const UpcomingList = ({ items, className }: { items: Commitment[]; classN
                             <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{item.name}</span>
 
                             <Amount value={item.amount} className="shrink-0 text-sm font-semibold text-primary" />
-                        </button>
+                        </div>
                     </li>
                 ))}
             </ul>
 
             <div className="flex items-baseline justify-between gap-2 pt-1">
-                <p className="text-xs text-tertiary">Next 30 days</p>
+                <p className="text-xs text-tertiary">Still to come</p>
                 <Amount value={total} className="text-base font-semibold text-primary" />
             </div>
         </Card>
@@ -442,16 +477,26 @@ const elapsed = (from: Date) => {
     return `${Math.floor(months / 12)}y ${months % 12}m in`;
 };
 
-export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: string }) => {
+export const SavingsGoals = ({ goals, className, onViewAll }: { goals: Goal[]; className?: string; onViewAll?: () => void }) => {
     const { accounts } = useAccounts();
     const [creating, setCreating] = useState(false);
+    // Which goal is being funded, and which way the money is going.
+    const [moving, setMoving] = useState<{ goal: Goal; direction: "deposit" | "withdraw" } | null>(null);
 
     return (
         <Card className={cx("flex flex-col gap-4", className)}>
             <div className="flex items-center justify-between gap-3">
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Goals</h2>
 
-                <ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>New goal</ActionButton>
+                {onViewAll ? (
+                    <ActionButton icon={HiOutlineArrowRight} onClick={onViewAll}>
+                        View all
+                    </ActionButton>
+                ) : (
+                    <ActionButton icon={HiOutlinePlus} onClick={() => setCreating(true)}>
+                        New goal
+                    </ActionButton>
+                )}
             </div>
 
             {goals.length === 0 && <Blank art={<NoGoalsArt />}>No goals yet. Name one thing you're saving for.</Blank>}
@@ -480,27 +525,56 @@ export const SavingsGoals = ({ goals, className }: { goals: Goal[]; className?: 
                                 <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums text-primary">{percent}%</span>
                             </div>
 
-                            <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-xs text-tertiary">
-                                <span>
-                                    <Amount value={Math.max(0, goal.target - goal.saved)} /> to go
+                            <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
+                                <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-tertiary">
+                                    <span>
+                                        <Amount value={Math.max(0, goal.target - goal.saved)} /> to go
+                                    </span>
+                                    <span className="text-quaternary">·</span>
+                                    <span className="text-quaternary" title={`Started ${sinceFormat.format(goal.startedAt)}`}>
+                                        {elapsed(goal.startedAt)}
+                                    </span>
+                                </p>
+
+                                <span className="flex shrink-0 items-center gap-1">
+                                    <ActionButton
+                                        icon={HiOutlinePlus}
+                                        onClick={() => setMoving({ goal, direction: "deposit" })}
+                                        aria-label={`Add money to ${goal.name}`}
+                                        className="h-8 bg-secondary px-2.5"
+                                    />
+                                    {/* Only offered once there is something to take back. */}
+                                    {goal.saved > 0 && (
+                                        <ActionButton
+                                            icon={HiOutlineMinus}
+                                            onClick={() => setMoving({ goal, direction: "withdraw" })}
+                                            aria-label={`Take money out of ${goal.name}`}
+                                            className="h-8 bg-secondary px-2.5"
+                                        />
+                                    )}
                                 </span>
-                                <span className="text-quaternary">·</span>
-                                <span className="text-quaternary" title={`Started ${sinceFormat.format(goal.startedAt)}`}>
-                                    {elapsed(goal.startedAt)}
-                                </span>
-                            </p>
+                            </div>
                         </li>
                     );
                 })}
             </ul>
             <RecordModal kind="goal" isOpen={creating} onOpenChange={setCreating} accounts={accounts} />
+
+            {moving && (
+                <GoalMoneyModal
+                    goal={moving.goal}
+                    direction={moving.direction}
+                    isOpen
+                    onOpenChange={(open) => !open && setMoving(null)}
+                />
+            )}
         </Card>
     );
 };
 
 /* ── recent-activity.tsx ── */
 
-export type ActivityKind = "balance" | "expense" | "income";
+export type ActivityKind = "balance" | "expense" | "income" | "goal_deposit" | "goal_withdrawal";
 
 /* Solid chips carry the vibrancy; the amount text stays at a step that clears
    4.5:1, since a vivid green or red is unreadable at 14px on white. */
@@ -508,6 +582,10 @@ const kinds: Record<ActivityKind, { icon: FC<{ className?: string }>; chip: stri
     balance: { icon: HiOutlineScale, chip: "bg-tile-blue text-white", sign: "", amount: "text-tile-blue-ink", label: "Balance" },
     expense: { icon: HiOutlineArrowTrendingDown, chip: "bg-negative text-white", sign: "−", amount: "text-negative-ink", label: "Expense" },
     income: { icon: HiOutlineArrowTrendingUp, chip: "bg-positive text-white", sign: "+", amount: "text-positive-ink", label: "Income" },
+    // Saving is not spending, so these are neutral rather than red and green —
+    // the money left the account but it did not leave the person.
+    goal_deposit: { icon: HiOutlineFlag, chip: "bg-brand-solid text-white", sign: "−", amount: "text-tertiary", label: "To goal" },
+    goal_withdrawal: { icon: HiOutlineFlag, chip: "bg-brand-solid text-white", sign: "+", amount: "text-tertiary", label: "From goal" },
 };
 
 export interface Activity {
@@ -537,14 +615,18 @@ const whenLabel = (date: Date) => {
     return dateFormat.format(date);
 };
 
-export const RecentActivity = ({ items, className }: { items: Activity[]; className?: string }) => {
+export const RecentActivity = ({ items, className, onViewAll }: { items: Activity[]; className?: string; onViewAll?: () => void }) => {
     const rows = [...items].sort((a, b) => b.at.getTime() - a.at.getTime());
 
     return (
         <Card className={cx("flex flex-col gap-3", className)}>
             <div className="flex items-center justify-between gap-3">
                 <h2 className="truncate text-lg font-semibold tracking-tight text-primary md:text-xl">Recent</h2>
-                <ActionButton icon={HiOutlineArrowRight}>View all</ActionButton>
+                {onViewAll && (
+                    <ActionButton icon={HiOutlineArrowRight} onClick={onViewAll}>
+                        View all
+                    </ActionButton>
+                )}
             </div>
 
             {items.length === 0 && <Blank art={<NoActivityArt />}>Nothing recorded yet. Your first expense or balance update lands here.</Blank>}
@@ -583,8 +665,8 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
                             const Icon = kind.icon;
 
                             return (
-                                <tr key={item.id} className="group cursor-default">
-                                    <td className="rounded-l-full px-4 py-2.5 transition duration-100 ease-linear group-hover:bg-secondary">
+                                <tr key={item.id}>
+                                    <td className="rounded-l-full px-4 py-2.5">
                                         <div className="flex items-center gap-3">
                                             <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-full", kind.chip)}>
                                                 <Icon className="size-4.5" />
@@ -593,27 +675,27 @@ export const RecentActivity = ({ items, className }: { items: Activity[]; classN
                                         </div>
                                     </td>
 
-                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary transition duration-100 ease-linear group-hover:bg-secondary sm:table-cell">
+                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary sm:table-cell">
                                         {kind.label}
                                     </td>
 
-                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary transition duration-100 ease-linear group-hover:bg-secondary md:table-cell">
+                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary md:table-cell">
                                         {item.account}
                                     </td>
 
-                                    <td className="hidden max-w-48 truncate px-2.5 py-2.5 text-sm text-quaternary transition duration-100 ease-linear group-hover:bg-secondary xl:table-cell">
+                                    <td className="hidden max-w-48 truncate px-2.5 py-2.5 text-sm text-quaternary xl:table-cell">
                                         {item.note ?? "—"}
                                     </td>
 
-                                    <td className="px-2.5 py-2.5 text-sm whitespace-nowrap text-tertiary transition duration-100 ease-linear group-hover:bg-secondary">
+                                    <td className="px-2.5 py-2.5 text-sm whitespace-nowrap text-tertiary">
                                         {whenLabel(item.at)} · {timeFormat.format(item.at)}
                                     </td>
 
-                                    <td className="hidden px-2.5 py-2.5 text-right text-sm whitespace-nowrap text-tertiary transition duration-100 ease-linear group-hover:bg-secondary lg:table-cell">
+                                    <td className="hidden px-2.5 py-2.5 text-right text-sm whitespace-nowrap text-tertiary lg:table-cell">
                                         {item.balanceAfter === undefined ? "—" : <Amount value={item.balanceAfter} hideSymbol />}
                                     </td>
 
-                                    <td className={cx("rounded-r-full px-4 py-2.5 text-right text-sm font-semibold whitespace-nowrap transition duration-100 ease-linear group-hover:bg-secondary", kind.amount)}>
+                                    <td className={cx("rounded-r-full px-4 py-2.5 text-right text-sm font-semibold whitespace-nowrap", kind.amount)}>
                                         {kind.sign}
                                         <Amount value={item.amount} />
                                     </td>
