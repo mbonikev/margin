@@ -400,6 +400,7 @@ export const ModalActions = ({
     confirmLabel,
     confirmDisabled,
     leading,
+    className,
 }: {
     onCancel: () => void;
     onConfirm: () => void;
@@ -408,8 +409,10 @@ export const ModalActions = ({
     confirmDisabled?: boolean;
     /** Sits opposite the confirm button — for the odd destructive action. */
     leading?: ReactNode;
+    /** Spacing from the form above, which varies by modal. */
+    className?: string;
 }) => (
-    <div className="flex items-center justify-end gap-2">
+    <div className={cx("flex items-center justify-end gap-2", className)}>
         {leading && <div className="mr-auto">{leading}</div>}
         <button type="button" onClick={onCancel} className="h-10 rounded-full px-4 text-sm font-medium text-tertiary transition duration-100 ease-linear hover:bg-secondary">
             Cancel

@@ -405,15 +405,14 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
                 is the first thing seen on mobile rather than scrolled past. */}
             <div className="shrink-0 sm:w-96">
                 <span className="mb-1.5 block text-xs font-medium text-tertiary">Preview</span>
-                {/* Scaled, not resized. The card's type and padding are fixed
-                    sizes, so a smaller box clips them — the name and balance
-                    fell off the bottom. Rendering it slightly oversized and
-                    scaling back keeps every proportion while guaranteeing the
-                    content still fits, which a bare resize does not. */}
-                <div className="relative aspect-[1.6/1] w-full sm:sticky sm:top-0">
-                    <div className="absolute top-0 left-0 h-[110%] w-[110%] origin-top-left scale-[0.909]">
-                        <AccountCard account={previewAccount} />
-                    </div>
+                {/* No scaling: the column is now as wide as the card is on the
+                    dashboard, so it renders at its natural size. Scaling was
+                    only ever a way to fit fixed-size type into a smaller box,
+                    and it shrank that type along with everything else.
+                    1.55 rather than 1.6 gives the content the same height it
+                    has on the dashboard, where nothing clips. */}
+                <div className="aspect-[1.55/1] w-full sm:sticky sm:top-0">
+                    <AccountCard account={previewAccount} />
                 </div>
             </div>
 
@@ -433,7 +432,13 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
                 <CardThemePicker value={theme} onChange={setTheme} />
             </Field>
 
+            {/* `mt-auto` rather than a fixed margin: the two columns stretch to
+                the same height, so this pins the actions to the bottom of the
+                form and lets whatever is left over become the gap. The minimum
+                keeps them off the colour swatches when the form is the taller
+                of the two. */}
             <ModalActions
+                className="mt-auto pt-6"
                 onCancel={() => onOpenChange(false)}
                 onConfirm={() => {
                     onSave?.({ name: name.trim() || account.name, kind, theme });
