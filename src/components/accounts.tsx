@@ -783,7 +783,9 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onAddAccount
                 </Field>
 
                 <Field label={text.nameLabel}>
-                    <TextField value={name} onChange={(event) => setName(event.target.value)} placeholder={text.namePlaceholder} />
+                    {/* Required: without it the feed fills with nameless rows
+                        that say only that something happened. */}
+                    <TextField required value={name} onChange={(event) => setName(event.target.value)} placeholder={text.namePlaceholder} />
                 </Field>
 
                 {/* An empty dropdown reads as broken, so with no accounts the field
@@ -820,7 +822,7 @@ export const RecordModal = ({ kind, isOpen, onOpenChange, accounts, onAddAccount
                 <ModalActions
                     onCancel={() => onOpenChange(false)}
                     confirmLabel={text.confirm}
-                    confirmDisabled={(kind !== "goal" && accounts.length === 0) || record.isPending}
+                    confirmDisabled={(kind !== "goal" && accounts.length === 0) || !name.trim() || !Number(amount) || record.isPending}
                     onConfirm={() => {
                         // Typed in the display currency, stored in the base one.
                         const value = Math.round(toBase(Number(amount || 0)));

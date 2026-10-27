@@ -11,7 +11,7 @@ import { useAuth } from "@/auth-provider";
 import { countTrashedEntries } from "@/services/accounts";
 import type { SpendPeriod } from "@/providers";
 import { createEntry, deleteEntry, getDashboardSeries, getSafeToSpend, listAccountHistory, listActivity, listMonthFlows } from "@/services/entries";
-import { createGoal, listGoals, trashGoal, updateGoal } from "@/services/goals";
+import { createGoal, listGoals, moveGoalMoney, trashGoal, updateGoal } from "@/services/goals";
 import { createCommitment, listCommitments, trashCommitment, updateCommitment } from "@/services/commitments";
 import { getProfile, updateProfile } from "@/services/profile";
 import { dismiss, listNotifications, markAllRead, markRead } from "@/services/notifications";
@@ -98,6 +98,17 @@ export const useGoalMutations = () => {
             onSuccess: refresh,
         }),
         remove: useMutation({ mutationFn: tracked(trashGoal, { loading: "Removing…", success: "Goal removed." }), onSuccess: refresh }),
+        // Moves money on both sides, so everything built from balances has to
+        // be re-read — not just the goals list.
+        move: useMutation({
+            mutationFn: tracked(moveGoalMoney, { loading: "Moving…", success: "Done." }),
+            onSuccess: () => {
+                refresh();
+                void queryClient.invalidateQueries({ queryKey: keys.accounts });
+                void queryClient.invalidateQueries({ queryKey: keys.activity });
+                void queryClient.invalidateQueries({ queryKey: ["entries", "series"] });
+            },
+        }),
     };
 };
 

@@ -12,7 +12,7 @@
 
 export type CardTheme = "blue" | "indigo" | "violet" | "plum" | "rose" | "crimson" | "amber" | "emerald" | "teal" | "slate" | "graphite";
 
-export type EntryKind = "income" | "expense" | "balance";
+export type EntryKind = "income" | "expense" | "balance" | "goal_deposit" | "goal_withdrawal";
 
 export type Pressure = "ok" | "tight" | "over";
 
@@ -76,6 +76,8 @@ export type EntryRow = {
     balance_after: number | null;
     occurred_at: string;
     created_at: string;
+    /** Set only on goal transfers. */
+    goal_id: string | null;
 };
 
 export type GoalRow = {
@@ -128,7 +130,7 @@ export type NotificationRow = {
 };
 
 /** Columns the database fills in for you, so callers never have to. */
-type Generated = "id" | "created_at";
+type Generated = "id" | "created_at" | "goal_id";
 
 /** `entries.account_id` -> `accounts.id`, the only join the app makes. */
 type EntryRelationships = [
@@ -169,6 +171,10 @@ export type Database = {
             month_flows: {
                 Args: { n_months?: number };
                 Returns: { month: string; total_in: number; total_out: number }[];
+            };
+            move_goal_money: {
+                Args: { p_goal_id: string; p_account_id: string; p_amount: number; p_direction?: string };
+                Returns: undefined;
             };
             safe_to_spend: {
                 Args: { period?: string };

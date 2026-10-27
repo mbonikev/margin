@@ -47,3 +47,20 @@ export const trashGoal = async (id: string): Promise<void> => {
     const { error } = await supabase.from("goals").update({ deleted_at: new Date().toISOString() }).eq("id", id);
     if (error) throw error;
 };
+
+/**
+ * Moves money between an account and a goal, both sides in one call.
+ *
+ * A single RPC rather than two writes: the account and the goal have to move
+ * together, and a dropped connection between two client writes would leave the
+ * money in neither place or both.
+ */
+export const moveGoalMoney = async (input: { goalId: string; accountId: string; amount: number; direction: "deposit" | "withdraw" }): Promise<void> => {
+    const { error } = await supabase.rpc("move_goal_money", {
+        p_goal_id: input.goalId,
+        p_account_id: input.accountId,
+        p_amount: input.amount,
+        p_direction: input.direction,
+    });
+    if (error) throw error;
+};

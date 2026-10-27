@@ -3,7 +3,9 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useId, useMemo, useState } from "react";
 import type { FC, ReactNode } from "react";
-import { HiArrowDown, HiArrowUp, HiOutlineArrowRight, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
+import { HiArrowDown, HiArrowUp, HiOutlineArrowRight, HiOutlineArrowTrendingDown, HiOutlineArrowTrendingUp, HiOutlineFlag, HiOutlineMinus, HiOutlinePlus, HiOutlineScale } from "react-icons/hi2";
+import { Button as AriaButton } from "react-aria-components";
+import { Tooltip } from "@/components/base/tooltip";
 import { RecordModal } from "@/components/accounts";
 import { NoActivityArt, NoFlowArt, NoGoalsArt, NoUpcomingArt } from "@/components/illustrations";
 import { ActionButton } from "@/components/ui";
@@ -11,6 +13,7 @@ import { Amount } from "@/components/ui";
 import { Card } from "@/components/ui";
 import { Progress } from "@/components/ui";
 import { useAccounts } from "@/providers";
+import { GoalMoneyModal } from "@/components/goal-money-modal";
 import { cx } from "@/utils";
 
 /* ── stat-tile.tsx ── */
@@ -69,6 +72,8 @@ export interface StatTileProps {
     period?: TilePeriod;
     /** How a bar's value reads in the tooltip. Defaults to a grouped number. */
     formatBar?: (value: number) => string;
+    /** Plain-English sum behind the figure, shown on the fx button. */
+    formula?: string;
     className?: string;
 }
 
@@ -85,7 +90,7 @@ export const Blank = ({ art, children }: { art?: ReactNode; children: ReactNode 
     </div>
 );
 
-export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, activeIndex, period, formatBar, className }: StatTileProps) => {
+export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, activeIndex, period, formatBar, formula, className }: StatTileProps) => {
     const palette = tones[tone];
     const active = activeIndex ?? bars.length - 1;
     const peak = Math.max(...bars, 1);
@@ -102,7 +107,23 @@ export const StatTile = ({ label, value, delta, deltaSuffix = "", tone, bars, ac
                     number it wraps on long values — and a masked figure is a
                     different width again — which changed the card's height. */}
                 <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-xs font-medium text-tertiary md:text-sm">{label}</p>
+                    <p className="flex min-w-0 items-center gap-1.5 truncate text-xs font-medium text-tertiary md:text-sm">
+                        <span className="truncate">{label}</span>
+
+                        {/* Borrowed from a spreadsheet: the number is derived,
+                            and this says from what without putting a sentence
+                            of explanation on every card. */}
+                        {formula && (
+                            <Tooltip title={formula} placement="top">
+                                <AriaButton
+                                    aria-label={`How ${label} is worked out`}
+                                    className="shrink-0 rounded-full px-1 font-serif text-xs italic text-quaternary outline-focus-ring transition duration-100 ease-linear hover:text-tertiary focus-visible:outline-2"
+                                >
+                                    fx
+                                </AriaButton>
+                            </Tooltip>
+                        )}
+                    </p>
 
                     {delta !== undefined && (
                         <span className={cx("flex h-5 shrink-0 items-center gap-0.5 rounded-full px-1.5 text-xs font-semibold tabular-nums", palette.pill)}>
@@ -456,6 +477,8 @@ const elapsed = (from: Date) => {
 export const SavingsGoals = ({ goals, className, onViewAll }: { goals: Goal[]; className?: string; onViewAll?: () => void }) => {
     const { accounts } = useAccounts();
     const [creating, setCreating] = useState(false);
+    // Which goal is being funded, and which way the money is going.
+    const [moving, setMoving] = useState<{ goal: Goal; direction: "deposit" | "withdraw" } | null>(null);
 
     return (
         <Card className={cx("flex flex-col gap-4", className)}>
@@ -499,27 +522,56 @@ export const SavingsGoals = ({ goals, className, onViewAll }: { goals: Goal[]; c
                                 <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums text-primary">{percent}%</span>
                             </div>
 
-                            <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-xs text-tertiary">
-                                <span>
-                                    <Amount value={Math.max(0, goal.target - goal.saved)} /> to go
+                            <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
+                                <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-tertiary">
+                                    <span>
+                                        <Amount value={Math.max(0, goal.target - goal.saved)} /> to go
+                                    </span>
+                                    <span className="text-quaternary">·</span>
+                                    <span className="text-quaternary" title={`Started ${sinceFormat.format(goal.startedAt)}`}>
+                                        {elapsed(goal.startedAt)}
+                                    </span>
+                                </p>
+
+                                <span className="flex shrink-0 items-center gap-1">
+                                    <ActionButton
+                                        icon={HiOutlinePlus}
+                                        onClick={() => setMoving({ goal, direction: "deposit" })}
+                                        aria-label={`Add money to ${goal.name}`}
+                                        className="h-8 bg-secondary px-2.5"
+                                    />
+                                    {/* Only offered once there is something to take back. */}
+                                    {goal.saved > 0 && (
+                                        <ActionButton
+                                            icon={HiOutlineMinus}
+                                            onClick={() => setMoving({ goal, direction: "withdraw" })}
+                                            aria-label={`Take money out of ${goal.name}`}
+                                            className="h-8 bg-secondary px-2.5"
+                                        />
+                                    )}
                                 </span>
-                                <span className="text-quaternary">·</span>
-                                <span className="text-quaternary" title={`Started ${sinceFormat.format(goal.startedAt)}`}>
-                                    {elapsed(goal.startedAt)}
-                                </span>
-                            </p>
+                            </div>
                         </li>
                     );
                 })}
             </ul>
             <RecordModal kind="goal" isOpen={creating} onOpenChange={setCreating} accounts={accounts} />
+
+            {moving && (
+                <GoalMoneyModal
+                    goal={moving.goal}
+                    direction={moving.direction}
+                    isOpen
+                    onOpenChange={(open) => !open && setMoving(null)}
+                />
+            )}
         </Card>
     );
 };
 
 /* ── recent-activity.tsx ── */
 
-export type ActivityKind = "balance" | "expense" | "income";
+export type ActivityKind = "balance" | "expense" | "income" | "goal_deposit" | "goal_withdrawal";
 
 /* Solid chips carry the vibrancy; the amount text stays at a step that clears
    4.5:1, since a vivid green or red is unreadable at 14px on white. */
@@ -527,6 +579,10 @@ const kinds: Record<ActivityKind, { icon: FC<{ className?: string }>; chip: stri
     balance: { icon: HiOutlineScale, chip: "bg-tile-blue text-white", sign: "", amount: "text-tile-blue-ink", label: "Balance" },
     expense: { icon: HiOutlineArrowTrendingDown, chip: "bg-negative text-white", sign: "−", amount: "text-negative-ink", label: "Expense" },
     income: { icon: HiOutlineArrowTrendingUp, chip: "bg-positive text-white", sign: "+", amount: "text-positive-ink", label: "Income" },
+    // Saving is not spending, so these are neutral rather than red and green —
+    // the money left the account but it did not leave the person.
+    goal_deposit: { icon: HiOutlineFlag, chip: "bg-brand-solid text-white", sign: "−", amount: "text-tertiary", label: "To goal" },
+    goal_withdrawal: { icon: HiOutlineFlag, chip: "bg-brand-solid text-white", sign: "+", amount: "text-tertiary", label: "From goal" },
 };
 
 export interface Activity {

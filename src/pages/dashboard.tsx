@@ -58,6 +58,7 @@ export const DashboardPage = () => {
     // The labels have to follow too — "Spent this week" beside a daily chart
     // describes neither the number above it nor the bars below.
     const spanLabel = period === "daily" ? "today" : period === "weekly" ? "this week" : "this month";
+    const perLabel = period === "daily" ? "day" : period === "weekly" ? "week" : "month";
 
     const series = useDashboardSeries(period, points);
     const commitments = useCommitments();
@@ -93,6 +94,7 @@ export const DashboardPage = () => {
         () => [
             {
                 label: "Safe to spend",
+                formula: `what you have, minus bills before payday, split over the ${perLabel}s left`,
                 value: <Amount value={liveSafeToSpend} compactSymbol compact />,
                 delta: change(safeToSpend),
                 deltaSuffix: "%",
@@ -103,6 +105,7 @@ export const DashboardPage = () => {
             },
             {
                 label: `Spent ${spanLabel}`,
+                formula: `every expense ${spanLabel}`,
                 value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} compactSymbol compact />,
                 delta: totalChange(spentThisWeek),
                 deltaSuffix: "%",
@@ -113,6 +116,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Total balance",
+                formula: "all your accounts added up",
                 value: <Amount value={liveTotalBalance} compactSymbol compact />,
                 delta: change(totalBalance),
                 deltaSuffix: "%",
@@ -123,6 +127,7 @@ export const DashboardPage = () => {
             },
             {
                 label: "Total saved",
+                formula: "all your goals added up",
                 value: <Amount value={liveTotalSaved} compactSymbol compact />,
                 delta: change(savedPerMonth),
                 deltaSuffix: "%",
@@ -132,7 +137,7 @@ export const DashboardPage = () => {
                 formatBar: formatBarAmount,
             },
         ],
-        [formatBarAmount, tilePeriod, spanLabel, liveSafeToSpend, liveTotalBalance, liveTotalSaved, safeToSpend, spentThisWeek, totalBalance, savedPerMonth],
+        [formatBarAmount, tilePeriod, spanLabel, perLabel, liveSafeToSpend, liveTotalBalance, liveTotalSaved, safeToSpend, spentThisWeek, totalBalance, savedPerMonth],
     );
 
     // Held back deliberately: a half-built dashboard of empty states says "you
