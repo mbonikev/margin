@@ -43,7 +43,12 @@ export const listCommitments = async (): Promise<Commitment[]> => {
         .select("*")
         .is("deleted_at", null)
         .gte("due_on", today)
-        .order("due_on", { ascending: true });
+        .order("due_on", { ascending: true })
+        // Tie-break, or two bills on the same day come back in whatever order
+        // Postgres happens to produce and can swap between refetches. Biggest
+        // first: on the day rent and a 3,000 subscription both land, rent is
+        // the one that decides whether the day is affordable.
+        .order("amount", { ascending: false });
 
     if (error) throw error;
     return data.map(toCommitment);

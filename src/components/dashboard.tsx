@@ -221,6 +221,9 @@ const monthFormat = new Intl.DateTimeFormat(undefined, { month: "short" });
 
 export const UpcomingList = ({ items, className, onViewAll }: { items: Commitment[]; className?: string; onViewAll?: () => void }) => {
     const total = items.reduce((sum, item) => sum + item.amount, 0);
+    // Sorted here as well as in the query: the component should not depend on
+    // its caller having ordered the list, the way RecentActivity does not.
+    const rows = useMemo(() => [...items].sort((a, b) => a.due.getTime() - b.due.getTime() || b.amount - a.amount), [items]);
 
     return (
         <Card className={cx("flex flex-col gap-3", className)}>
@@ -237,7 +240,7 @@ export const UpcomingList = ({ items, className, onViewAll }: { items: Commitmen
             {items.length === 0 && <Blank art={<NoUpcomingArt />}>Nothing due yet. Add a recurring bill and it shows up here.</Blank>}
 
             <ul className={cx("-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto", items.length === 0 && "hidden")}>
-                {items.map((item) => (
+                {rows.map((item) => (
                     <li key={item.id}>
                         {/* A div, not a button: it had no handler, so it was
                             keyboard-focusable and announced as actionable while
