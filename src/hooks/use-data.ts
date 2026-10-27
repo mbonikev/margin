@@ -8,6 +8,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { keys } from "@/lib/query";
 import { useAuth } from "@/auth-provider";
+import type { SpendPeriod } from "@/providers";
 import { createEntry, deleteEntry, getDashboardSeries, getSafeToSpend, listAccountHistory, listActivity, listMonthFlows } from "@/services/entries";
 import { createGoal, listGoals, trashGoal, updateGoal } from "@/services/goals";
 import { createCommitment, listCommitments, trashCommitment, updateCommitment } from "@/services/commitments";
@@ -28,9 +29,9 @@ export const useMonthFlows = (months = 6) => {
     return useQuery({ queryKey: [...keys.monthFlows, months], queryFn: () => listMonthFlows(months), enabled });
 };
 
-export const useSafeToSpend = (horizonDays = 30) => {
+export const useSafeToSpend = (period: SpendPeriod = "daily") => {
     const enabled = useEnabled();
-    return useQuery({ queryKey: [...keys.safeToSpend, horizonDays], queryFn: () => getSafeToSpend(horizonDays), enabled });
+    return useQuery({ queryKey: [...keys.safeToSpend, period], queryFn: () => getSafeToSpend(period), enabled });
 };
 
 export const useGoals = () => {
@@ -136,9 +137,9 @@ export const useNotificationActions = () => {
     };
 };
 
-export const useDashboardSeries = (days = 7) => {
+export const useDashboardSeries = (period: SpendPeriod = "daily", points = 7) => {
     const enabled = useEnabled();
-    return useQuery({ queryKey: ["entries", "series", days], queryFn: () => getDashboardSeries(days), enabled });
+    return useQuery({ queryKey: ["entries", "series", period, points], queryFn: () => getDashboardSeries(period, points), enabled });
 };
 
 /** Balance readings for one account — the history modal's only source. */

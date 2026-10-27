@@ -9,6 +9,7 @@
 import { supabase } from "@/lib/supabase";
 import type { EntryRow } from "@/lib/database.types";
 import type { Activity, ActivityKind, MonthFlow } from "@/components/dashboard";
+import type { SpendPeriod } from "@/providers";
 
 const toActivity = (row: EntryRow): Activity => ({
     id: row.id,
@@ -88,8 +89,8 @@ export const listMonthFlows = async (months = 6): Promise<MonthFlow[]> => {
 };
 
 /** Defined in SQL so the dashboard tile and the morning mail agree. */
-export const getSafeToSpend = async (horizonDays = 30): Promise<number> => {
-    const { data, error } = await supabase.rpc("safe_to_spend", { horizon_days: horizonDays });
+export const getSafeToSpend = async (period: SpendPeriod = "daily"): Promise<number> => {
+    const { data, error } = await supabase.rpc("safe_to_spend", { period });
     if (error) throw error;
     return data ?? 0;
 };
@@ -106,8 +107,8 @@ export interface DashboardSeries {
  * The four stat-tile series. Empty on a new account and filling in daily, since
  * the snapshot job can only record what it was running for.
  */
-export const getDashboardSeries = async (days = 7): Promise<DashboardSeries> => {
-    const { data, error } = await supabase.rpc("dashboard_series", { days });
+export const getDashboardSeries = async (period: SpendPeriod = "daily", points = 7): Promise<DashboardSeries> => {
+    const { data, error } = await supabase.rpc("dashboard_series", { period, points });
     if (error) throw error;
 
     return {

@@ -24,11 +24,16 @@ const tones: Record<TileTone, { bar: string; soft: string; pill: string }> = {
     magenta: { bar: "bg-tile-magenta", soft: "bg-tile-magenta-soft", pill: "bg-tile-magenta-tint text-tile-magenta-ink" },
 };
 
-export type TilePeriod = "days" | "months";
+export type TilePeriod = "days" | "weeks" | "months";
 
 /** Short names for the last `count` periods, ending today, in the viewer's locale. */
 const recentLabels = (count: number, period: TilePeriod) => {
-    const format = new Intl.DateTimeFormat(undefined, period === "days" ? { weekday: "short" } : { month: "short" });
+    // Weeks are labelled by the day the week starts on — "6 Oct" reads as a
+    // week more clearly than a week number nobody counts in.
+    const format = new Intl.DateTimeFormat(
+        undefined,
+        period === "days" ? { weekday: "short" } : period === "weeks" ? { day: "numeric", month: "short" } : { month: "short" },
+    );
 
     return Array.from({ length: count }, (_, index) => {
         const date = new Date();
@@ -36,6 +41,8 @@ const recentLabels = (count: number, period: TilePeriod) => {
 
         if (period === "days") {
             date.setDate(date.getDate() - stepsBack);
+        } else if (period === "weeks") {
+            date.setDate(date.getDate() - stepsBack * 7);
         } else {
             // Pin to the 1st first, or stepping back from a 31st skips short months.
             date.setDate(1);

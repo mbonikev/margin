@@ -16,9 +16,14 @@ DONE
 10. missing pages behind "view all" (activity, upcoming, notifications)
       → /activity /upcoming /goals /notifications, reusing the same components
         the dashboard cards use, without a limit.
-11. decide if we keep "safe to spend"
-      → kept, defined once in SQL (safe_to_spend) so the dashboard tile and the
-        morning mail cannot quote different numbers.
+11. decide if we keep "safe to spend" and where to set it from
+      → kept, and it is now an allowance rather than a leftover: what remains
+        after bills due before payday and after goal savings, divided across
+        the periods left until payday. The person picks daily / weekly /
+        monthly in Settings -> Money, and that choice also sets the tile's
+        x-axis. Uses the payday setting, which until now was collected and
+        never read. Defined once in safe_to_spend_for(uid, period); the
+        snapshot job and the morning mail both delegate to it.
 12. morning mail with a Duolingo feel
       → streak in profiles, carried by the morning-mail function.
 13. export should be excel not json

@@ -50,7 +50,16 @@ export const DashboardPage = () => {
 
     // Everything below comes from the database. A new account sees genuine
     // empty states rather than a sample standing in for them.
-    const series = useDashboardSeries();
+    // One choice drives three things: how the figure is divided, how many
+    // points the chart plots, and what its x-axis is labelled with.
+    const period = preferences.spendPeriod;
+    const points = period === "daily" ? 7 : period === "weekly" ? 8 : 6;
+    const tilePeriod = period === "daily" ? "days" : period === "weekly" ? "weeks" : "months";
+    // The labels have to follow too — "Spent this week" beside a daily chart
+    // describes neither the number above it nor the bars below.
+    const spanLabel = period === "daily" ? "today" : period === "weekly" ? "this week" : "this month";
+
+    const series = useDashboardSeries(period, points);
     const commitments = useCommitments();
     const goalsQuery = useGoals();
     const activityQuery = useActivity();
@@ -62,7 +71,7 @@ export const DashboardPage = () => {
     // taken once a day, so the newest one is up to 24h old — and on a fresh
     // account there are none at all, which showed as a confident zero next to
     // an account holding money. The series is only ever the sparkline.
-    const liveSafeToSpend = useSafeToSpend().data ?? 0;
+    const liveSafeToSpend = useSafeToSpend(period).data ?? 0;
     const upcoming = commitments.data ?? [];
     const goals = goalsQuery.data ?? [];
     const activity = activityQuery.data ?? [];
@@ -88,17 +97,17 @@ export const DashboardPage = () => {
                 delta: change(safeToSpend),
                 deltaSuffix: "%",
                 tone: "aqua",
-                period: "days",
+                period: tilePeriod,
                 bars: safeToSpend,
                 formatBar: formatBarAmount,
             },
             {
-                label: "Spent this week",
+                label: `Spent ${spanLabel}`,
                 value: <Amount value={spentThisWeek.reduce((total, day) => total + day, 0)} compactSymbol compact />,
                 delta: totalChange(spentThisWeek),
                 deltaSuffix: "%",
                 tone: "blue",
-                period: "days",
+                period: tilePeriod,
                 bars: spentThisWeek,
                 formatBar: formatBarAmount,
             },
@@ -108,22 +117,22 @@ export const DashboardPage = () => {
                 delta: change(totalBalance),
                 deltaSuffix: "%",
                 tone: "yellow",
-                period: "days",
+                period: tilePeriod,
                 bars: totalBalance,
                 formatBar: formatBarAmount,
             },
             {
-                label: "Saved this month",
+                label: "Total saved",
                 value: <Amount value={liveTotalSaved} compactSymbol compact />,
                 delta: change(savedPerMonth),
                 deltaSuffix: "%",
                 tone: "magenta",
-                period: "months",
+                period: tilePeriod,
                 bars: savedPerMonth,
                 formatBar: formatBarAmount,
             },
         ],
-        [formatBarAmount, liveSafeToSpend, liveTotalBalance, liveTotalSaved, safeToSpend, spentThisWeek, totalBalance, savedPerMonth],
+        [formatBarAmount, tilePeriod, spanLabel, liveSafeToSpend, liveTotalBalance, liveTotalSaved, safeToSpend, spentThisWeek, totalBalance, savedPerMonth],
     );
 
     // Held back deliberately: a half-built dashboard of empty states says "you

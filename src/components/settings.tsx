@@ -617,9 +617,21 @@ export const MoneySettings = () => {
                     ]}
                 />
 
+                <ChoiceRow
+                    label="Safe to spend"
+                    hint="What's left after bills and goals, split across what's left until payday. Also sets the chart below it."
+                    value={preferences.spendPeriod}
+                    onChange={(value) => set("spendPeriod", value)}
+                    options={[
+                        { id: "daily", label: "Per day" },
+                        { id: "weekly", label: "Per week" },
+                        { id: "monthly", label: "Per month" },
+                    ]}
+                />
+
                 <StepperRow
                     label="Payday"
-                    hint="The day your month resets."
+                    hint="The day your month resets. Safe to spend counts down to it."
                     value={preferences.payday}
                     min={1}
                     max={31}

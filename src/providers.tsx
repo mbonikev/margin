@@ -137,6 +137,9 @@ export type TextSize = "small" | "default" | "large";
 export type Rounding = "exact" | "hundred" | "thousand";
 export type WeekStart = "monday" | "sunday";
 
+/** How "safe to spend" is expressed, and what the tile's chart plots. */
+export type SpendPeriod = "daily" | "weekly" | "monthly";
+
 /**
  * Every tweak the app offers, in one flat record. Flat because it serialises to
  * a single localStorage entry and merges cleanly over the defaults — a nested
@@ -160,6 +163,8 @@ export interface Preferences {
     rounding: Rounding;
     showCurrencyCode: boolean;
     weekStart: WeekStart;
+    /** Divides what's left until payday. Also sets the chart's x-axis. */
+    spendPeriod: SpendPeriod;
     payday: number;
     lowBalance: number;
     staleAfterDays: number;
@@ -196,6 +201,7 @@ export const defaultPreferences: Preferences = {
     rounding: "exact",
     showCurrencyCode: false,
     weekStart: "monday",
+    spendPeriod: "daily",
     payday: 28,
     lowBalance: 20000,
     staleAfterDays: 3,

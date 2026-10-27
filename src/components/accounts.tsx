@@ -393,9 +393,24 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
     // the button itself rather than stacking a dialog on top of this one.
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
+    // The card as it would look if saved. Rendering the real AccountCard rather
+    // than a swatch means the colour is shown where it actually matters — the
+    // themes differ far more as a full card than as a 28px circle.
+    const previewAccount: Account = { ...account, name: name.trim() || account.name, kind, theme };
+
     return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} settings`}>
-        <div className="flex flex-col gap-4 p-5">
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} settings`} className="max-w-3xl">
+        <div className="flex max-h-[85vh] flex-col gap-5 overflow-y-auto p-5 sm:flex-row sm:gap-6">
+            {/* Above the form on a phone, beside it from `sm` up — so the card
+                is the first thing seen on mobile rather than scrolled past. */}
+            <div className="shrink-0 sm:w-64">
+                <span className="mb-1.5 block text-xs font-medium text-tertiary">Preview</span>
+                <div className="aspect-[1.6/1] w-full sm:sticky sm:top-0">
+                    <AccountCard account={previewAccount} />
+                </div>
+            </div>
+
+            <div className="flex min-w-0 flex-1 flex-col gap-4">
             <div>
                 <h2 className="text-lg font-semibold tracking-tight text-primary">Account settings</h2>
                 <p className="mt-0.5 text-sm text-tertiary">How {account.name} appears in Margin.</p>
@@ -444,6 +459,7 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
                     )
                 }
             />
+            </div>
         </div>
     </Modal>
 );
