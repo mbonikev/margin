@@ -218,10 +218,10 @@ export const UpcomingList = ({ items, className, onViewAll }: { items: Commitmen
             <ul className={cx("-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto", items.length === 0 && "hidden")}>
                 {items.map((item) => (
                     <li key={item.id}>
-                        <button
-                            type="button"
-                            className="no-press flex w-full items-center gap-2.5 rounded-2xl px-2 py-1.5 text-left transition duration-100 ease-linear hover:bg-secondary"
-                        >
+                        {/* A div, not a button: it had no handler, so it was
+                            keyboard-focusable and announced as actionable while
+                            doing nothing. The hover went with it. */}
+                        <div className="flex w-full items-center gap-2.5 rounded-2xl px-2 py-1.5 text-left">
                             {/* A calendar tile reads faster down a column than a row of pills. */}
                             <span className="flex size-10 shrink-0 flex-col items-center justify-center rounded-xl bg-brand-primary leading-none text-brand-secondary">
                                 <span className="text-sm font-semibold">{dayFormat.format(item.due)}</span>
@@ -231,13 +231,13 @@ export const UpcomingList = ({ items, className, onViewAll }: { items: Commitmen
                             <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{item.name}</span>
 
                             <Amount value={item.amount} className="shrink-0 text-sm font-semibold text-primary" />
-                        </button>
+                        </div>
                     </li>
                 ))}
             </ul>
 
             <div className="flex items-baseline justify-between gap-2 pt-1">
-                <p className="text-xs text-tertiary">Next 30 days</p>
+                <p className="text-xs text-tertiary">Still to come</p>
                 <Amount value={total} className="text-base font-semibold text-primary" />
             </div>
         </Card>
@@ -606,8 +606,8 @@ export const RecentActivity = ({ items, className, onViewAll }: { items: Activit
                             const Icon = kind.icon;
 
                             return (
-                                <tr key={item.id} className="group cursor-default">
-                                    <td className="rounded-l-full px-4 py-2.5 transition duration-100 ease-linear group-hover:bg-secondary">
+                                <tr key={item.id}>
+                                    <td className="rounded-l-full px-4 py-2.5">
                                         <div className="flex items-center gap-3">
                                             <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-full", kind.chip)}>
                                                 <Icon className="size-4.5" />
@@ -616,27 +616,27 @@ export const RecentActivity = ({ items, className, onViewAll }: { items: Activit
                                         </div>
                                     </td>
 
-                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary transition duration-100 ease-linear group-hover:bg-secondary sm:table-cell">
+                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary sm:table-cell">
                                         {kind.label}
                                     </td>
 
-                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary transition duration-100 ease-linear group-hover:bg-secondary md:table-cell">
+                                    <td className="hidden px-2.5 py-2.5 text-sm text-tertiary md:table-cell">
                                         {item.account}
                                     </td>
 
-                                    <td className="hidden max-w-48 truncate px-2.5 py-2.5 text-sm text-quaternary transition duration-100 ease-linear group-hover:bg-secondary xl:table-cell">
+                                    <td className="hidden max-w-48 truncate px-2.5 py-2.5 text-sm text-quaternary xl:table-cell">
                                         {item.note ?? "—"}
                                     </td>
 
-                                    <td className="px-2.5 py-2.5 text-sm whitespace-nowrap text-tertiary transition duration-100 ease-linear group-hover:bg-secondary">
+                                    <td className="px-2.5 py-2.5 text-sm whitespace-nowrap text-tertiary">
                                         {whenLabel(item.at)} · {timeFormat.format(item.at)}
                                     </td>
 
-                                    <td className="hidden px-2.5 py-2.5 text-right text-sm whitespace-nowrap text-tertiary transition duration-100 ease-linear group-hover:bg-secondary lg:table-cell">
+                                    <td className="hidden px-2.5 py-2.5 text-right text-sm whitespace-nowrap text-tertiary lg:table-cell">
                                         {item.balanceAfter === undefined ? "—" : <Amount value={item.balanceAfter} hideSymbol />}
                                     </td>
 
-                                    <td className={cx("rounded-r-full px-4 py-2.5 text-right text-sm font-semibold whitespace-nowrap transition duration-100 ease-linear group-hover:bg-secondary", kind.amount)}>
+                                    <td className={cx("rounded-r-full px-4 py-2.5 text-right text-sm font-semibold whitespace-nowrap", kind.amount)}>
                                         {kind.sign}
                                         <Amount value={item.amount} />
                                     </td>

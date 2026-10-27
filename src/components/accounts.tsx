@@ -403,10 +403,16 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
         <div className="flex max-h-[85vh] flex-col gap-5 overflow-y-auto p-5 sm:flex-row sm:gap-6">
             {/* Above the form on a phone, beside it from `sm` up — so the card
                 is the first thing seen on mobile rather than scrolled past. */}
-            <div className="shrink-0 sm:w-64">
+            <div className="shrink-0 sm:w-72">
                 <span className="mb-1.5 block text-xs font-medium text-tertiary">Preview</span>
-                <div className="aspect-[1.6/1] w-full sm:sticky sm:top-0">
-                    <AccountCard account={previewAccount} />
+                {/* Scaled, not resized. The card's type and padding are fixed
+                    sizes, so a smaller box clips them — the name and balance
+                    fell off the bottom. Rendering it at 125% and scaling to
+                    0.8 keeps every proportion and just makes it smaller. */}
+                <div className="relative aspect-[1.6/1] w-full sm:sticky sm:top-0">
+                    <div className="absolute top-0 left-0 h-[125%] w-[125%] origin-top-left scale-[0.8]">
+                        <AccountCard account={previewAccount} />
+                    </div>
                 </div>
             </div>
 
