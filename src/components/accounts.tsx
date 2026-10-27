@@ -1106,66 +1106,81 @@ export const AccountTrash = () => {
         <div className="flex flex-col gap-4">
             <p className="text-sm text-tertiary">Left out of your totals, along with everything recorded against them. Restore any time.</p>
 
-            <ul className="flex flex-col gap-2">
-                {trashed.map((account) => {
-                    const records = entryCounts?.[account.id] ?? 0;
-                    const label = records === 1 ? "record" : "records";
+            {/* A table, not cards. The card is drawn at fixed type sizes and
+                clips at any width narrower than the dashboard's, and a row of
+                facts is what this view is actually for — the colour survives
+                as a dot, which is all that is needed to tell two apart. */}
+            <div className="-mx-2 overflow-x-auto">
+                <table className="w-full min-w-[34rem] border-separate border-spacing-y-1">
+                    <thead>
+                        <tr className="text-left text-xs font-medium text-quaternary">
+                            <th scope="col" className="px-4 py-1 font-medium">Account</th>
+                            <th scope="col" className="px-2.5 py-1 font-medium">Deleted</th>
+                            <th scope="col" className="px-2.5 py-1 text-right font-medium">Balance</th>
+                            <th scope="col" className="px-2.5 py-1 text-right font-medium">Records</th>
+                            <th scope="col" className="px-4 py-1" />
+                        </tr>
+                    </thead>
 
-                    return (
-                        <li key={account.id} className="flex flex-wrap items-center gap-4 rounded-3xl bg-secondary p-3">
-                            {/* The real card, dimmed. It is what the person
-                                recognises the account by; a swatch is not. */}
-                            <div className="w-40 shrink-0 opacity-50 grayscale-[0.35]">
-                                <div className="aspect-[1.55/1] w-full">
-                                    <AccountCard account={account} />
-                                </div>
-                            </div>
+                    <tbody>
+                        {trashed.map((account) => {
+                            const records = entryCounts?.[account.id] ?? 0;
+                            const label = records === 1 ? "record" : "records";
 
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-medium text-primary">{account.name}</p>
-                                <p className="truncate text-xs text-tertiary">
-                                    {account.kind} · deleted {sinceDeleted(account.deletedAt)}
-                                </p>
-                                <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-quaternary">
-                                    <span className="flex items-center gap-1">
-                                        Balance <Amount value={account.balance} className="font-medium text-tertiary" />
-                                    </span>
-                                    <span>
-                                        {records} {label} held with it
-                                    </span>
-                                </p>
-                            </div>
+                            return (
+                                <tr key={account.id}>
+                                    <td className="rounded-l-2xl bg-secondary px-4 py-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <span aria-hidden="true" className={cx("size-6 shrink-0 rounded-full opacity-70", cardThemeClass(account.theme))} />
+                                            <span className="min-w-0">
+                                                <span className="block truncate text-sm font-medium text-primary">{account.name}</span>
+                                                <span className="block truncate text-xs text-tertiary">{account.kind}</span>
+                                            </span>
+                                        </div>
+                                    </td>
 
-                            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                                <ActionButton icon={HiOutlineArrowUturnLeft} onClick={() => restore(account.id)} className="bg-primary">
-                                    Restore
-                                </ActionButton>
+                                    <td className="bg-secondary px-2.5 py-3 text-sm whitespace-nowrap text-tertiary">{sinceDeleted(account.deletedAt)}</td>
 
-                                {confirming === account.id ? (
-                                    <ActionButton
-                                        icon={HiOutlineTrash}
-                                        onClick={() => purge(account.id)}
-                                        onBlur={() => setConfirming(null)}
-                                        autoFocus
-                                        className="bg-negative-tint text-negative-ink hover:bg-negative-tint hover:text-negative-ink"
-                                    >
-                                        {/* Names what is lost: purging takes the
-                                            entries with it now, not just the card. */}
-                                        {records > 0 ? `Delete with ${records} ${label}?` : "Sure? This is forever"}
-                                    </ActionButton>
-                                ) : (
-                                    <ActionButton
-                                        icon={HiOutlineTrash}
-                                        onClick={() => setConfirming(account.id)}
-                                        aria-label={`Delete ${account.name} forever`}
-                                        className="bg-primary hover:bg-negative-tint hover:text-negative-ink"
-                                    />
-                                )}
-                            </div>
-                        </li>
-                    );
-                })}
-            </ul>
+                                    <td className="bg-secondary px-2.5 py-3 text-right text-sm whitespace-nowrap text-tertiary">
+                                        <Amount value={account.balance} />
+                                    </td>
+
+                                    <td className="bg-secondary px-2.5 py-3 text-right text-sm tabular-nums whitespace-nowrap text-tertiary">{records}</td>
+
+                                    <td className="rounded-r-2xl bg-secondary px-4 py-3">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <ActionButton icon={HiOutlineArrowUturnLeft} onClick={() => restore(account.id)} className="bg-primary">
+                                                Restore
+                                            </ActionButton>
+
+                                            {confirming === account.id ? (
+                                                <ActionButton
+                                                    icon={HiOutlineTrash}
+                                                    onClick={() => purge(account.id)}
+                                                    onBlur={() => setConfirming(null)}
+                                                    autoFocus
+                                                    className="bg-negative-tint text-negative-ink hover:bg-negative-tint hover:text-negative-ink"
+                                                >
+                                                    {/* Names what is lost: purging takes the
+                                                        entries with it, not just the card. */}
+                                                    {records > 0 ? `Delete with ${records} ${label}?` : "Sure? This is forever"}
+                                                </ActionButton>
+                                            ) : (
+                                                <ActionButton
+                                                    icon={HiOutlineTrash}
+                                                    onClick={() => setConfirming(account.id)}
+                                                    aria-label={`Delete ${account.name} forever`}
+                                                    className="bg-primary hover:bg-negative-tint hover:text-negative-ink"
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
