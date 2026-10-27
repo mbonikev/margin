@@ -11,3 +11,5 @@
 11. decide if we keep "safe to spend" and where to set it from
 12. morning mail, the idea of tone is very good now we need to add a feeling of Duolingo reminders
 13. exporting data should be in excel not json
+14. the cards on the accounts page, they are very compact coppiable elements are cut through
+15. Goals needs to have view all button instead of new goal

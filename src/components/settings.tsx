@@ -32,7 +32,7 @@ const row = "flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded
 
 export const ToggleRow = ({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (next: boolean) => void }) => (
     <div className={row}>
-        <span className="min-w-0 flex-1">
+        <span className="min-w-0 flex-1 flex flex-col gap-1">
             <span className="block text-sm font-medium text-primary">{label}</span>
             {hint && <span className="block text-xs text-tertiary">{hint}</span>}
         </span>
@@ -316,38 +316,38 @@ export const ProfileSettings = () => {
     const person = preferences.demoData ? demoProfile : { name: "", email: "" };
 
     return (
-    <div className="flex max-w-md flex-col gap-4">
-        <div>
-            <h2 className="text-md font-semibold text-primary">Profile</h2>
-            <p className="mt-0.5 text-sm text-tertiary">Your details, and the timezone your morning email follows.</p>
-        </div>
+        <div className="flex max-w-md flex-col gap-4">
+            <div>
+                <h2 className="text-md font-semibold text-primary">Profile</h2>
+                <p className="mt-0.5 text-sm text-tertiary">Your details, and the timezone your morning email follows.</p>
+            </div>
 
-        <Field label="Name">
-            <TextField key={person.name} defaultValue={person.name} placeholder="Your name" />
-        </Field>
+            <Field label="Name">
+                <TextField key={person.name} defaultValue={person.name} placeholder="Your name" />
+            </Field>
 
-        <Field label="Email" hint="Where the morning email arrives.">
-            <TextField key={person.email} type="email" defaultValue={person.email} placeholder="you@example.com" />
-        </Field>
+            <Field label="Email" hint="Where the morning email arrives.">
+                <TextField key={person.email} type="email" defaultValue={person.email} placeholder="you@example.com" />
+            </Field>
 
-        {/* A combobox, not a select: 400-odd zones is a scroll, but one word of
+            {/* A combobox, not a select: 400-odd zones is a scroll, but one word of
             typing is a jump. */}
-        <Select.ComboBox
-            label="Timezone"
-            hint="The email is sent at your local time, not the server's."
-            placeholder="Search zones"
-            defaultSelectedKey={localZone}
-            items={zones}
-        >
-            {(item) => (
-                <Select.Item id={item.id} supportingText={item.supportingText}>
-                    {item.label}
-                </Select.Item>
-            )}
-        </Select.ComboBox>
+            <Select.ComboBox
+                label="Timezone"
+                hint="The email is sent at your local time, not the server's."
+                placeholder="Search zones"
+                defaultSelectedKey={localZone}
+                items={zones}
+            >
+                {(item) => (
+                    <Select.Item id={item.id} supportingText={item.supportingText}>
+                        {item.label}
+                    </Select.Item>
+                )}
+            </Select.ComboBox>
 
-        <ModalActions onCancel={() => {}} onConfirm={() => {}} confirmLabel="Save profile" />
-    </div>
+            <ModalActions onCancel={() => { }} onConfirm={() => { }} confirmLabel="Save profile" />
+        </div>
     );
 };
 
@@ -761,7 +761,7 @@ export const EmailSettings = () => {
                 </div>
             </div>
 
-            <ModalActions onCancel={() => {}} onConfirm={() => {}} confirmLabel="Save email settings" />
+            <ModalActions onCancel={() => { }} onConfirm={() => { }} confirmLabel="Save email settings" />
         </div>
     );
 };
