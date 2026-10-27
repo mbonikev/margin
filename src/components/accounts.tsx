@@ -400,10 +400,10 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
 
     return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} label={`${account.name} settings`} className="max-w-4xl">
-        <div className="flex max-h-[85vh] flex-col gap-5 overflow-y-auto p-5 sm:flex-row sm:gap-6">
+        <div className="flex max-h-[85vh] flex-col gap-5 overflow-y-auto p-5 lg:flex-row lg:gap-6">
             {/* Above the form on a phone, beside it from `sm` up — so the card
                 is the first thing seen on mobile rather than scrolled past. */}
-            <div className="shrink-0 sm:w-96">
+            <div className="shrink-0 lg:w-96">
                 <span className="mb-1.5 block text-xs font-medium text-tertiary">Preview</span>
                 {/* No scaling: the column is now as wide as the card is on the
                     dashboard, so it renders at its natural size. Scaling was
@@ -411,7 +411,7 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
                     and it shrank that type along with everything else.
                     1.55 rather than 1.6 gives the content the same height it
                     has on the dashboard, where nothing clips. */}
-                <div className="aspect-[1.55/1] w-full sm:sticky sm:top-0">
+                <div className="aspect-[1.55/1] w-full max-w-sm lg:max-w-none lg:sticky lg:top-0">
                     <AccountCard account={previewAccount} />
                 </div>
             </div>
@@ -438,7 +438,7 @@ export const AccountSettingsModal = ({ isOpen, onOpenChange, account, onDelete, 
                 keeps them off the colour swatches when the form is the taller
                 of the two. */}
             <ModalActions
-                className="mt-auto pt-6"
+                className="mt-auto pt-8"
                 onCancel={() => onOpenChange(false)}
                 onConfirm={() => {
                     onSave?.({ name: name.trim() || account.name, kind, theme });
@@ -872,7 +872,7 @@ const actions = [
 ];
 
 export const AccountHero = ({ accounts, className }: { accounts: Account[]; className?: string }) => {
-    const { add, update } = useAccounts();
+    const { add, update, remove } = useAccounts();
     const [activeId, setActiveId] = useState(accounts[0]?.id ?? "");
     const [openModal, setOpenModal] = useState<"balance" | "history" | "settings" | null>(null);
     const [adding, setAdding] = useState(false);
@@ -1065,6 +1065,7 @@ export const AccountHero = ({ accounts, className }: { accounts: Account[]; clas
                 onOpenChange={(open) => setOpenModal(open ? "settings" : null)}
                 account={active}
                 onSave={(patch) => update(active.id, patch)}
+                onDelete={() => remove(active.id)}
             />
         </Card>
     );
